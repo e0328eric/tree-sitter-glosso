@@ -1,0 +1,77 @@
+[
+  "if"
+  "else"
+  "while"
+  "for"
+  "return"
+  "struct"
+  "union"
+  "enum"
+  "using"
+  "defer"
+  "goto"
+  "long_goto"
+  "where"
+  "cast"
+] @keyword
+
+[
+  "#run"
+  "#import"
+  "#load"
+  "#from_header"
+  "#library"
+  "#fn_ptr"
+  "#c_ptr"
+  "#as"
+  "#empty"
+  "#raw"
+  "#precedence"
+  "#prefix"
+  "#suffix"
+  "#expand"
+  "#magic"
+  "#foreign"
+  "#c_call"
+  "#no_context"
+  "#dump"
+  "#fallback"
+  "#bytes"
+  "#asm"
+  "#push_context"
+  "#push_allocator"
+  "#if"
+  "#insert"
+  "#falling"
+  "#meaningful"
+  "#code"
+  "#string"
+  "#char"
+] @attribute
+
+(comment) @comment
+(string_literal) @string
+(multiline_string_line) @string
+(char_literal) @character
+(integer_literal) @number
+(float_literal) @number.float
+(boolean_literal) @boolean
+(null_literal) @constant.builtin
+(context_expression) @constant.builtin
+(context_type) @type.builtin
+
+(declaration_name) @function
+(function_declaration (parameter_list (parameter name: (binding_list (identifier) @variable.parameter))))
+(parameter name: (binding_list (identifier) @variable.parameter))
+(struct_field name: (identifier) @property)
+(union_field name: (identifier) @property)
+(enum_variant name: (identifier) @constant)
+(struct_literal_field name: (identifier) @property)
+(postfix_expression field: (identifier) @property)
+(postfix_expression function: (identifier) @function)
+
+(identifier) @variable
+(non_hygienic_identifier) @variable
+(label) @label
+(quoted_operator) @operator
+(operator) @operator

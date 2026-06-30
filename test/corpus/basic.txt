@@ -1,0 +1,306 @@
+==================
+declarations
+==================
+
+Vec :: struct {
+  x: int;
+  y: int = 2;
+}
+
+Color :: enum { Red; Green = 2, Blue; }
+
+Shape :: union #raw {
+  point: Vec;
+}
+
+main :: () -> int #dump {
+  v : Vec = .{ .x = 1, .y = 2 };
+  return v.x;
+}
+
+---
+
+(source_file
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (struct_declaration
+      (struct_field
+        (identifier)
+        (named_type
+          (identifier)))
+      (struct_field
+        (identifier)
+        (named_type
+          (identifier))
+        (integer_literal))))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (enum_declaration
+      (enum_variant
+        (identifier))
+      (enum_variant
+        (identifier)
+        (integer_literal))
+      (enum_variant
+        (identifier))))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (union_declaration
+      (union_field
+        (identifier)
+        (named_type
+          (identifier)))))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (function_declaration
+      (parameter_list)
+      (arrow)
+      (named_type
+        (identifier))
+      (block
+        (variable_declaration
+          (binding_list
+            (identifier))
+          (named_type
+            (identifier))
+          (struct_literal
+            (struct_literal_field
+              (identifier)
+              (integer_literal))
+            (struct_literal_field
+              (identifier)
+              (integer_literal))))
+        (return_statement
+          (postfix_expression
+            (identifier)
+            (identifier)))))))
+
+==================
+directives and code blocks
+==================
+
+#import "Prelude";
+#load "parts/geometry.glo";
+MSG :: #string
+\\hello
+\\world
+
+macro :: (body: Code) #expand {
+  `tmp := #run 1 + 2;
+  #insert body;
+}
+
+---
+
+(source_file
+  (import_declaration
+    (string_literal))
+  (load_declaration
+    (string_literal))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (constant_declaration_body
+      (string_block
+        (multiline_string_line)
+        (multiline_string_line))))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (function_declaration
+      (parameter_list
+        (parameter
+          (binding_list
+            (identifier))
+          (named_type
+            (identifier))))
+      (block
+        (variable_declaration
+          (binding_list
+            (non_hygienic_identifier))
+          (binary_expression
+            (run_expression
+              (integer_literal))
+            (operator)
+            (integer_literal)))
+        (insert_statement
+          (identifier))))))
+
+==================
+bare run block
+==================
+
+VALUE :: #run {
+  x := 1;
+  x += 2;
+  return x;
+}
+
+#run {
+  VALUE;
+}
+
+---
+
+(source_file
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (constant_declaration_body
+      (run_expression
+        (block
+          (variable_declaration
+            (binding_list
+              (identifier))
+            (integer_literal))
+          (assignment_statement
+            (identifier)
+            (compound_assignment_operator)
+            (integer_literal))
+          (return_statement
+            (identifier))))))
+	    (top_run_declaration
+	      (block
+	        (expression_statement
+	          (identifier)))))
+
+==================
+empty type markers
+==================
+
+RangeFull :: struct { #empty: $T, $U; }
+zero :: (#empty: $T, $U) -> T where IsInteger(T) { return 0; }
+
+---
+
+(source_file
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (struct_declaration
+      (empty_field
+        (generic_type_variable
+          (identifier))
+        (generic_type_variable
+          (identifier)))))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (function_declaration
+      (parameter_list
+        (empty_parameter
+          (generic_type_variable
+            (identifier))
+          (generic_type_variable
+            (identifier))))
+      (arrow)
+      (named_type
+        (identifier))
+      (where_clause
+        (postfix_expression
+          (identifier)
+          (argument_list
+            (identifier))))
+      (block
+        (return_statement
+          (integer_literal))))))
+
+==================
+fallback and long_goto
+==================
+
+worker :: (from: int, flag: bool) -> int {
+'task:
+  return from;
+}
+
+'.*' :: (p: *$T) -> T #suffix #fallback #magic "ptr_deref";
+
+VALUE :: #run -> int {
+  x := long_goto worker 'task 40, true;
+  return x;
+}
+
+main :: () {
+  long_goto worker 'task 1, false;
+}
+
+---
+
+(source_file
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (function_declaration
+      (parameter_list
+        (parameter
+          (binding_list
+            (identifier))
+          (named_type
+            (identifier)))
+        (parameter
+          (binding_list
+            (identifier))
+          (named_type
+            (identifier))))
+      (arrow)
+      (named_type
+        (identifier))
+      (block
+        (label_statement
+          (label))
+        (return_statement
+          (identifier)))))
+  (named_declaration
+    (declaration_name
+      (quoted_operator))
+    (function_declaration
+      (parameter_list
+        (parameter
+          (binding_list
+            (identifier))
+          (pointer_type
+            (generic_type_variable
+              (identifier)))))
+      (arrow)
+      (named_type
+        (identifier))
+      (magic_directive
+        (string_literal))))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (constant_declaration_body
+      (run_expression
+        (arrow)
+        (named_type
+          (identifier))
+        (block
+          (variable_declaration
+            (binding_list
+              (identifier))
+            (long_goto_expression
+              (identifier)
+              (label)
+              (long_goto_argument_list
+                (integer_literal)
+                (boolean_literal))))
+          (return_statement
+            (identifier))))))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (function_declaration
+      (parameter_list)
+      (block
+        (expression_statement
+          (long_goto_expression
+            (identifier)
+            (label)
+            (long_goto_argument_list
+              (integer_literal)
+              (boolean_literal))))))))

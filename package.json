@@ -1,0 +1,39 @@
+{
+  "name": "tree-sitter-glosso",
+  "version": "0.0.0",
+  "description": "Tree-sitter grammar for Glosso",
+  "license": "MIT",
+  "author": {
+    "name": "Sungbae Jeong",
+    "email": "almagest0328@gmail.com"
+  },
+  "keywords": [
+    "incremental",
+    "parsing",
+    "tree-sitter",
+    "glosso"
+  ],
+  "files": [
+    "grammar.js",
+    "tree-sitter.json",
+    "queries/*",
+    "src/**"
+  ],
+  "devDependencies": {
+    "tree-sitter-cli": "^0.26.8"
+  },
+  "scripts": {
+    "generate": "tree-sitter generate",
+    "parse:examples": "tree-sitter parse ../glosso/examples/*.glo ../glosso/examples/parts/*.glo",
+    "test": "tree-sitter test"
+  },
+  "tree-sitter": [
+    {
+      "scope": "source.glosso",
+      "file-types": [
+        "glo"
+      ],
+      "injection-regex": "^glosso$"
+    }
+  ]
+}
