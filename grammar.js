@@ -7,10 +7,11 @@
 // @ts-check
 
 const PREC = {
-  range: 1,
-  binary: 2,
-  unary: 3,
-  call: 4,
+  assignment: 1,
+  range: 2,
+  binary: 3,
+  unary: 4,
+  call: 5,
 };
 
 module.exports = grammar({
@@ -221,6 +222,7 @@ module.exports = grammar({
     _function_modifier: ($) =>
       choice(
         $.where_clause,
+        $.operator_directive,
         $.precedence_directive,
         "#prefix",
         "#suffix",
@@ -235,6 +237,15 @@ module.exports = grammar({
       ),
 
     where_clause: ($) => seq("where", field("condition", $._expression)),
+
+    operator_directive: ($) =>
+      seq(
+        "#operator",
+        "(",
+        field("mode", $.identifier),
+        optional(seq(",", field("level", $.integer_literal))),
+        ")",
+      ),
 
     precedence_directive: ($) =>
       seq(
@@ -457,11 +468,14 @@ module.exports = grammar({
       ),
 
     assignment_statement: ($) =>
-      seq(
-        field("left", $._expression),
-        field("operator", choice("=", $.compound_assignment_operator)),
-        field("right", $._expression),
-        optional(";"),
+      prec.right(
+        PREC.assignment + 1,
+        seq(
+          field("left", $._expression),
+          field("operator", choice("=", $.assignment_operator)),
+          field("right", $._expression),
+          optional(";"),
+        ),
       ),
 
     expression_statement: ($) => seq($._expression, optional(";")),
@@ -537,6 +551,7 @@ module.exports = grammar({
 
     _expression: ($) =>
       choice(
+        $.assignment_expression,
         $.binary_expression,
         $.range_expression,
         $.unary_expression,
@@ -546,6 +561,16 @@ module.exports = grammar({
         $.meaningful_expression,
         $.postfix_expression,
         $._primary_expression,
+      ),
+
+    assignment_expression: ($) =>
+      prec.right(
+        PREC.assignment,
+        seq(
+          field("left", $._expression),
+          field("operator", $.assignment_operator),
+          field("right", $._expression),
+        ),
       ),
 
     binary_expression: ($) =>
@@ -700,8 +725,26 @@ module.exports = grammar({
 
     range_operator: (_) => token(prec(2, choice("..=", ".."))),
 
-    compound_assignment_operator: (_) =>
-      token(prec(2, choice("+=", "-=", "*=", "/=", "%=", "<<=", ">>=", "&=", "|=", "^="))),
+    assignment_operator: (_) =>
+      token(
+        prec(
+          2,
+          choice(
+            "+=",
+            "-=",
+            "*=",
+            "/=",
+            "%=",
+            "<<=",
+            ">>=",
+            "&=",
+            "|=",
+            "^=",
+            /[+*\/@%\^&|~?][+\-*\/<>!@%\^&|~?]*=/,
+            /-[+\-*\/<!@%\^&|~?][+\-*\/<>!@%\^&|~?]*=/,
+          ),
+        ),
+      ),
 
     arrow: (_) => token(prec(2, "->")),
 

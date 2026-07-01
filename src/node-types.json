@@ -30,6 +30,10 @@
         "named": true
       },
       {
+        "type": "assignment_expression",
+        "named": true
+      },
+      {
         "type": "binary_expression",
         "named": true
       },
@@ -428,6 +432,42 @@
     }
   },
   {
+    "type": "assignment_expression",
+    "named": true,
+    "fields": {
+      "left": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "_expression",
+            "named": true
+          }
+        ]
+      },
+      "operator": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "assignment_operator",
+            "named": true
+          }
+        ]
+      },
+      "right": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "_expression",
+            "named": true
+          }
+        ]
+      }
+    }
+  },
+  {
     "type": "assignment_statement",
     "named": true,
     "fields": {
@@ -450,7 +490,7 @@
             "named": false
           },
           {
-            "type": "compound_assignment_operator",
+            "type": "assignment_operator",
             "named": true
           }
         ]
@@ -929,6 +969,10 @@
         },
         {
           "type": "magic_directive",
+          "named": true
+        },
+        {
+          "type": "operator_directive",
           "named": true
         },
         {
@@ -1465,6 +1509,32 @@
           "named": true
         }
       ]
+    }
+  },
+  {
+    "type": "operator_directive",
+    "named": true,
+    "fields": {
+      "level": {
+        "multiple": false,
+        "required": false,
+        "types": [
+          {
+            "type": "integer_literal",
+            "named": true
+          }
+        ]
+      },
+      "mode": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "identifier",
+            "named": true
+          }
+        ]
+      }
     }
   },
   {
@@ -2467,6 +2537,10 @@
     "named": false
   },
   {
+    "type": "#operator",
+    "named": false
+  },
+  {
     "type": "#precedence",
     "named": false
   },
@@ -2567,6 +2641,10 @@
     "named": true
   },
   {
+    "type": "assignment_operator",
+    "named": true
+  },
+  {
     "type": "case",
     "named": false
   },
@@ -2578,10 +2656,6 @@
     "type": "comment",
     "named": true,
     "extra": true
-  },
-  {
-    "type": "compound_assignment_operator",
-    "named": true
   },
   {
     "type": "const",

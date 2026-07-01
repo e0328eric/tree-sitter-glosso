@@ -159,14 +159,14 @@ VALUE :: #run {
             (integer_literal))
           (assignment_statement
             (identifier)
-            (compound_assignment_operator)
+            (assignment_operator)
             (integer_literal))
           (return_statement
             (identifier))))))
-	    (top_run_declaration
-	      (block
-	        (expression_statement
-	          (identifier)))))
+  (top_run_declaration
+    (block
+      (expression_statement
+        (identifier)))))
 
 ==================
 empty type markers
@@ -218,7 +218,7 @@ worker :: (from: int, flag: bool) -> int {
   return from;
 }
 
-'.*' :: (p: *$T) -> T #suffix #fallback #magic "ptr_deref";
+'.*' :: (p: *$T) -> T #operator(suffix) #fallback #magic "ptr_deref";
 
 VALUE :: #run -> int {
   x := long_goto worker 'task 40, true;
@@ -269,6 +269,8 @@ main :: () {
       (arrow)
       (named_type
         (identifier))
+      (operator_directive
+        (identifier))
       (magic_directive
         (string_literal))))
   (named_declaration
@@ -304,3 +306,120 @@ main :: () {
             (long_goto_argument_list
               (integer_literal)
               (boolean_literal))))))))
+
+==================
+operator directives
+==================
+
+'@=' :: (a: int, b: int) -> int #operator(assign, 10) {
+  return a * 10 + b;
+}
+
+'!!' :: (x: int) -> int #operator(prefix) { return 0 - x; }
+'sq' :: (x: int) -> int #operator(suffix) { return x * x; }
+
+main :: () {
+  a := 2;
+  a @= 7;
+  b := a @= 3 + 4;
+}
+
+---
+
+(source_file
+  (named_declaration
+    (declaration_name
+      (quoted_operator))
+    (function_declaration
+      (parameter_list
+        (parameter
+          (binding_list
+            (identifier))
+          (named_type
+            (identifier)))
+        (parameter
+          (binding_list
+            (identifier))
+          (named_type
+            (identifier))))
+      (arrow)
+      (named_type
+        (identifier))
+      (operator_directive
+        (identifier)
+        (integer_literal))
+      (block
+        (return_statement
+          (binary_expression
+            (binary_expression
+              (identifier)
+              (operator)
+              (integer_literal))
+            (operator)
+            (identifier))))))
+  (named_declaration
+    (declaration_name
+      (quoted_operator))
+    (function_declaration
+      (parameter_list
+        (parameter
+          (binding_list
+            (identifier))
+          (named_type
+            (identifier))))
+      (arrow)
+      (named_type
+        (identifier))
+      (operator_directive
+        (identifier))
+      (block
+        (return_statement
+          (binary_expression
+            (integer_literal)
+            (operator)
+            (identifier))))))
+  (named_declaration
+    (declaration_name
+      (quoted_operator))
+    (function_declaration
+      (parameter_list
+        (parameter
+          (binding_list
+            (identifier))
+          (named_type
+            (identifier))))
+      (arrow)
+      (named_type
+        (identifier))
+      (operator_directive
+        (identifier))
+      (block
+        (return_statement
+          (binary_expression
+            (identifier)
+            (operator)
+            (identifier))))))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (function_declaration
+      (parameter_list)
+      (block
+        (variable_declaration
+          (binding_list
+            (identifier))
+          (integer_literal))
+        (assignment_statement
+          (identifier)
+          (assignment_operator)
+          (integer_literal))
+        (variable_declaration
+          (binding_list
+            (identifier))
+          (assignment_expression
+            (identifier)
+            (assignment_operator)
+            (binary_expression
+              (integer_literal)
+              (operator)
+              (integer_literal))))))))

@@ -26,6 +26,7 @@
   "#as"
   "#empty"
   "#raw"
+  "#operator"
   "#precedence"
   "#prefix"
   "#suffix"
