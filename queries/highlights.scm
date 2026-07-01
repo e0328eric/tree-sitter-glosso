@@ -9,8 +9,6 @@
   "enum"
   "using"
   "defer"
-  "goto"
-  "long_goto"
   "where"
   "cast"
 ] @keyword
@@ -19,6 +17,7 @@
   "#run"
   "#import"
   "#load"
+  "#private_section"
   "#from_header"
   "#library"
   "#fn_ptr"
@@ -58,6 +57,7 @@
 (float_literal) @number.float
 (boolean_literal) @boolean
 (null_literal) @constant.builtin
+(label_none_literal) @constant.builtin
 (context_expression) @constant.builtin
 (context_type) @type.builtin
 

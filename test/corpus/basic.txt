@@ -85,6 +85,7 @@ directives and code blocks
 
 #import "Prelude";
 #load "parts/geometry.glo";
+#private_section,siblings;
 MSG :: #string
 \\hello
 \\world
@@ -101,6 +102,7 @@ macro :: (body: Code) #expand {
     (string_literal))
   (load_declaration
     (string_literal))
+  (private_section_declaration)
   (named_declaration
     (declaration_name
       (identifier))
@@ -221,12 +223,13 @@ worker :: (from: int, flag: bool) -> int {
 '.*' :: (p: *$T) -> T #operator(suffix) #fallback #magic "ptr_deref";
 
 VALUE :: #run -> int {
-  x := long_goto worker 'task 40, true;
+  target : label = ---;
+  x := long_goto(worker, 'task, 40, true);
   return x;
 }
 
 main :: () {
-  long_goto worker 'task 1, false;
+  long_goto(worker, 'task, 1, false);
 }
 
 ---
@@ -285,10 +288,17 @@ main :: () {
           (variable_declaration
             (binding_list
               (identifier))
-            (long_goto_expression
+            (named_type
+              (identifier))
+            (label_none_literal))
+          (variable_declaration
+            (binding_list
+              (identifier))
+            (postfix_expression
               (identifier)
-              (label)
-              (long_goto_argument_list
+              (argument_list
+                (identifier)
+                (label)
                 (integer_literal)
                 (boolean_literal))))
           (return_statement
@@ -300,10 +310,11 @@ main :: () {
       (parameter_list)
       (block
         (expression_statement
-          (long_goto_expression
+          (postfix_expression
             (identifier)
-            (label)
-            (long_goto_argument_list
+            (argument_list
+              (identifier)
+              (label)
               (integer_literal)
               (boolean_literal))))))))
 

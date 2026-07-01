@@ -70,6 +70,7 @@ module.exports = grammar({
         $.top_run_declaration,
         $.import_declaration,
         $.load_declaration,
+        $.private_section_declaration,
         $.named_declaration,
       ),
 
@@ -89,6 +90,9 @@ module.exports = grammar({
 
     load_declaration: ($) =>
       seq("#load", field("path", $.string_literal), optional(";")),
+
+    private_section_declaration: (_) =>
+      seq("#private_section", optional(seq(",", "siblings")), optional(";")),
 
     named_declaration: ($) =>
       seq(
@@ -275,7 +279,6 @@ module.exports = grammar({
         $.inline_bytes_statement,
         $.inline_asm_statement,
         $.label_statement,
-        $.goto_statement,
         $.return_statement,
         $.while_statement,
         $.for_statement,
@@ -351,21 +354,6 @@ module.exports = grammar({
       ),
 
     label_statement: ($) => seq($.label, ":"),
-
-    goto_statement: ($) => seq("goto", field("label", $.label), optional(";")),
-
-    long_goto_expression: ($) =>
-      prec.right(
-        PREC.unary,
-        seq(
-          "long_goto",
-          field("function", $.identifier),
-          field("label", $.label),
-          optional(field("arguments", $.long_goto_argument_list)),
-        ),
-      ),
-
-    long_goto_argument_list: ($) => prec.right(commaSep1($._expression)),
 
     return_statement: ($) =>
       prec.right(seq("return", optional(commaSep1($._expression)), optional(";"))),
@@ -556,7 +544,6 @@ module.exports = grammar({
         $.range_expression,
         $.unary_expression,
         $.cast_expression,
-        $.long_goto_expression,
         $.run_expression,
         $.meaningful_expression,
         $.postfix_expression,
@@ -664,6 +651,8 @@ module.exports = grammar({
         $.string_block,
         $.boolean_literal,
         $.null_literal,
+        $.label_none_literal,
+        $.label,
         $.context_expression,
         $.code_expression,
         $.array_literal,
@@ -684,6 +673,8 @@ module.exports = grammar({
     boolean_literal: (_) => choice("true", "false"),
 
     null_literal: (_) => "null",
+
+    label_none_literal: (_) => token(prec(2, "---")),
 
     context_expression: (_) => "context",
 
