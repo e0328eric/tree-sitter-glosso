@@ -33,6 +33,8 @@ module.exports = grammar({
     [$.tuple_type, $.function_type],
     [$.empty_field],
     [$.empty_parameter],
+    [$.range_expression],
+    [$.argument_list, $.parenthesized_expression],
   ],
 
   supertypes: ($) => [
@@ -238,6 +240,7 @@ module.exports = grammar({
         "#no_context",
         "#dump",
         "#fallback",
+        "#must",
       ),
 
     where_clause: ($) => seq("where", field("condition", $._expression)),
@@ -391,13 +394,37 @@ module.exports = grammar({
     default_clause: ($) =>
       seq("else", ";", repeat($._statement)),
 
+    _if_body: ($) => choice($.block, $._single_statement),
+
+    _single_statement: ($) =>
+      choice(
+        $.inline_bytes_statement,
+        $.inline_asm_statement,
+        $.label_statement,
+        $.return_statement,
+        $.while_statement,
+        $.for_statement,
+        $.defer_statement,
+        $.using_statement,
+        $.switch_statement,
+        $.if_statement,
+        $.push_context_statement,
+        $.push_allocator_statement,
+        $.static_if_statement,
+        $.insert_statement,
+        $.falling_statement,
+        $.variable_declaration,
+        $.assignment_statement,
+        $.expression_statement,
+      ),
+
     if_statement: ($) =>
       prec.right(
         seq(
           "if",
           field("condition", $._expression),
-          field("consequence", $.block),
-          optional(seq("else", field("alternative", choice($.block, $.if_statement)))),
+          field("consequence", $._if_body),
+          optional(seq("else", field("alternative", $._if_body))),
         ),
       ),
 
@@ -592,7 +619,7 @@ module.exports = grammar({
     unary_expression: ($) =>
       prec(
         PREC.unary,
-        seq(field("operator", $._operator), field("argument", $._expression)),
+        seq(field("operator", $._prefix_operator), field("argument", $._expression)),
       ),
 
     cast_expression: ($) =>
@@ -690,6 +717,8 @@ module.exports = grammar({
 
     _operator: ($) => choice($.operator, $.quoted_operator),
 
+    _prefix_operator: ($) => choice($.prefix_operator, $.quoted_operator),
+
     _separator: (_) => choice(";", ","),
 
     identifier: (_) => /[\p{L}_][\p{L}\p{N}_]*/,
@@ -705,6 +734,7 @@ module.exports = grammar({
         prec(
           1,
           choice(
+            "<=>",
             "==",
             "-=",
             "-",
@@ -713,6 +743,9 @@ module.exports = grammar({
           ),
         ),
       ),
+
+    prefix_operator: (_) =>
+      token(prec(1, choice("!", "-", "+", "~", "*", "&"))),
 
     range_operator: (_) => token(prec(2, choice("..=", ".."))),
 
@@ -727,7 +760,9 @@ module.exports = grammar({
             "/=",
             "%=",
             "<<=",
+            "<<|=",
             ">>=",
+            ">>|=",
             "&=",
             "|=",
             "^=",

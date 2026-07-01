@@ -36,6 +36,7 @@
   "#no_context"
   "#dump"
   "#fallback"
+  "#must"
   "#bytes"
   "#asm"
   "#push_context"
@@ -76,3 +77,4 @@
 (label) @label
 (quoted_operator) @operator
 (operator) @operator
+(prefix_operator) @operator

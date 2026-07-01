@@ -1310,6 +1310,10 @@
         {
           "type": "STRING",
           "value": "#fallback"
+        },
+        {
+          "type": "STRING",
+          "value": "#must"
         }
       ]
     },
@@ -2295,6 +2299,96 @@
         }
       ]
     },
+    "_if_body": {
+      "type": "CHOICE",
+      "members": [
+        {
+          "type": "SYMBOL",
+          "name": "block"
+        },
+        {
+          "type": "SYMBOL",
+          "name": "_single_statement"
+        }
+      ]
+    },
+    "_single_statement": {
+      "type": "CHOICE",
+      "members": [
+        {
+          "type": "SYMBOL",
+          "name": "inline_bytes_statement"
+        },
+        {
+          "type": "SYMBOL",
+          "name": "inline_asm_statement"
+        },
+        {
+          "type": "SYMBOL",
+          "name": "label_statement"
+        },
+        {
+          "type": "SYMBOL",
+          "name": "return_statement"
+        },
+        {
+          "type": "SYMBOL",
+          "name": "while_statement"
+        },
+        {
+          "type": "SYMBOL",
+          "name": "for_statement"
+        },
+        {
+          "type": "SYMBOL",
+          "name": "defer_statement"
+        },
+        {
+          "type": "SYMBOL",
+          "name": "using_statement"
+        },
+        {
+          "type": "SYMBOL",
+          "name": "switch_statement"
+        },
+        {
+          "type": "SYMBOL",
+          "name": "if_statement"
+        },
+        {
+          "type": "SYMBOL",
+          "name": "push_context_statement"
+        },
+        {
+          "type": "SYMBOL",
+          "name": "push_allocator_statement"
+        },
+        {
+          "type": "SYMBOL",
+          "name": "static_if_statement"
+        },
+        {
+          "type": "SYMBOL",
+          "name": "insert_statement"
+        },
+        {
+          "type": "SYMBOL",
+          "name": "falling_statement"
+        },
+        {
+          "type": "SYMBOL",
+          "name": "variable_declaration"
+        },
+        {
+          "type": "SYMBOL",
+          "name": "assignment_statement"
+        },
+        {
+          "type": "SYMBOL",
+          "name": "expression_statement"
+        }
+      ]
+    },
     "if_statement": {
       "type": "PREC_RIGHT",
       "value": 0,
@@ -2318,7 +2412,7 @@
             "name": "consequence",
             "content": {
               "type": "SYMBOL",
-              "name": "block"
+              "name": "_if_body"
             }
           },
           {
@@ -2335,17 +2429,8 @@
                     "type": "FIELD",
                     "name": "alternative",
                     "content": {
-                      "type": "CHOICE",
-                      "members": [
-                        {
-                          "type": "SYMBOL",
-                          "name": "block"
-                        },
-                        {
-                          "type": "SYMBOL",
-                          "name": "if_statement"
-                        }
-                      ]
+                      "type": "SYMBOL",
+                      "name": "_if_body"
                     }
                   }
                 ]
@@ -3390,7 +3475,7 @@
             "name": "operator",
             "content": {
               "type": "SYMBOL",
-              "name": "_operator"
+              "name": "_prefix_operator"
             }
           },
           {
@@ -4145,6 +4230,19 @@
         }
       ]
     },
+    "_prefix_operator": {
+      "type": "CHOICE",
+      "members": [
+        {
+          "type": "SYMBOL",
+          "name": "prefix_operator"
+        },
+        {
+          "type": "SYMBOL",
+          "name": "quoted_operator"
+        }
+      ]
+    },
     "_separator": {
       "type": "CHOICE",
       "members": [
@@ -4224,6 +4322,10 @@
           "members": [
             {
               "type": "STRING",
+              "value": "<=>"
+            },
+            {
+              "type": "STRING",
               "value": "=="
             },
             {
@@ -4241,6 +4343,42 @@
             {
               "type": "PATTERN",
               "value": "-[+\\-*\\/<!@%\\^&|~?][+\\-*\\/<>!@%\\^&|~?]*=?"
+            }
+          ]
+        }
+      }
+    },
+    "prefix_operator": {
+      "type": "TOKEN",
+      "content": {
+        "type": "PREC",
+        "value": 1,
+        "content": {
+          "type": "CHOICE",
+          "members": [
+            {
+              "type": "STRING",
+              "value": "!"
+            },
+            {
+              "type": "STRING",
+              "value": "-"
+            },
+            {
+              "type": "STRING",
+              "value": "+"
+            },
+            {
+              "type": "STRING",
+              "value": "~"
+            },
+            {
+              "type": "STRING",
+              "value": "*"
+            },
+            {
+              "type": "STRING",
+              "value": "&"
             }
           ]
         }
@@ -4300,7 +4438,15 @@
             },
             {
               "type": "STRING",
+              "value": "<<|="
+            },
+            {
+              "type": "STRING",
               "value": ">>="
+            },
+            {
+              "type": "STRING",
+              "value": ">>|="
             },
             {
               "type": "STRING",
@@ -4469,6 +4615,13 @@
     ],
     [
       "empty_parameter"
+    ],
+    [
+      "range_expression"
+    ],
+    [
+      "argument_list",
+      "parenthesized_expression"
     ]
   ],
   "precedences": [],
