@@ -28,6 +28,7 @@ module.exports = grammar({
     [$.binary_expression, $.unary_expression, $.postfix_expression],
     [$.named_type, $._expression],
     [$.declaration_name, $.binding_list],
+    [$.global_variable_declaration_tail, $.typed_constant_declaration_tail],
     [$.parenthesized_type, $.type_element],
     [$.tuple_type, $.type_element],
     [$.tuple_type, $.function_type],
@@ -101,6 +102,7 @@ module.exports = grammar({
         field("name", $.declaration_name),
         choice(
           seq("::", $._declaration_body),
+          $.global_variable_declaration_tail,
           $.typed_constant_declaration_tail,
         ),
       ),
@@ -132,7 +134,7 @@ module.exports = grammar({
     function_pointer_type_declaration: ($) =>
       seq(
         "#fn_ptr",
-        field("parameters", $.parameter_list),
+        field("parameters", $.fn_ptr_parameter_list),
         optional(seq($.arrow, field("return_type", $._type))),
         repeat(choice("#c_call", "#no_context")),
         optional(";"),
@@ -141,11 +143,24 @@ module.exports = grammar({
     constant_declaration_body: ($) =>
       seq(field("value", $._expression), optional(";")),
 
+    global_variable_declaration_tail: ($) =>
+      seq(
+        choice(
+          seq(":=", field("value", $._expression)),
+          seq(
+            ":",
+            optional(field("type", $._type)),
+            optional(seq("=", field("value", $._expression))),
+          ),
+        ),
+        optional(";"),
+      ),
+
     typed_constant_declaration_tail: ($) =>
       seq(
         ":",
         optional(field("type", $._type)),
-        choice(":", "::", "="),
+        choice(":", "::"),
         field("value", $._expression),
         optional(";"),
       ),
@@ -178,7 +193,7 @@ module.exports = grammar({
     enum_variant: ($) =>
       seq(
         field("name", $.identifier),
-        optional(seq("=", field("value", $.integer_literal))),
+        optional(seq("::", field("value", $.integer_literal))),
         optional($._separator),
       ),
 
@@ -202,6 +217,16 @@ module.exports = grammar({
       ),
 
     parameter_list: ($) => seq("(", commaSep(choice($.parameter, $.empty_parameter)), ")"),
+
+    fn_ptr_parameter_list: ($) =>
+      seq("(", commaSep($.fn_ptr_parameter), ")"),
+
+    fn_ptr_parameter: ($) =>
+      seq(
+        field("name", $.identifier),
+        ":",
+        field("type", $._type),
+      ),
 
     empty_parameter: ($) =>
       seq(
@@ -667,7 +692,7 @@ module.exports = grammar({
 
     argument_list: ($) => seq("(", commaSep($._expression), ")"),
 
-    index_suffix: ($) => seq("[", optional(field("value", $._expression)), "]"),
+    index_suffix: ($) => seq("[", field("value", $._expression), "]"),
 
     _primary_expression: ($) =>
       choice(
@@ -682,6 +707,7 @@ module.exports = grammar({
         $.label,
         $.context_expression,
         $.code_expression,
+        $.shorthand_member_expression,
         $.array_literal,
         $.struct_literal,
         $.non_hygienic_identifier,
@@ -695,7 +721,8 @@ module.exports = grammar({
 
     string_block: ($) => seq("#string", repeat1($.multiline_string_line)),
 
-    char_literal: ($) => seq("#char", $.string_literal),
+    char_literal: (_) =>
+      token(seq("#char", /[ \t]*/, '"', repeat(choice(/[^"\\\n]/, /\\./)), '"')),
 
     boolean_literal: (_) => choice("true", "false"),
 
@@ -704,6 +731,8 @@ module.exports = grammar({
     label_none_literal: (_) => token(prec(2, "---")),
 
     context_expression: (_) => "context",
+
+    shorthand_member_expression: ($) => seq(".", field("field", $.identifier)),
 
     struct_literal: ($) => seq(".{", commaSep($.struct_literal_field), "}"),
 

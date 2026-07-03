@@ -47,7 +47,6 @@
   "#meaningful"
   "#code"
   "#string"
-  "#char"
 ] @attribute
 
 (comment) @comment
@@ -69,6 +68,7 @@
 (union_field name: (identifier) @property)
 (enum_variant name: (identifier) @constant)
 (struct_literal_field name: (identifier) @property)
+(shorthand_member_expression field: (identifier) @property)
 (postfix_expression field: (identifier) @property)
 (postfix_expression function: (identifier) @function)
 

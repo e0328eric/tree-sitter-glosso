@@ -7,7 +7,7 @@ Vec :: struct {
   y: int = 2;
 }
 
-Color :: enum { Red; Green = 2, Blue; }
+Color :: enum { Red; Green :: 2, Blue; }
 
 Shape :: union #raw {
   point: Vec;
@@ -169,6 +169,172 @@ VALUE :: #run {
     (block
       (expression_statement
         (identifier)))))
+
+==================
+globals and foreign declarations
+==================
+
+#import "Context";
+FILE :: #from_header "<stdio.h>";
+BinOp :: #fn_ptr(a: int, b: int) -> int;
+G1 := 42;
+G2 : string = "hello";
+c_len :: (s: #c_ptr *const s8) -> u64 #foreign "libc" "strlen";
+puts :: (text: #c_ptr *const s8) -> s32 #foreign libc;
+ctx :: () -> #Context { return context; }
+
+---
+
+(source_file
+  (import_declaration
+    (string_literal))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (header_type_declaration
+      (string_literal)))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (function_pointer_type_declaration
+      (fn_ptr_parameter_list
+        (fn_ptr_parameter
+          (identifier)
+          (named_type
+            (identifier)))
+        (fn_ptr_parameter
+          (identifier)
+          (named_type
+            (identifier))))
+      (arrow)
+      (named_type
+        (identifier))))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (global_variable_declaration_tail
+      (integer_literal)))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (global_variable_declaration_tail
+      (named_type
+        (identifier))
+      (string_literal)))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (function_declaration
+      (parameter_list
+        (parameter
+          (binding_list
+            (identifier))
+          (c_pointer_type
+            (pointer_type
+              (named_type
+                (identifier))))))
+      (arrow)
+      (named_type
+        (identifier))
+      (foreign_directive
+        (string_literal)
+        (string_literal))))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (function_declaration
+      (parameter_list
+        (parameter
+          (binding_list
+            (identifier))
+          (c_pointer_type
+            (pointer_type
+              (named_type
+                (identifier))))))
+      (arrow)
+      (named_type
+        (identifier))
+      (foreign_directive
+        (identifier))))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (function_declaration
+      (parameter_list)
+      (arrow)
+      (context_type)
+      (block
+        (return_statement
+          (context_expression))))))
+
+==================
+char literals and postfix forms
+==================
+
+main :: () {
+  ch := #char "\n";
+  bytes := .[0x90, #char "A"];
+  item := bytes[0];
+  ptr := *item;
+  again := ptr.*;
+  f := 3.9;
+  y := f.cast(s32);
+  tag := .Alloc;
+}
+
+---
+
+(source_file
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (function_declaration
+      (parameter_list)
+      (block
+        (variable_declaration
+          (binding_list
+            (identifier))
+          (char_literal))
+        (variable_declaration
+          (binding_list
+            (identifier))
+          (array_literal
+            (integer_literal)
+            (char_literal)))
+        (variable_declaration
+          (binding_list
+            (identifier))
+          (postfix_expression
+            (identifier)
+            (index_suffix
+              (integer_literal))))
+        (variable_declaration
+          (binding_list
+            (identifier))
+          (unary_expression
+            (prefix_operator)
+            (identifier)))
+        (variable_declaration
+          (binding_list
+            (identifier))
+          (postfix_expression
+            (identifier)))
+        (variable_declaration
+          (binding_list
+            (identifier))
+          (float_literal))
+        (variable_declaration
+          (binding_list
+            (identifier))
+          (postfix_expression
+            (identifier)
+            (named_type
+              (identifier))))
+        (variable_declaration
+          (binding_list
+            (identifier))
+          (shorthand_member_expression
+            (identifier)))))))
 
 ==================
 empty type markers
