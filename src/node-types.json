@@ -20,6 +20,10 @@
         "named": true
       },
       {
+        "type": "thread_local_declaration",
+        "named": true
+      },
+      {
         "type": "top_run_declaration",
         "named": true
       }
@@ -239,6 +243,10 @@
       },
       {
         "type": "generic_type_variable",
+        "named": true
+      },
+      {
+        "type": "layout_type",
         "named": true
       },
       {
@@ -872,6 +880,10 @@
       "required": false,
       "types": [
         {
+          "type": "c_varargs_parameter",
+          "named": true
+        },
+        {
           "type": "fn_ptr_parameter",
           "named": true
         }
@@ -1456,6 +1468,36 @@
     }
   },
   {
+    "type": "layout_type",
+    "named": true,
+    "fields": {
+      "layout": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "#aos",
+            "named": false
+          },
+          {
+            "type": "#soa",
+            "named": false
+          }
+        ]
+      },
+      "type": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "_type",
+            "named": true
+          }
+        ]
+      }
+    }
+  },
+  {
     "type": "library_declaration",
     "named": true,
     "fields": {
@@ -1722,6 +1764,10 @@
       "multiple": true,
       "required": false,
       "types": [
+        {
+          "type": "c_varargs_parameter",
+          "named": true
+        },
         {
           "type": "empty_parameter",
           "named": true
@@ -2289,6 +2335,22 @@
     }
   },
   {
+    "type": "thread_local_declaration",
+    "named": true,
+    "fields": {
+      "declaration": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "named_declaration",
+            "named": true
+          }
+        ]
+      }
+    }
+  },
+  {
     "type": "top_run_declaration",
     "named": true,
     "fields": {
@@ -2603,6 +2665,10 @@
     }
   },
   {
+    "type": "#aos",
+    "named": false
+  },
+  {
     "type": "#as",
     "named": false
   },
@@ -2695,6 +2761,10 @@
     "named": false
   },
   {
+    "type": "#noreturn",
+    "named": false
+  },
+  {
     "type": "#operator",
     "named": false
   },
@@ -2727,11 +2797,23 @@
     "named": false
   },
   {
+    "type": "#soa",
+    "named": false
+  },
+  {
     "type": "#string",
     "named": false
   },
   {
     "type": "#suffix",
+    "named": false
+  },
+  {
+    "type": "#system_library",
+    "named": false
+  },
+  {
+    "type": "#thread_local",
     "named": false
   },
   {
@@ -2804,6 +2886,10 @@
   },
   {
     "type": "assignment_operator",
+    "named": true
+  },
+  {
+    "type": "c_varargs_parameter",
     "named": true
   },
   {

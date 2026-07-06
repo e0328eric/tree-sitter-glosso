@@ -74,6 +74,7 @@ module.exports = grammar({
         $.import_declaration,
         $.load_declaration,
         $.private_section_declaration,
+        $.thread_local_declaration,
         $.named_declaration,
       ),
 
@@ -96,6 +97,9 @@ module.exports = grammar({
 
     private_section_declaration: (_) =>
       seq("#private_section", optional(seq(",", "siblings")), optional(";")),
+
+    thread_local_declaration: ($) =>
+      seq("#thread_local", field("declaration", $.named_declaration)),
 
     named_declaration: ($) =>
       seq(
@@ -129,7 +133,7 @@ module.exports = grammar({
       seq("#from_header", field("header", $.string_literal), optional(";")),
 
     library_declaration: ($) =>
-      seq("#library", field("path", $.string_literal), optional(";")),
+      seq(choice("#library", "#system_library"), field("path", $.string_literal), optional(";")),
 
     function_pointer_type_declaration: ($) =>
       seq(
@@ -213,13 +217,14 @@ module.exports = grammar({
         field("parameters", $.parameter_list),
         optional(seq($.arrow, field("return_type", $._type))),
         repeat($._function_modifier),
+        repeat($.where_clause),
         choice(field("body", $.block), ";"),
       ),
 
-    parameter_list: ($) => seq("(", commaSep(choice($.parameter, $.empty_parameter)), ")"),
+    parameter_list: ($) => seq("(", commaSep(choice($.parameter, $.empty_parameter, $.c_varargs_parameter)), ")"),
 
     fn_ptr_parameter_list: ($) =>
-      seq("(", commaSep($.fn_ptr_parameter), ")"),
+      seq("(", commaSep(choice($.fn_ptr_parameter, $.c_varargs_parameter)), ")"),
 
     fn_ptr_parameter: ($) =>
       seq(
@@ -227,6 +232,8 @@ module.exports = grammar({
         ":",
         field("type", $._type),
       ),
+
+    c_varargs_parameter: (_) => "...",
 
     empty_parameter: ($) =>
       seq(
@@ -252,7 +259,6 @@ module.exports = grammar({
 
     _function_modifier: ($) =>
       choice(
-        $.where_clause,
         $.operator_directive,
         $.precedence_directive,
         "#prefix",
@@ -266,6 +272,7 @@ module.exports = grammar({
         "#dump",
         "#fallback",
         "#must",
+        "#noreturn",
       ),
 
     where_clause: ($) => seq("where", field("condition", $._expression)),
@@ -381,7 +388,7 @@ module.exports = grammar({
         ")",
       ),
 
-    label_statement: ($) => seq($.label, ":"),
+    label_statement: ($) => prec(1, seq($.label, ";")),
 
     return_statement: ($) =>
       prec.right(seq("return", optional(commaSep1($._expression)), optional(";"))),
@@ -524,6 +531,7 @@ module.exports = grammar({
       choice(
         $.generic_type,
         $.array_type,
+        $.layout_type,
         $.c_pointer_type,
         $.pointer_type,
         $.function_type,
@@ -538,6 +546,9 @@ module.exports = grammar({
 
     array_type: ($) =>
       seq("[", optional(".."), "]", field("element", $._type)),
+
+    layout_type: ($) =>
+      seq(field("layout", choice("#aos", "#soa")), field("type", $._type)),
 
     c_pointer_type: ($) =>
       seq("#c_ptr", field("pointer", $.pointer_type)),
@@ -756,7 +767,13 @@ module.exports = grammar({
 
     label: (_) => token(seq("'", /[\p{L}_][\p{L}\p{N}_]*/)),
 
-    quoted_operator: (_) => token(seq("'", /[^'\n]+/, "'")),
+    quoted_operator: (_) =>
+      token(
+        choice(
+          seq("'", /[\p{L}_][\p{L}\p{N}_]*/, "'"),
+          seq("'", /[^\p{L}_'\n\s;][^'\n\s;]*/, "'"),
+        ),
+      ),
 
     operator: (_) =>
       token(

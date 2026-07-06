@@ -382,7 +382,7 @@ fallback and long_goto
 ==================
 
 worker :: (from: int, flag: bool) -> int {
-'task:
+'task;
   return from;
 }
 
@@ -703,3 +703,95 @@ main :: () {
               (integer_literal)
               (operator)
               (integer_literal))))))))
+
+==================
+function directive order and noreturn
+==================
+
+OnlyInt :: (T: type) -> bool { return T == int; }
+
+'%%' :: (a: $T, b: T) -> T #fallback #operator(left, 10) #magic "int_add" where OnlyInt(T);
+stop :: () #no_context #noreturn { exit(0); }
+
+---
+
+(source_file
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (function_declaration
+      (parameter_list
+        (parameter
+          (binding_list
+            (identifier))
+          (named_type
+            (identifier))))
+      (arrow)
+      (named_type
+        (identifier))
+      (block
+        (return_statement
+          (binary_expression
+            (identifier)
+            (operator)
+            (identifier))))))
+  (named_declaration
+    (declaration_name
+      (quoted_operator))
+    (function_declaration
+      (parameter_list
+        (parameter
+          (binding_list
+            (identifier))
+          (generic_type_variable
+            (identifier)))
+        (parameter
+          (binding_list
+            (identifier))
+          (named_type
+            (identifier))))
+      (arrow)
+      (named_type
+        (identifier))
+      (operator_directive
+        (identifier)
+        (integer_literal))
+      (magic_directive
+        (string_literal))
+      (where_clause
+        (postfix_expression
+          (identifier)
+          (argument_list
+            (identifier))))))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (function_declaration
+      (parameter_list)
+      (block
+        (expression_statement
+          (postfix_expression
+            (identifier)
+            (argument_list
+              (integer_literal))))))))
+
+==================
+label before comment quote
+==================
+
+main :: () {
+'while; // 'while is a label
+}
+
+---
+
+(source_file
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (function_declaration
+      (parameter_list)
+      (block
+        (label_statement
+          (label))
+        (comment)))))
