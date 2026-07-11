@@ -36,6 +36,13 @@ module.exports = grammar({
     [$.empty_parameter],
     [$.range_expression],
     [$.argument_list, $.parenthesized_expression],
+    [$.struct_literal, $.struct_pattern],
+    [$._pattern, $.struct_pattern_field],
+    [$._expression, $._pattern],
+    [$._expression, $.pattern_binding],
+    [$.shorthand_member_pattern, $.struct_pattern_field],
+    [$.shorthand_member_pattern, $.shorthand_member_expression],
+    [$.shorthand_member_pattern, $.struct_pattern_field, $.shorthand_member_expression],
   ],
 
   supertypes: ($) => [
@@ -43,12 +50,14 @@ module.exports = grammar({
     $._statement,
     $._expression,
     $._type,
+    $._pattern,
   ],
 
   inline: ($) => [
     $._declaration_body,
     $._function_modifier,
     $._primary_expression,
+    $._pattern_primary,
     $._operator,
     $._binding_name,
     $._separator,
@@ -75,6 +84,7 @@ module.exports = grammar({
         $.load_declaration,
         $.private_section_declaration,
         $.thread_local_declaration,
+        $.static_if_declaration,
         $.named_declaration,
       ),
 
@@ -101,6 +111,40 @@ module.exports = grammar({
     thread_local_declaration: ($) =>
       seq("#thread_local", field("declaration", $.named_declaration)),
 
+    static_if_declaration: ($) =>
+      prec.right(
+        seq(
+          "#if",
+          field("condition", $._expression),
+          choice(
+            seq(
+              field("operator", $.operator),
+              "{",
+              repeat(choice($.static_declaration_case_clause, $.static_declaration_default_clause)),
+              "}",
+            ),
+            seq(
+              field("consequence", $.declaration_block),
+              optional(seq("else", field("alternative", choice($.declaration_block, $.static_if_declaration)))),
+            ),
+          ),
+        ),
+      ),
+
+    declaration_block: ($) =>
+      seq("{", repeat(choice($._declaration, $.compile_error_statement)), "}"),
+
+    static_declaration_case_clause: ($) =>
+      seq(
+        "case",
+        field("value", $._expression),
+        ";",
+        repeat(choice($._declaration, $.compile_error_statement)),
+      ),
+
+    static_declaration_default_clause: ($) =>
+      seq("else", ";", repeat(choice($._declaration, $.compile_error_statement))),
+
     named_declaration: ($) =>
       seq(
         field("name", $.declaration_name),
@@ -116,7 +160,6 @@ module.exports = grammar({
     _declaration_body: ($) =>
       choice(
         $.qualified_import_declaration,
-        $.header_type_declaration,
         $.library_declaration,
         $.function_pointer_type_declaration,
         $.struct_declaration,
@@ -129,11 +172,15 @@ module.exports = grammar({
     qualified_import_declaration: ($) =>
       seq("#import", field("module", $.string_literal), optional(";")),
 
-    header_type_declaration: ($) =>
-      seq("#from_header", field("header", $.string_literal), optional(";")),
-
     library_declaration: ($) =>
-      seq(choice("#library", "#system_library"), field("path", $.string_literal), optional(";")),
+      seq(
+        "#library",
+        repeat(seq(",", field("modifier", $.library_modifier))),
+        field("path", $.string_literal),
+        optional(";"),
+      ),
+
+    library_modifier: (_) => choice("system", "dyn", "static"),
 
     function_pointer_type_declaration: ($) =>
       seq(
@@ -261,8 +308,6 @@ module.exports = grammar({
       choice(
         $.operator_directive,
         $.precedence_directive,
-        "#prefix",
-        "#suffix",
         "#expand",
         "#magic",
         $.magic_directive,
@@ -273,7 +318,13 @@ module.exports = grammar({
         "#fallback",
         "#must",
         "#noreturn",
+        $.inline_directive,
       ),
+
+    inline_directive: ($) =>
+      seq("#inline", optional(seq(",", field("mode", $.inline_modifier)))),
+
+    inline_modifier: (_) => choice("always", "never"),
 
     where_clause: ($) => seq("where", field("condition", $._expression)),
 
@@ -325,6 +376,7 @@ module.exports = grammar({
         $.push_allocator_statement,
         $.static_if_statement,
         $.insert_statement,
+        $.compile_error_statement,
         $.falling_statement,
         $.variable_declaration,
         $.assignment_statement,
@@ -336,6 +388,8 @@ module.exports = grammar({
         field("name", $.declaration_name),
         "::",
         choice(
+          $.qualified_import_declaration,
+          $.library_declaration,
           $.struct_declaration,
           $.enum_declaration,
           $.union_declaration,
@@ -411,17 +465,40 @@ module.exports = grammar({
       seq("using", field("name", $.identifier), optional(";")),
 
     switch_statement: ($) =>
-      seq(
-        "if",
-        field("subject", $._expression),
-        field("operator", $.operator),
-        "{",
-        repeat(choice($.case_clause, $.default_clause)),
-        "}",
+      choice(
+        seq(
+          "if",
+          optional(field("modifier", $.partial_directive)),
+          field("subject", $._expression),
+          field("operator", $.operator),
+          "{",
+          repeat(choice($.case_clause, $.default_clause)),
+          "}",
+        ),
+        seq(
+          "if",
+          optional(field("modifier", $.partial_directive)),
+          "#pattern",
+          optional(field("subject", $._expression)),
+          field("operator", $.operator),
+          "{",
+          repeat(choice($.pattern_case_clause, $.default_clause)),
+          "}",
+        ),
       ),
+
+    partial_directive: (_) => "#partial",
 
     case_clause: ($) =>
       seq("case", field("value", $._expression), ";", repeat($._statement)),
+
+    pattern_case_clause: ($) =>
+      seq(
+        "case",
+        field("value", choice($.pattern_arm_block, $._pattern, $._expression)),
+        ";",
+        repeat($._statement),
+      ),
 
     default_clause: ($) =>
       seq("else", ";", repeat($._statement)),
@@ -444,6 +521,7 @@ module.exports = grammar({
         $.push_allocator_statement,
         $.static_if_statement,
         $.insert_statement,
+        $.compile_error_statement,
         $.falling_statement,
         $.variable_declaration,
         $.assignment_statement,
@@ -478,16 +556,29 @@ module.exports = grammar({
 
     static_if_statement: ($) =>
       prec.right(
-        seq(
-          "#if",
-          field("condition", $._expression),
-          field("consequence", $.block),
-          optional(seq("else", field("alternative", choice($.block, $.static_if_statement)))),
+        choice(
+          seq(
+            "#if",
+            field("condition", $._expression),
+            field("operator", $.operator),
+            "{",
+            repeat(choice($.case_clause, $.default_clause)),
+            "}",
+          ),
+          seq(
+            "#if",
+            field("condition", $._expression),
+            field("consequence", $.block),
+            optional(seq("else", field("alternative", choice($.block, $.static_if_statement)))),
+          ),
         ),
       ),
 
     insert_statement: ($) =>
       seq("#insert", field("value", $._expression), optional(";")),
+
+    compile_error_statement: ($) =>
+      seq("#compile_error", field("message", $.string_literal), optional(";")),
 
     falling_statement: (_) => seq("#falling", optional(";")),
 
@@ -608,6 +699,7 @@ module.exports = grammar({
         $.unary_expression,
         $.cast_expression,
         $.run_expression,
+        $.pattern_test_expression,
         $.meaningful_expression,
         $.postfix_expression,
         $._primary_expression,
@@ -686,6 +778,77 @@ module.exports = grammar({
         PREC.unary,
         seq("#meaningful", choice(field("body", $.block), field("value", $._expression))),
       ),
+
+    pattern_test_expression: ($) =>
+      prec(
+        PREC.unary,
+        seq(
+          "#pattern",
+          choice(
+            field("arms", $.pattern_arm_block),
+            field("arm", $.pattern_arm),
+          ),
+        ),
+      ),
+
+    pattern_arm_block: ($) =>
+      seq("{", repeat(seq($.pattern_arm, optional($._separator))), "}"),
+
+    pattern_arm: ($) =>
+      seq(field("pattern", $._pattern), "=", field("value", $._expression)),
+
+    _pattern: ($) =>
+      choice(
+        $.pattern_postfix_expression,
+        $._pattern_primary,
+      ),
+
+    pattern_postfix_expression: ($) =>
+      prec.left(
+        PREC.call,
+        choice(
+          seq(field("function", $._pattern), field("arguments", $.pattern_argument_list)),
+          seq(field("object", $._pattern), ".", field("field", $.identifier)),
+          seq(field("type", $._pattern), field("literal", $.struct_pattern)),
+        ),
+      ),
+
+    pattern_argument_list: ($) => seq("(", commaSep($._pattern), ")"),
+
+    _pattern_primary: ($) =>
+      choice(
+        $.integer_literal,
+        $.float_literal,
+        $.char_literal,
+        $.string_literal,
+        $.boolean_literal,
+        $.null_literal,
+        $.pattern_rest,
+        $.pointer_pattern,
+        $.pattern_binding,
+        $.shorthand_member_pattern,
+        $.struct_pattern,
+        $.parenthesized_pattern,
+      ),
+
+    pattern_rest: (_) => "...",
+
+    pointer_pattern: ($) => seq("*", field("name", $.identifier)),
+
+    pattern_binding: ($) => field("name", $.identifier),
+
+    shorthand_member_pattern: ($) => seq(".", field("field", $.identifier)),
+
+    struct_pattern: ($) => seq(".{", commaSep($.struct_pattern_field), "}"),
+
+    struct_pattern_field: ($) =>
+      choice(
+        $.pattern_rest,
+        seq(".", field("name", $.identifier), optional(seq("=", field("value", $._pattern)))),
+        field("value", $._pattern),
+      ),
+
+    parenthesized_pattern: ($) => seq("(", $._pattern, ")"),
 
     postfix_expression: ($) =>
       prec.left(

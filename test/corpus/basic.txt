@@ -175,7 +175,11 @@ globals and foreign declarations
 ==================
 
 #import "Context";
-FILE :: #from_header "<stdio.h>";
+libc :: #library "c";
+win32 :: #library,system "kernel32";
+raylib :: #library,dyn "%USERPROFILE%/.local/raylib/lib/raylib.dll";
+sqlite :: #library,static "sqlite3";
+FILE :: struct {}
 BinOp :: #fn_ptr(a: int, b: int) -> int;
 G1 := 42;
 G2 : string = "hello";
@@ -191,8 +195,30 @@ ctx :: () -> #Context { return context; }
   (named_declaration
     (declaration_name
       (identifier))
-    (header_type_declaration
+    (library_declaration
       (string_literal)))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (library_declaration
+      (library_modifier)
+      (string_literal)))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (library_declaration
+      (library_modifier)
+      (string_literal)))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (library_declaration
+      (library_modifier)
+      (string_literal)))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (struct_declaration))
   (named_declaration
     (declaration_name
       (identifier))
@@ -712,6 +738,9 @@ OnlyInt :: (T: type) -> bool { return T == int; }
 
 '%%' :: (a: $T, b: T) -> T #fallback #operator(left, 10) #magic "int_add" where OnlyInt(T);
 stop :: () #no_context #noreturn { exit(0); }
+plain_inline :: () #inline { }
+always_inline :: () #inline,always { }
+never_inline :: () #inline,never { }
 
 ---
 
@@ -773,7 +802,310 @@ stop :: () #no_context #noreturn { exit(0); }
           (postfix_expression
             (identifier)
             (argument_list
-              (integer_literal))))))))
+              (integer_literal)))))))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (function_declaration
+      (parameter_list)
+      (inline_directive)
+      (block)))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (function_declaration
+      (parameter_list)
+      (inline_directive
+        (inline_modifier))
+      (block)))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (function_declaration
+      (parameter_list)
+      (inline_directive
+        (inline_modifier))
+      (block))))
+
+==================
+compile errors partial switches and patterns
+==================
+
+Foo :: struct { x: int; y: f64; z: Bar; }
+Bar :: union { Pax: int; None: void; }
+
+#if OUT.os == {
+case .Windows; raylib_case :: #library,dyn "raylib.dll";
+else; #compile_error "unsupported";
+}
+
+main :: () {
+  Io :: #import "Io";
+  #compile_error "stop here";
+
+  if #partial x == {
+  case #char " "; print("space");
+  }
+
+  if #pattern Foo.{ .z = Bar.Pax(val), ... } = f { print("%\n", val); }
+  if #pattern Foo.{ .z = .None, ... } = g && f.x < 0 { print("none"); }
+
+  while #pattern {
+    Foo.{ .x = *v, .y = 5.67, ... } = f;
+    Foo.{ .x, ... } = g;
+  } {
+    v.* -= 1;
+  }
+
+  if #pattern f == {
+  case Foo.{ .z = .Pax(other), ... }; print("%\n", other);
+  else;
+  }
+
+  if #partial #pattern == {
+  case {
+    Foo.{ .z = .Pax(val1), ... } = f;
+    Foo.{ .z = .None, ... } = g;
+  }; #falling;
+  case f.x == 3; print("three");
+  else;
+  }
+}
+
+---
+
+(source_file
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (struct_declaration
+      (struct_field
+        (identifier)
+        (named_type
+          (identifier)))
+      (struct_field
+        (identifier)
+        (named_type
+          (identifier)))
+      (struct_field
+        (identifier)
+        (named_type
+          (identifier)))))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (union_declaration
+      (union_field
+        (identifier)
+        (named_type
+          (identifier)))
+      (union_field
+        (identifier)
+        (named_type
+          (identifier)))))
+  (static_if_declaration
+    (postfix_expression
+      (identifier)
+      (identifier))
+    (operator)
+    (static_declaration_case_clause
+      (shorthand_member_expression
+        (identifier))
+      (named_declaration
+        (declaration_name
+          (identifier))
+        (library_declaration
+          (library_modifier)
+          (string_literal))))
+    (static_declaration_default_clause
+      (compile_error_statement
+        (string_literal))))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (function_declaration
+      (parameter_list)
+      (block
+        (nested_declaration
+          (declaration_name
+            (identifier))
+          (qualified_import_declaration
+            (string_literal)))
+        (compile_error_statement
+          (string_literal))
+        (switch_statement
+          (partial_directive)
+          (identifier)
+          (operator)
+          (case_clause
+            (char_literal)
+            (expression_statement
+              (postfix_expression
+                (identifier)
+                (argument_list
+                  (string_literal))))))
+        (if_statement
+          (pattern_test_expression
+            (pattern_arm
+              (pattern_postfix_expression
+                (pattern_binding
+                  (identifier))
+                (struct_pattern
+                  (struct_pattern_field
+                    (identifier)
+                    (pattern_postfix_expression
+                      (pattern_postfix_expression
+                        (pattern_binding
+                          (identifier))
+                        (identifier))
+                      (pattern_argument_list
+                        (pattern_binding
+                          (identifier)))))
+                  (struct_pattern_field
+                    (pattern_rest))))
+              (identifier)))
+          (block
+            (expression_statement
+              (postfix_expression
+                (identifier)
+                (argument_list
+                  (string_literal)
+                  (identifier))))))
+        (if_statement
+          (pattern_test_expression
+            (pattern_arm
+              (pattern_postfix_expression
+                (pattern_binding
+                  (identifier))
+                (struct_pattern
+                  (struct_pattern_field
+                    (identifier)
+                    (shorthand_member_pattern
+                      (identifier)))
+                  (struct_pattern_field
+                    (pattern_rest))))
+              (binary_expression
+                (binary_expression
+                  (identifier)
+                  (operator)
+                  (postfix_expression
+                    (identifier)
+                    (identifier)))
+                (operator)
+                (integer_literal))))
+          (block
+            (expression_statement
+              (postfix_expression
+                (identifier)
+                (argument_list
+                  (string_literal))))))
+        (while_statement
+          (pattern_test_expression
+            (pattern_arm_block
+              (pattern_arm
+                (pattern_postfix_expression
+                  (pattern_binding
+                    (identifier))
+                  (struct_pattern
+                    (struct_pattern_field
+                      (identifier)
+                      (pointer_pattern
+                        (identifier)))
+                    (struct_pattern_field
+                      (identifier)
+                      (float_literal))
+                    (struct_pattern_field
+                      (pattern_rest))))
+                (identifier))
+              (pattern_arm
+                (pattern_postfix_expression
+                  (pattern_binding
+                    (identifier))
+                  (struct_pattern
+                    (struct_pattern_field
+                      (shorthand_member_pattern
+                        (identifier)))
+                    (struct_pattern_field
+                      (pattern_rest))))
+                (identifier))))
+          (block
+            (assignment_statement
+              (postfix_expression
+                (identifier))
+              (assignment_operator)
+              (integer_literal))))
+        (switch_statement
+          (identifier)
+          (operator)
+          (pattern_case_clause
+            (pattern_postfix_expression
+              (pattern_binding
+                (identifier))
+              (struct_pattern
+                (struct_pattern_field
+                  (identifier)
+                  (pattern_postfix_expression
+                    (shorthand_member_pattern
+                      (identifier))
+                    (pattern_argument_list
+                      (pattern_binding
+                        (identifier)))))
+                (struct_pattern_field
+                  (pattern_rest))))
+            (expression_statement
+              (postfix_expression
+                (identifier)
+                (argument_list
+                  (string_literal)
+                  (identifier)))))
+          (default_clause))
+        (switch_statement
+          (partial_directive)
+          (operator)
+          (pattern_case_clause
+            (pattern_arm_block
+              (pattern_arm
+                (pattern_postfix_expression
+                  (pattern_binding
+                    (identifier))
+                  (struct_pattern
+                    (struct_pattern_field
+                      (identifier)
+                      (pattern_postfix_expression
+                        (shorthand_member_pattern
+                          (identifier))
+                        (pattern_argument_list
+                          (pattern_binding
+                            (identifier)))))
+                    (struct_pattern_field
+                      (pattern_rest))))
+                (identifier))
+              (pattern_arm
+                (pattern_postfix_expression
+                  (pattern_binding
+                    (identifier))
+                  (struct_pattern
+                    (struct_pattern_field
+                      (identifier)
+                      (shorthand_member_pattern
+                        (identifier)))
+                    (struct_pattern_field
+                      (pattern_rest))))
+                (identifier)))
+            (falling_statement))
+          (pattern_case_clause
+            (binary_expression
+              (postfix_expression
+                (identifier)
+                (identifier))
+              (operator)
+              (integer_literal))
+            (expression_statement
+              (postfix_expression
+                (identifier)
+                (argument_list
+                  (string_literal)))))
+          (default_clause))))))
 
 ==================
 label before comment quote

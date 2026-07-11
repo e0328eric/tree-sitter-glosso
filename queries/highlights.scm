@@ -19,9 +19,7 @@
   "#load"
   "#private_section"
   "#thread_local"
-  "#from_header"
   "#library"
-  "#system_library"
   "#fn_ptr"
   "#c_ptr"
   "#as"
@@ -31,8 +29,6 @@
   "#soa"
   "#operator"
   "#precedence"
-  "#prefix"
-  "#suffix"
   "#expand"
   "#magic"
   "#foreign"
@@ -42,12 +38,15 @@
   "#fallback"
   "#must"
   "#noreturn"
+  "#inline"
   "#bytes"
   "#asm"
   "#push_context"
   "#push_allocator"
   "#if"
   "#insert"
+  "#compile_error"
+  "#pattern"
   "#falling"
   "#meaningful"
   "#code"
@@ -73,9 +72,16 @@
 (union_field name: (identifier) @property)
 (enum_variant name: (identifier) @constant)
 (struct_literal_field name: (identifier) @property)
+(struct_pattern_field name: (identifier) @property)
 (shorthand_member_expression field: (identifier) @property)
+(shorthand_member_pattern field: (identifier) @property)
 (postfix_expression field: (identifier) @property)
+(pattern_postfix_expression field: (identifier) @property)
 (postfix_expression function: (identifier) @function)
+(library_modifier) @attribute
+(inline_modifier) @attribute
+(partial_directive) @attribute
+(pattern_rest) @operator
 
 (identifier) @variable
 (non_hygienic_identifier) @variable
