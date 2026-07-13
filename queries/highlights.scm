@@ -4,13 +4,19 @@
   "while"
   "for"
   "return"
+  "break"
+  "continue"
   "struct"
   "union"
   "enum"
+  "enum_flags"
   "using"
   "defer"
   "where"
   "cast"
+  "acast"
+  "typeclass"
+  "instance"
 ] @keyword
 
 [
@@ -29,6 +35,7 @@
   "#soa"
   "#operator"
   "#precedence"
+  "#modify"
   "#expand"
   "#magic"
   "#foreign"
@@ -65,9 +72,12 @@
 (context_expression) @constant.builtin
 (context_type) @type.builtin
 
+(named_argument name: (identifier) @variable.parameter)
+(typeclass_parameter name: (identifier) @variable.parameter)
 (declaration_name) @function
 (function_declaration (parameter_list (parameter name: (binding_list (identifier) @variable.parameter))))
 (parameter name: (binding_list (identifier) @variable.parameter))
+(parameter name: (identifier) @variable.parameter)
 (struct_field name: (identifier) @property)
 (union_field name: (identifier) @property)
 (enum_variant name: (identifier) @constant)

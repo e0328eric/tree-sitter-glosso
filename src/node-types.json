@@ -8,6 +8,10 @@
         "named": true
       },
       {
+        "type": "instance_declaration",
+        "named": true
+      },
+      {
         "type": "load_declaration",
         "named": true
       },
@@ -138,6 +142,10 @@
         "named": true
       },
       {
+        "type": "tuple_literal",
+        "named": true
+      },
+      {
         "type": "unary_expression",
         "named": true
       }
@@ -210,7 +218,19 @@
         "named": true
       },
       {
+        "type": "block",
+        "named": true
+      },
+      {
+        "type": "break_statement",
+        "named": true
+      },
+      {
         "type": "compile_error_statement",
+        "named": true
+      },
+      {
+        "type": "continue_statement",
         "named": true
       },
       {
@@ -239,6 +259,10 @@
       },
       {
         "type": "inline_bytes_statement",
+        "named": true
+      },
+      {
+        "type": "inline_statement",
         "named": true
       },
       {
@@ -348,6 +372,10 @@
         {
           "type": "_expression",
           "named": true
+        },
+        {
+          "type": "named_argument",
+          "named": true
         }
       ]
     }
@@ -380,8 +408,31 @@
             "named": true
           }
         ]
+      },
+      "length": {
+        "multiple": false,
+        "required": false,
+        "types": [
+          {
+            "type": "..",
+            "named": false
+          },
+          {
+            "type": "identifier",
+            "named": true
+          },
+          {
+            "type": "integer_literal",
+            "named": true
+          }
+        ]
       }
     }
+  },
+  {
+    "type": "array_type_constructor_pattern",
+    "named": true,
+    "fields": {}
   },
   {
     "type": "asm_clobber_list",
@@ -673,6 +724,11 @@
     "fields": {}
   },
   {
+    "type": "break_statement",
+    "named": true,
+    "fields": {}
+  },
+  {
     "type": "c_pointer_type",
     "named": true,
     "fields": {
@@ -794,6 +850,11 @@
     }
   },
   {
+    "type": "continue_statement",
+    "named": true,
+    "fields": {}
+  },
+  {
     "type": "declaration_block",
     "named": true,
     "fields": {},
@@ -910,6 +971,32 @@
     }
   },
   {
+    "type": "enum_flags_declaration",
+    "named": true,
+    "fields": {
+      "backing_type": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "_type",
+            "named": true
+          }
+        ]
+      }
+    },
+    "children": {
+      "multiple": true,
+      "required": false,
+      "types": [
+        {
+          "type": "enum_variant",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
     "type": "enum_variant",
     "named": true,
     "fields": {
@@ -1009,7 +1096,95 @@
         "required": true,
         "types": [
           {
+            "type": "assignment_statement",
+            "named": true
+          },
+          {
             "type": "block",
+            "named": true
+          },
+          {
+            "type": "break_statement",
+            "named": true
+          },
+          {
+            "type": "compile_error_statement",
+            "named": true
+          },
+          {
+            "type": "continue_statement",
+            "named": true
+          },
+          {
+            "type": "defer_statement",
+            "named": true
+          },
+          {
+            "type": "expression_statement",
+            "named": true
+          },
+          {
+            "type": "falling_statement",
+            "named": true
+          },
+          {
+            "type": "for_statement",
+            "named": true
+          },
+          {
+            "type": "if_statement",
+            "named": true
+          },
+          {
+            "type": "inline_asm_statement",
+            "named": true
+          },
+          {
+            "type": "inline_bytes_statement",
+            "named": true
+          },
+          {
+            "type": "inline_statement",
+            "named": true
+          },
+          {
+            "type": "insert_statement",
+            "named": true
+          },
+          {
+            "type": "label_statement",
+            "named": true
+          },
+          {
+            "type": "push_allocator_statement",
+            "named": true
+          },
+          {
+            "type": "push_context_statement",
+            "named": true
+          },
+          {
+            "type": "return_statement",
+            "named": true
+          },
+          {
+            "type": "static_if_statement",
+            "named": true
+          },
+          {
+            "type": "switch_statement",
+            "named": true
+          },
+          {
+            "type": "using_statement",
+            "named": true
+          },
+          {
+            "type": "variable_declaration",
+            "named": true
+          },
+          {
+            "type": "while_statement",
             "named": true
           }
         ]
@@ -1020,6 +1195,26 @@
         "types": [
           {
             "type": "operator",
+            "named": true
+          }
+        ]
+      },
+      "expansion": {
+        "multiple": false,
+        "required": false,
+        "types": [
+          {
+            "type": "identifier",
+            "named": true
+          }
+        ]
+      },
+      "index": {
+        "multiple": false,
+        "required": false,
+        "types": [
+          {
+            "type": "identifier",
             "named": true
           }
         ]
@@ -1132,6 +1327,10 @@
           "named": true
         },
         {
+          "type": "modify_directive",
+          "named": true
+        },
+        {
           "type": "operator_directive",
           "named": true
         },
@@ -1217,9 +1416,13 @@
     "named": true,
     "fields": {
       "name": {
-        "multiple": false,
+        "multiple": true,
         "required": true,
         "types": [
+          {
+            "type": ".",
+            "named": false
+          },
           {
             "type": "identifier",
             "named": true
@@ -1233,6 +1436,36 @@
       "types": [
         {
           "type": "_type",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
+    "type": "generic_type_constructor_pattern",
+    "named": true,
+    "fields": {
+      "name": {
+        "multiple": true,
+        "required": true,
+        "types": [
+          {
+            "type": ".",
+            "named": false
+          },
+          {
+            "type": "identifier",
+            "named": true
+          }
+        ]
+      }
+    },
+    "children": {
+      "multiple": true,
+      "required": true,
+      "types": [
+        {
+          "type": "type_constructor_pattern",
           "named": true
         }
       ]
@@ -1297,7 +1530,15 @@
             "named": true
           },
           {
+            "type": "break_statement",
+            "named": true
+          },
+          {
             "type": "compile_error_statement",
+            "named": true
+          },
+          {
+            "type": "continue_statement",
             "named": true
           },
           {
@@ -1326,6 +1567,10 @@
           },
           {
             "type": "inline_bytes_statement",
+            "named": true
+          },
+          {
+            "type": "inline_statement",
             "named": true
           },
           {
@@ -1393,7 +1638,15 @@
             "named": true
           },
           {
+            "type": "break_statement",
+            "named": true
+          },
+          {
             "type": "compile_error_statement",
+            "named": true
+          },
+          {
+            "type": "continue_statement",
             "named": true
           },
           {
@@ -1422,6 +1675,10 @@
           },
           {
             "type": "inline_bytes_statement",
+            "named": true
+          },
+          {
+            "type": "inline_statement",
             "named": true
           },
           {
@@ -1564,6 +1821,26 @@
     "fields": {}
   },
   {
+    "type": "inline_statement",
+    "named": true,
+    "fields": {
+      "statement": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "for_statement",
+            "named": true
+          },
+          {
+            "type": "while_statement",
+            "named": true
+          }
+        ]
+      }
+    }
+  },
+  {
     "type": "insert_statement",
     "named": true,
     "fields": {
@@ -1577,6 +1854,68 @@
           }
         ]
       }
+    }
+  },
+  {
+    "type": "instance_declaration",
+    "named": true,
+    "fields": {
+      "class": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "identifier",
+            "named": true
+          }
+        ]
+      },
+      "target": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "type_constructor_pattern",
+            "named": true
+          }
+        ]
+      }
+    },
+    "children": {
+      "multiple": true,
+      "required": false,
+      "types": [
+        {
+          "type": "instance_method",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
+    "type": "instance_method",
+    "named": true,
+    "fields": {
+      "name": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "declaration_name",
+            "named": true
+          }
+        ]
+      }
+    },
+    "children": {
+      "multiple": false,
+      "required": true,
+      "types": [
+        {
+          "type": "function_declaration",
+          "named": true
+        }
+      ]
     }
   },
   {
@@ -1714,6 +2053,58 @@
     }
   },
   {
+    "type": "modify_directive",
+    "named": true,
+    "fields": {
+      "body": {
+        "multiple": false,
+        "required": false,
+        "types": [
+          {
+            "type": "block",
+            "named": true
+          }
+        ]
+      },
+      "condition": {
+        "multiple": false,
+        "required": false,
+        "types": [
+          {
+            "type": "_expression",
+            "named": true
+          }
+        ]
+      }
+    }
+  },
+  {
+    "type": "named_argument",
+    "named": true,
+    "fields": {
+      "name": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "identifier",
+            "named": true
+          }
+        ]
+      },
+      "value": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "_expression",
+            "named": true
+          }
+        ]
+      }
+    }
+  },
+  {
     "type": "named_declaration",
     "named": true,
     "fields": {
@@ -1741,6 +2132,10 @@
           "named": true
         },
         {
+          "type": "enum_flags_declaration",
+          "named": true
+        },
+        {
           "type": "function_declaration",
           "named": true
         },
@@ -1765,6 +2160,10 @@
           "named": true
         },
         {
+          "type": "typeclass_declaration",
+          "named": true
+        },
+        {
           "type": "typed_constant_declaration_tail",
           "named": true
         },
@@ -1780,7 +2179,7 @@
     "named": true,
     "fields": {},
     "children": {
-      "multiple": false,
+      "multiple": true,
       "required": true,
       "types": [
         {
@@ -1859,6 +2258,16 @@
             "named": true
           }
         ]
+      },
+      "modifier": {
+        "multiple": false,
+        "required": false,
+        "types": [
+          {
+            "type": "identifier",
+            "named": true
+          }
+        ]
       }
     }
   },
@@ -1883,12 +2292,20 @@
           {
             "type": "binding_list",
             "named": true
+          },
+          {
+            "type": "identifier",
+            "named": true
+          },
+          {
+            "type": "non_hygienic_identifier",
+            "named": true
           }
         ]
       },
       "type": {
         "multiple": false,
-        "required": true,
+        "required": false,
         "types": [
           {
             "type": "_type",
@@ -2235,6 +2652,10 @@
         "types": [
           {
             "type": "identifier",
+            "named": true
+          },
+          {
+            "type": "integer_literal",
             "named": true
           }
         ]
@@ -2661,11 +3082,95 @@
         "required": false,
         "types": [
           {
+            "type": "assignment_statement",
+            "named": true
+          },
+          {
             "type": "block",
             "named": true
           },
           {
+            "type": "break_statement",
+            "named": true
+          },
+          {
+            "type": "compile_error_statement",
+            "named": true
+          },
+          {
+            "type": "continue_statement",
+            "named": true
+          },
+          {
+            "type": "defer_statement",
+            "named": true
+          },
+          {
+            "type": "expression_statement",
+            "named": true
+          },
+          {
+            "type": "falling_statement",
+            "named": true
+          },
+          {
+            "type": "for_statement",
+            "named": true
+          },
+          {
+            "type": "if_statement",
+            "named": true
+          },
+          {
+            "type": "inline_asm_statement",
+            "named": true
+          },
+          {
+            "type": "inline_bytes_statement",
+            "named": true
+          },
+          {
+            "type": "inline_statement",
+            "named": true
+          },
+          {
+            "type": "insert_statement",
+            "named": true
+          },
+          {
+            "type": "label_statement",
+            "named": true
+          },
+          {
+            "type": "push_allocator_statement",
+            "named": true
+          },
+          {
+            "type": "push_context_statement",
+            "named": true
+          },
+          {
+            "type": "return_statement",
+            "named": true
+          },
+          {
             "type": "static_if_statement",
+            "named": true
+          },
+          {
+            "type": "switch_statement",
+            "named": true
+          },
+          {
+            "type": "using_statement",
+            "named": true
+          },
+          {
+            "type": "variable_declaration",
+            "named": true
+          },
+          {
+            "type": "while_statement",
             "named": true
           }
         ]
@@ -2685,7 +3190,95 @@
         "required": false,
         "types": [
           {
+            "type": "assignment_statement",
+            "named": true
+          },
+          {
             "type": "block",
+            "named": true
+          },
+          {
+            "type": "break_statement",
+            "named": true
+          },
+          {
+            "type": "compile_error_statement",
+            "named": true
+          },
+          {
+            "type": "continue_statement",
+            "named": true
+          },
+          {
+            "type": "defer_statement",
+            "named": true
+          },
+          {
+            "type": "expression_statement",
+            "named": true
+          },
+          {
+            "type": "falling_statement",
+            "named": true
+          },
+          {
+            "type": "for_statement",
+            "named": true
+          },
+          {
+            "type": "if_statement",
+            "named": true
+          },
+          {
+            "type": "inline_asm_statement",
+            "named": true
+          },
+          {
+            "type": "inline_bytes_statement",
+            "named": true
+          },
+          {
+            "type": "inline_statement",
+            "named": true
+          },
+          {
+            "type": "insert_statement",
+            "named": true
+          },
+          {
+            "type": "label_statement",
+            "named": true
+          },
+          {
+            "type": "push_allocator_statement",
+            "named": true
+          },
+          {
+            "type": "push_context_statement",
+            "named": true
+          },
+          {
+            "type": "return_statement",
+            "named": true
+          },
+          {
+            "type": "static_if_statement",
+            "named": true
+          },
+          {
+            "type": "switch_statement",
+            "named": true
+          },
+          {
+            "type": "using_statement",
+            "named": true
+          },
+          {
+            "type": "variable_declaration",
+            "named": true
+          },
+          {
+            "type": "while_statement",
             "named": true
           }
         ]
@@ -2745,6 +3338,10 @@
         },
         {
           "type": "struct_field",
+          "named": true
+        },
+        {
+          "type": "struct_modifier",
           "named": true
         }
       ]
@@ -2825,6 +3422,21 @@
           }
         ]
       }
+    }
+  },
+  {
+    "type": "struct_modifier",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": false,
+      "required": false,
+      "types": [
+        {
+          "type": "modify_directive",
+          "named": true
+        }
+      ]
     }
   },
   {
@@ -2995,6 +3607,21 @@
     }
   },
   {
+    "type": "tuple_literal",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": true,
+      "required": false,
+      "types": [
+        {
+          "type": "_expression",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
     "type": "tuple_type",
     "named": true,
     "fields": {
@@ -3031,6 +3658,37 @@
     }
   },
   {
+    "type": "type_constructor_pattern",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": true,
+      "required": true,
+      "types": [
+        {
+          "type": "array_type_constructor_pattern",
+          "named": true
+        },
+        {
+          "type": "generic_type_constructor_pattern",
+          "named": true
+        },
+        {
+          "type": "generic_type_variable",
+          "named": true
+        },
+        {
+          "type": "identifier",
+          "named": true
+        },
+        {
+          "type": "type_hole",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
     "type": "type_element",
     "named": true,
     "fields": {
@@ -3050,6 +3708,129 @@
         "types": [
           {
             "type": "_type",
+            "named": true
+          }
+        ]
+      }
+    }
+  },
+  {
+    "type": "typeclass_declaration",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": true,
+      "required": false,
+      "types": [
+        {
+          "type": "typeclass_method_signature",
+          "named": true
+        },
+        {
+          "type": "typeclass_parameter",
+          "named": true
+        },
+        {
+          "type": "where_clause",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
+    "type": "typeclass_method_signature",
+    "named": true,
+    "fields": {
+      "name": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "declaration_name",
+            "named": true
+          }
+        ]
+      },
+      "parameters": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "parameter_list",
+            "named": true
+          }
+        ]
+      },
+      "return_type": {
+        "multiple": false,
+        "required": false,
+        "types": [
+          {
+            "type": "_type",
+            "named": true
+          }
+        ]
+      }
+    },
+    "children": {
+      "multiple": true,
+      "required": false,
+      "types": [
+        {
+          "type": "arrow",
+          "named": true
+        },
+        {
+          "type": "foreign_directive",
+          "named": true
+        },
+        {
+          "type": "inline_directive",
+          "named": true
+        },
+        {
+          "type": "magic_directive",
+          "named": true
+        },
+        {
+          "type": "modify_directive",
+          "named": true
+        },
+        {
+          "type": "operator_directive",
+          "named": true
+        },
+        {
+          "type": "precedence_directive",
+          "named": true
+        },
+        {
+          "type": "where_clause",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
+    "type": "typeclass_parameter",
+    "named": true,
+    "fields": {
+      "kind": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "_type",
+            "named": true
+          }
+        ]
+      },
+      "name": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "identifier",
             "named": true
           }
         ]
@@ -3245,7 +4026,95 @@
         "required": true,
         "types": [
           {
+            "type": "assignment_statement",
+            "named": true
+          },
+          {
             "type": "block",
+            "named": true
+          },
+          {
+            "type": "break_statement",
+            "named": true
+          },
+          {
+            "type": "compile_error_statement",
+            "named": true
+          },
+          {
+            "type": "continue_statement",
+            "named": true
+          },
+          {
+            "type": "defer_statement",
+            "named": true
+          },
+          {
+            "type": "expression_statement",
+            "named": true
+          },
+          {
+            "type": "falling_statement",
+            "named": true
+          },
+          {
+            "type": "for_statement",
+            "named": true
+          },
+          {
+            "type": "if_statement",
+            "named": true
+          },
+          {
+            "type": "inline_asm_statement",
+            "named": true
+          },
+          {
+            "type": "inline_bytes_statement",
+            "named": true
+          },
+          {
+            "type": "inline_statement",
+            "named": true
+          },
+          {
+            "type": "insert_statement",
+            "named": true
+          },
+          {
+            "type": "label_statement",
+            "named": true
+          },
+          {
+            "type": "push_allocator_statement",
+            "named": true
+          },
+          {
+            "type": "push_context_statement",
+            "named": true
+          },
+          {
+            "type": "return_statement",
+            "named": true
+          },
+          {
+            "type": "static_if_statement",
+            "named": true
+          },
+          {
+            "type": "switch_statement",
+            "named": true
+          },
+          {
+            "type": "using_statement",
+            "named": true
+          },
+          {
+            "type": "variable_declaration",
+            "named": true
+          },
+          {
+            "type": "while_statement",
             "named": true
           }
         ]
@@ -3355,6 +4224,10 @@
     "named": false
   },
   {
+    "type": "#modify",
+    "named": false
+  },
+  {
     "type": "#must",
     "named": false
   },
@@ -3435,6 +4308,10 @@
     "named": false
   },
   {
+    "type": ".(",
+    "named": false
+  },
+  {
     "type": "..",
     "named": false
   },
@@ -3479,6 +4356,10 @@
     "named": false
   },
   {
+    "type": "acast",
+    "named": false
+  },
+  {
     "type": "always",
     "named": false
   },
@@ -3489,6 +4370,10 @@
   {
     "type": "assignment_operator",
     "named": true
+  },
+  {
+    "type": "break",
+    "named": false
   },
   {
     "type": "case",
@@ -3520,6 +4405,10 @@
     "named": true
   },
   {
+    "type": "continue",
+    "named": false
+  },
+  {
     "type": "defer",
     "named": false
   },
@@ -3533,6 +4422,10 @@
   },
   {
     "type": "enum",
+    "named": false
+  },
+  {
+    "type": "enum_flags",
     "named": false
   },
   {
@@ -3561,6 +4454,10 @@
   },
   {
     "type": "inout",
+    "named": false
+  },
+  {
+    "type": "instance",
     "named": false
   },
   {
@@ -3641,6 +4538,14 @@
   },
   {
     "type": "true",
+    "named": false
+  },
+  {
+    "type": "type_hole",
+    "named": true
+  },
+  {
+    "type": "typeclass",
     "named": false
   },
   {
