@@ -1,0 +1,30 @@
+==================
+assignment probe
+==================
+main :: () {
+  if c == Color.Red r = 100;
+  r = 101;
+}
+
+---
+
+(source_file
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (function_declaration
+      (parameter_list)
+      (block
+        (if_statement
+          (binary_expression
+            (identifier)
+            (operator)
+            (postfix_expression
+              (identifier)
+              (identifier)))
+          (assignment_statement
+            (if_assignment_start)
+            (integer_literal)))
+        (assignment_statement
+          (identifier)
+          (integer_literal))))))

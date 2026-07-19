@@ -58,6 +58,9 @@
   "#meaningful"
   "#code"
   "#string"
+  "#enable"
+  "#disable"
+  "#derive"
 ] @attribute
 
 (comment) @comment
@@ -94,6 +97,7 @@
 (pattern_rest) @operator
 
 (identifier) @variable
+(code_splice_identifier) @variable
 (non_hygienic_identifier) @variable
 (label) @label
 (quoted_operator) @operator

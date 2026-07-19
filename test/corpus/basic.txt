@@ -564,11 +564,10 @@ main :: () -> int {
             (operator)
             (integer_literal))
           (assignment_statement
-            (identifier)
-            (assignment_operator)
-            (assignment_expression
+            (if_assignment_start)
+            (binary_expression
               (identifier)
-              (assignment_operator)
+              (operator)
               (identifier))))
         (if_statement
           (unary_expression
@@ -584,7 +583,7 @@ main :: () -> int {
             (operator)
             (integer_literal))
           (assignment_statement
-            (identifier)
+            (if_assignment_start)
             (integer_literal))
           (if_statement
             (binary_expression
@@ -592,10 +591,10 @@ main :: () -> int {
               (operator)
               (integer_literal))
             (assignment_statement
-              (identifier)
+              (if_assignment_start)
               (integer_literal))
             (assignment_statement
-              (identifier)
+              (if_assignment_start)
               (binary_expression
                 (identifier)
                 (operator)
@@ -722,13 +721,13 @@ main :: () {
         (variable_declaration
           (binding_list
             (identifier))
-          (assignment_expression
-            (identifier)
-            (assignment_operator)
+          (binary_expression
             (binary_expression
-              (integer_literal)
+              (identifier)
               (operator)
-              (integer_literal))))))))
+              (integer_literal))
+            (operator)
+            (integer_literal)))))))
 
 ==================
 function directive order and noreturn
