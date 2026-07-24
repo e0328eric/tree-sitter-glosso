@@ -11,6 +11,7 @@
   "enum"
   "enum_flags"
   "using"
+  "noalias"
   "defer"
   "where"
   "cast"

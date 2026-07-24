@@ -5405,6 +5405,10 @@
     "named": false
   },
   {
+    "type": "noalias",
+    "named": false
+  },
+  {
     "type": "non_hygienic_identifier",
     "named": true
   },

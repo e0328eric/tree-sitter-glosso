@@ -35,6 +35,7 @@ module.exports = grammar({
     [$.binding_list, $.tuple_type, $.type_element],
     [$.tuple_type, $.function_type],
     [$.parameter_list, $.function_type],
+    [$.parameter, $.function_type],
     [$.empty_field],
     [$.empty_parameter],
     [$.range_expression],
@@ -432,6 +433,7 @@ module.exports = grammar({
 
     fn_ptr_parameter: ($) =>
       seq(
+        optional("noalias"),
         field("name", $.identifier),
         ":",
         field("type", $._type),
@@ -449,13 +451,13 @@ module.exports = grammar({
     parameter: ($) =>
       choice(
         seq(
-          optional("using"),
+          repeat(choice("using", "noalias")),
           field("name", $._binding_name),
           ":=",
           field("default", $._expression),
         ),
         seq(
-          optional("using"),
+          repeat(choice("using", "noalias")),
           field("name", $.binding_list),
           ":",
           field("type", choice($.variadic_type, $._type)),
@@ -960,7 +962,7 @@ module.exports = grammar({
     function_type: ($) =>
       seq(
         "(",
-        commaSep($.type_element),
+        commaSep(seq(optional("noalias"), $.type_element)),
         ")",
         $.arrow,
         field("return_type", $._type),
@@ -1375,6 +1377,7 @@ module.exports = grammar({
 
     lambda_parameter: ($) =>
       seq(
+        optional("noalias"),
         field("name", $.identifier),
         optional(seq(":", field("type", $._type))),
       ),

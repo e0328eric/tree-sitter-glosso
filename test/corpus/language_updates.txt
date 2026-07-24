@@ -382,3 +382,95 @@ main :: () {
           (assignment_statement
             (if_assignment_start)
             (identifier)))))))
+
+==================
+noalias pointer parameters
+==================
+
+CopyCallback :: #fn_ptr(
+  noalias destination: [*]u8,
+  noalias source: [*]const u8,
+) -> void;
+
+copy :: (
+  noalias destination: [*]u8,
+  noalias source: [*]const u8,
+) -> void {
+  callback: (noalias *void, noalias source: *const void) -> void;
+  closure := |noalias output: *void, noalias input: *const void| {};
+}
+
+---
+
+(source_file
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (function_pointer_type_declaration
+      (fn_ptr_parameter_list
+        (fn_ptr_parameter
+          (identifier)
+          (many_pointer_type
+            (named_type
+              (identifier))))
+        (fn_ptr_parameter
+          (identifier)
+          (many_pointer_type
+            (named_type
+              (identifier)))))
+      (arrow)
+      (named_type
+        (identifier))))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (function_declaration
+      (parameter_list
+        (parameter
+          (binding_list
+            (identifier))
+          (many_pointer_type
+            (named_type
+              (identifier))))
+        (parameter
+          (binding_list
+            (identifier))
+          (many_pointer_type
+            (named_type
+              (identifier)))))
+      (arrow)
+      (named_type
+        (identifier))
+      (block
+        (variable_declaration
+          (binding_list
+            (identifier))
+          (function_type
+            (type_element
+              (pointer_type
+                (named_type
+                  (identifier))))
+            (type_element
+              (identifier)
+              (pointer_type
+                (named_type
+                  (identifier))))
+            (arrow)
+            (named_type
+              (identifier))))
+        (variable_declaration
+          (binding_list
+            (identifier))
+          (lambda_expression
+            (lambda_parameter_list
+              (lambda_parameter
+                (identifier)
+                (pointer_type
+                  (named_type
+                    (identifier))))
+              (lambda_parameter
+                (identifier)
+                (pointer_type
+                  (named_type
+                    (identifier)))))
+            (block)))))))
