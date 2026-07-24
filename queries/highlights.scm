@@ -54,10 +54,12 @@
   "#insert"
   "#compile_error"
   "#pattern"
+  "#minimal"
   "#falling"
   "#meaningful"
   "#code"
   "#string"
+  "#simd"
   "#enable"
   "#disable"
   "#derive"
@@ -77,6 +79,7 @@
 
 (named_argument name: (identifier) @variable.parameter)
 (typeclass_parameter name: (identifier) @variable.parameter)
+(lambda_parameter name: (identifier) @variable.parameter)
 (declaration_name) @function
 (function_declaration (parameter_list (parameter name: (binding_list (identifier) @variable.parameter))))
 (parameter name: (binding_list (identifier) @variable.parameter))
@@ -95,6 +98,12 @@
 (inline_modifier) @attribute
 (partial_directive) @attribute
 (pattern_rest) @operator
+(matrix_type "Matrix" @type.builtin)
+(simd_type "Simd" @type.builtin)
+(variadic_constraint (identifier) @type)
+(minimal_method (identifier) @function)
+(import_selector mode: _ @attribute)
+(expand_directive mode: (identifier) @attribute)
 
 (identifier) @variable
 (code_splice_identifier) @variable

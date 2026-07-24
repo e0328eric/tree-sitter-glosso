@@ -1,0 +1,384 @@
+==================
+selective imports and generated declarations
+==================
+
+#import,only (Fractional, '/') "Math/Core";
+Math :: #import,hide (Internal) "Math/Core";
+Parts :: #load "parts/math.glo";
+#insert generated_source;
+
+---
+
+(source_file
+  (import_declaration
+    (import_selector
+      (identifier)
+      (quoted_operator))
+    (string_literal))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (qualified_import_declaration
+      (import_selector
+        (identifier))
+      (string_literal)))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (qualified_load_declaration
+      (string_literal)))
+  (insert_declaration
+    (identifier)))
+
+==================
+matrix SIMD and constrained variadics
+==================
+
+show_all :: (values: ...(Show && PartialEq)) {
+  print("%\n", values...);
+}
+
+main :: () {
+  matrix: Matrix(f64, 2, COLS) = .[1.0, 2.0, 3.0, 4.0];
+  lanes: Simd(f32, 4) = #simd .[1.0, 2.0, 3.0, 4.0];
+}
+
+---
+
+(source_file
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (function_declaration
+      (parameter_list
+        (parameter
+          (binding_list
+            (identifier))
+          (variadic_type
+            (variadic_constraint
+              (identifier)
+              (identifier)))))
+      (block
+        (expression_statement
+          (postfix_expression
+            (identifier)
+            (argument_list
+              (string_literal)
+              (variadic_argument
+                (identifier))))))))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (function_declaration
+      (parameter_list)
+      (block
+        (variable_declaration
+          (binding_list
+            (identifier))
+          (matrix_type
+            (named_type
+              (identifier))
+            (type_dimension
+              (integer_literal))
+            (type_dimension
+              (identifier)))
+          (array_literal
+            (float_literal)
+            (float_literal)
+            (float_literal)
+            (float_literal)))
+        (variable_declaration
+          (binding_list
+            (identifier))
+          (simd_type
+            (named_type
+              (identifier))
+            (integer_literal))
+          (simd_literal
+            (array_literal
+              (float_literal)
+              (float_literal)
+              (float_literal)
+              (float_literal))))))))
+
+==================
+lambdas minimal instances and single line loops
+==================
+
+Witness :: typeclass (T: type)
+  #fallback
+  #minimal(extract, (convert | '==')) {
+  extract :: (value: T) -> T;
+  convert :: (value: T) -> T;
+  '==' :: (left: T, right: T) -> bool;
+}
+
+([]$T, ($T) -> bool) :: instance Witness where PartialEq(T) {
+  extract :: (value: []T) -> []T { return value; }
+  convert :: (value: []T) -> []T { return value; }
+  '==' :: (left: []T, right: []T) -> bool { return true; }
+}
+
+apply :: (callback: (int) -> int, value: int) -> int {
+  return callback(value);
+}
+
+main :: () {
+  result := apply(|value| value + 1, 41);
+  typed := |value: int| -> int { return value; };
+  empty := || -> int { return 42; };
+  values: [4]int = .[1, 2, 3, 4];
+  for index: 0..values.count values[index] = index;
+}
+
+---
+
+(source_file
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (typeclass_declaration
+      (typeclass_parameter
+        (identifier)
+        (named_type
+          (identifier)))
+      (minimal_directive
+        (minimal_requirement
+          (minimal_conjunction
+            (minimal_atom
+              (minimal_method
+                (identifier)))
+            (minimal_atom
+              (minimal_requirement
+                (minimal_conjunction
+                  (minimal_atom
+                    (minimal_method
+                      (identifier))))
+                (minimal_conjunction
+                  (minimal_atom
+                    (minimal_method
+                      (quoted_operator)))))))))
+      (typeclass_method_signature
+        (declaration_name
+          (identifier))
+        (function_declaration
+          (parameter_list
+            (parameter
+              (binding_list
+                (identifier))
+              (named_type
+                (identifier))))
+          (arrow)
+          (named_type
+            (identifier))))
+      (typeclass_method_signature
+        (declaration_name
+          (identifier))
+        (function_declaration
+          (parameter_list
+            (parameter
+              (binding_list
+                (identifier))
+              (named_type
+                (identifier))))
+          (arrow)
+          (named_type
+            (identifier))))
+      (typeclass_method_signature
+        (declaration_name
+          (quoted_operator))
+        (function_declaration
+          (parameter_list
+            (parameter
+              (binding_list
+                (identifier))
+              (named_type
+                (identifier)))
+            (parameter
+              (binding_list
+                (identifier))
+              (named_type
+                (identifier))))
+          (arrow)
+          (named_type
+            (identifier))))))
+  (instance_declaration
+    (type_constructor_pattern
+      (tuple_type_constructor_pattern
+        (type_constructor_pattern
+          (array_type_constructor_pattern
+            (type_constructor_pattern
+              (generic_type_variable
+                (identifier)))))
+        (type_constructor_pattern
+          (function_type_constructor_pattern
+            (type_constructor_pattern
+              (generic_type_variable
+                (identifier)))
+            (arrow)
+            (type_constructor_pattern
+              (identifier))))))
+    (identifier)
+    (where_clause
+      (postfix_expression
+        (identifier)
+        (argument_list
+          (identifier))))
+    (instance_method
+      (declaration_name
+        (identifier))
+      (function_declaration
+        (parameter_list
+          (parameter
+            (binding_list
+              (identifier))
+            (array_type
+              (named_type
+                (identifier)))))
+        (arrow)
+        (array_type
+          (named_type
+            (identifier)))
+        (block
+          (return_statement
+            (identifier)))))
+    (instance_method
+      (declaration_name
+        (identifier))
+      (function_declaration
+        (parameter_list
+          (parameter
+            (binding_list
+              (identifier))
+            (array_type
+              (named_type
+                (identifier)))))
+        (arrow)
+        (array_type
+          (named_type
+            (identifier)))
+        (block
+          (return_statement
+            (identifier)))))
+    (instance_method
+      (declaration_name
+        (quoted_operator))
+      (function_declaration
+        (parameter_list
+          (parameter
+            (binding_list
+              (identifier))
+            (array_type
+              (named_type
+                (identifier))))
+          (parameter
+            (binding_list
+              (identifier))
+            (array_type
+              (named_type
+                (identifier)))))
+        (arrow)
+        (named_type
+          (identifier))
+        (block
+          (return_statement
+            (boolean_literal))))))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (function_declaration
+      (parameter_list
+        (parameter
+          (binding_list
+            (identifier))
+          (function_type
+            (type_element
+              (named_type
+                (identifier)))
+            (arrow)
+            (named_type
+              (identifier))))
+        (parameter
+          (binding_list
+            (identifier))
+          (named_type
+            (identifier))))
+      (arrow)
+      (named_type
+        (identifier))
+      (block
+        (return_statement
+          (postfix_expression
+            (identifier)
+            (argument_list
+              (identifier)))))))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (function_declaration
+      (parameter_list)
+      (block
+        (variable_declaration
+          (binding_list
+            (identifier))
+          (postfix_expression
+            (identifier)
+            (argument_list
+              (lambda_expression
+                (lambda_parameter_list
+                  (lambda_parameter
+                    (identifier)))
+                (binary_expression
+                  (identifier)
+                  (operator)
+                  (integer_literal)))
+              (integer_literal))))
+        (variable_declaration
+          (binding_list
+            (identifier))
+          (lambda_expression
+            (lambda_parameter_list
+              (lambda_parameter
+                (identifier)
+                (named_type
+                  (identifier))))
+            (arrow)
+            (named_type
+              (identifier))
+            (block
+              (return_statement
+                (identifier)))))
+        (variable_declaration
+          (binding_list
+            (identifier))
+          (lambda_expression
+            (lambda_parameter_list)
+            (arrow)
+            (named_type
+              (identifier))
+            (block
+              (return_statement
+                (integer_literal)))))
+        (variable_declaration
+          (binding_list
+            (identifier))
+          (array_type
+            (integer_literal)
+            (named_type
+              (identifier)))
+          (array_literal
+            (integer_literal)
+            (integer_literal)
+            (integer_literal)
+            (integer_literal)))
+        (for_statement
+          (identifier)
+          (range_expression
+            (integer_literal)
+            (range_operator)
+            (postfix_expression
+              (identifier)
+              (identifier)))
+          (assignment_statement
+            (if_assignment_start)
+            (identifier)))))))

@@ -120,6 +120,7 @@ macro :: (body: Code) #expand {
             (identifier))
           (named_type
             (identifier))))
+      (expand_directive)
       (block
         (variable_declaration
           (binding_list
