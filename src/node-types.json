@@ -24,6 +24,10 @@
         "named": true
       },
       {
+        "type": "memory_overlay",
+        "named": true
+      },
+      {
         "type": "named_declaration",
         "named": true
       },
@@ -291,6 +295,10 @@
       },
       {
         "type": "label_statement",
+        "named": true
+      },
+      {
+        "type": "memory_overlay",
         "named": true
       },
       {
@@ -934,6 +942,42 @@
     }
   },
   {
+    "type": "comptime_parameter",
+    "named": true,
+    "fields": {
+      "default": {
+        "multiple": false,
+        "required": false,
+        "types": [
+          {
+            "type": "_expression",
+            "named": true
+          }
+        ]
+      },
+      "name": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "binding_list",
+            "named": true
+          }
+        ]
+      },
+      "type": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "_type",
+            "named": true
+          }
+        ]
+      }
+    }
+  },
+  {
     "type": "constant_declaration_body",
     "named": true,
     "fields": {
@@ -1335,6 +1379,10 @@
           },
           {
             "type": "label_statement",
+            "named": true
+          },
+          {
+            "type": "memory_overlay",
             "named": true
           },
           {
@@ -1843,6 +1891,10 @@
             "named": true
           },
           {
+            "type": "memory_overlay",
+            "named": true
+          },
+          {
             "type": "push_allocator_statement",
             "named": true
           },
@@ -1948,6 +2000,10 @@
           },
           {
             "type": "label_statement",
+            "named": true
+          },
+          {
+            "type": "memory_overlay",
             "named": true
           },
           {
@@ -2563,6 +2619,32 @@
     }
   },
   {
+    "type": "memory_argument_reference",
+    "named": true,
+    "fields": {
+      "function": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "identifier",
+            "named": true
+          }
+        ]
+      },
+      "index": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "integer_literal",
+            "named": true
+          }
+        ]
+      }
+    }
+  },
+  {
     "type": "memory_directive",
     "named": true,
     "fields": {
@@ -2591,10 +2673,44 @@
           "named": true
         },
         {
+          "type": "memory_release_effect",
+          "named": true
+        },
+        {
+          "type": "memory_resource_effect",
+          "named": true
+        },
+        {
           "type": "memory_simple_effect",
           "named": true
         }
       ]
+    }
+  },
+  {
+    "type": "memory_overlay",
+    "named": true,
+    "fields": {
+      "effect": {
+        "multiple": true,
+        "required": true,
+        "types": [
+          {
+            "type": "memory_effect",
+            "named": true
+          }
+        ]
+      },
+      "target": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "memory_qualified_name",
+            "named": true
+          }
+        ]
+      }
     }
   },
   {
@@ -2618,6 +2734,10 @@
           {
             "type": "identifier",
             "named": true
+          },
+          {
+            "type": "memory_argument_reference",
+            "named": true
           }
         ]
       }
@@ -2627,6 +2747,53 @@
     "type": "memory_parameter_effect_kind",
     "named": true,
     "fields": {}
+  },
+  {
+    "type": "memory_qualified_name",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": true,
+      "required": true,
+      "types": [
+        {
+          "type": "identifier",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
+    "type": "memory_release_effect",
+    "named": true,
+    "fields": {
+      "releaser": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "memory_qualified_name",
+            "named": true
+          }
+        ]
+      }
+    }
+  },
+  {
+    "type": "memory_resource_effect",
+    "named": true,
+    "fields": {
+      "releaser": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "memory_qualified_name",
+            "named": true
+          }
+        ]
+      }
+    }
   },
   {
     "type": "memory_simple_effect",
@@ -3031,6 +3198,10 @@
           "named": true
         },
         {
+          "type": "comptime_parameter",
+          "named": true
+        },
+        {
           "type": "empty_parameter",
           "named": true
         },
@@ -3361,6 +3532,16 @@
           }
         ]
       },
+      "directive": {
+        "multiple": false,
+        "required": false,
+        "types": [
+          {
+            "type": "memory_directive",
+            "named": true
+          }
+        ]
+      },
       "field": {
         "multiple": false,
         "required": false,
@@ -3443,6 +3624,16 @@
           },
           {
             "type": "_type",
+            "named": true
+          }
+        ]
+      },
+      "value": {
+        "multiple": false,
+        "required": false,
+        "types": [
+          {
+            "type": "_expression",
             "named": true
           }
         ]
@@ -4001,6 +4192,10 @@
             "named": true
           },
           {
+            "type": "memory_overlay",
+            "named": true
+          },
+          {
             "type": "push_allocator_statement",
             "named": true
           },
@@ -4106,6 +4301,10 @@
           },
           {
             "type": "label_statement",
+            "named": true
+          },
+          {
+            "type": "memory_overlay",
             "named": true
           },
           {
@@ -5062,6 +5261,10 @@
             "named": true
           },
           {
+            "type": "memory_overlay",
+            "named": true
+          },
+          {
             "type": "push_allocator_statement",
             "named": true
           },
@@ -5141,6 +5344,10 @@
   },
   {
     "type": "#compile_error",
+    "named": false
+  },
+  {
+    "type": "#comptime",
     "named": false
   },
   {
@@ -5265,10 +5472,6 @@
   },
   {
     "type": "#raw",
-    "named": false
-  },
-  {
-    "type": "#run",
     "named": false
   },
   {
@@ -5582,6 +5785,14 @@
   },
   {
     "type": "reads",
+    "named": false
+  },
+  {
+    "type": "released_by",
+    "named": false
+  },
+  {
+    "type": "resource",
     "named": false
   },
   {

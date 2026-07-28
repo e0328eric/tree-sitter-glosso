@@ -389,3 +389,183 @@ Sub :: typeclass (L: type, R: type) {
         (block
           (return_statement
             (identifier)))))))
+
+==================
+comptime evaluation and parameters
+==================
+
+select :: (#comptime W, T: type, writer: *W, value: T) -> T {
+  return value;
+}
+
+tag :: (#comptime text: string = "default") -> string {
+  return text;
+}
+
+VALUE :: #comptime 1 + 2;
+#comptime build();
+
+---
+
+(source_file
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (function_declaration
+      (parameter_list
+        (comptime_parameter
+          (binding_list
+            (identifier)
+            (identifier))
+          (named_type
+            (identifier)))
+        (parameter
+          (binding_list
+            (identifier))
+          (pointer_type
+            (named_type
+              (identifier))))
+        (parameter
+          (binding_list
+            (identifier))
+          (named_type
+            (identifier))))
+      (arrow)
+      (named_type
+        (identifier))
+      (block
+        (return_statement
+          (identifier)))))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (function_declaration
+      (parameter_list
+        (comptime_parameter
+          (binding_list
+            (identifier))
+          (named_type
+            (identifier))
+          (string_literal)))
+      (arrow)
+      (named_type
+        (identifier))
+      (block
+        (return_statement
+          (identifier)))))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (constant_declaration_body
+      (binary_expression
+        (run_expression
+          (integer_literal))
+        (operator)
+        (integer_literal))))
+  (top_run_declaration
+    (postfix_expression
+      (identifier)
+      (argument_list))))
+
+==================
+memory overlays and use-site effects
+==================
+
+Texture :: struct { id: u32; }
+LoadTexture :: (fileName: string) -> Texture #foreign "raylib" "LoadTexture";
+UnloadTexture :: (texture: Texture) #foreign "raylib" "UnloadTexture";
+
+#memory Graphics.LoadTexture {
+  returns_fresh,
+  released_by(Graphics.UnloadTexture),
+  noescape(arg(0)),
+};
+
+main :: () {
+  texture := LoadTexture("atlas.png")
+    #memory(resource(released_by: Graphics.UnloadTexture), noescape(arg(0)));
+}
+
+---
+
+(source_file
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (struct_declaration
+      (struct_field
+        (identifier)
+        (named_type
+          (identifier)))))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (function_declaration
+      (parameter_list
+        (parameter
+          (binding_list
+            (identifier))
+          (named_type
+            (identifier))))
+      (arrow)
+      (named_type
+        (identifier))
+      (foreign_directive
+        (string_literal)
+        (string_literal))))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (function_declaration
+      (parameter_list
+        (parameter
+          (binding_list
+            (identifier))
+          (named_type
+            (identifier))))
+      (foreign_directive
+        (string_literal)
+        (string_literal))))
+  (memory_overlay
+    (memory_qualified_name
+      (identifier)
+      (identifier))
+    (memory_effect
+      (memory_simple_effect))
+    (memory_effect
+      (memory_release_effect
+        (memory_qualified_name
+          (identifier)
+          (identifier))))
+    (memory_effect
+      (memory_parameter_effect
+        (memory_parameter_effect_kind)
+        (memory_argument_reference
+          (identifier)
+          (integer_literal)))))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (function_declaration
+      (parameter_list)
+      (block
+        (variable_declaration
+          (binding_list
+            (identifier))
+          (postfix_expression
+            (postfix_expression
+              (identifier)
+              (argument_list
+                (string_literal)))
+            (memory_directive
+              (memory_effect
+                (memory_resource_effect
+                  (memory_qualified_name
+                    (identifier)
+                    (identifier))))
+              (memory_effect
+                (memory_parameter_effect
+                  (memory_parameter_effect_kind)
+                  (memory_argument_reference
+                    (identifier)
+                    (integer_literal)))))))))))

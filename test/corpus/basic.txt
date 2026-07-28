@@ -91,7 +91,7 @@ MSG :: #string
 \\world
 
 macro :: (body: Code) #expand {
-  `tmp := #run 1 + 2;
+  `tmp := #comptime 1 + 2;
   #insert body;
 }
 
@@ -134,16 +134,16 @@ macro :: (body: Code) #expand {
           (identifier))))))
 
 ==================
-bare run block
+bare comptime block
 ==================
 
-VALUE :: #run {
+VALUE :: #comptime {
   x := 1;
   x += 2;
   return x;
 }
 
-#run {
+#comptime {
   VALUE;
 }
 
@@ -415,7 +415,7 @@ worker :: (from: int, flag: bool) -> int {
 
 '.*' :: (p: *$T) -> T #operator(suffix) #fallback #magic "ptr_deref";
 
-VALUE :: #run -> int {
+VALUE :: #comptime -> int {
   target : label = ---;
   x := long_goto(worker, 'task, 40, true);
   return x;

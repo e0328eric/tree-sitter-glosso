@@ -21,7 +21,7 @@
 ] @keyword
 
 [
-  "#run"
+  "#comptime"
   "#import"
   "#load"
   "#private_section"
@@ -86,6 +86,7 @@
 (function_declaration (parameter_list (parameter name: (binding_list (identifier) @variable.parameter))))
 (parameter name: (binding_list (identifier) @variable.parameter))
 (parameter name: (identifier) @variable.parameter)
+(comptime_parameter name: (binding_list (identifier) @variable.parameter))
 (struct_field name: (identifier) @property)
 (union_field name: (identifier) @property)
 (enum_variant name: (identifier) @constant)
@@ -106,6 +107,8 @@
 (minimal_method (identifier) @function)
 (memory_simple_effect) @attribute
 (memory_parameter_effect_kind) @attribute
+(memory_release_effect "released_by" @attribute)
+(memory_resource_effect ["resource" "released_by"] @attribute)
 (import_selector mode: _ @attribute)
 (expand_directive mode: (identifier) @attribute)
 

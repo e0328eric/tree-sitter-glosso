@@ -78,6 +78,7 @@ module.exports = grammar({
     $._pattern_primary,
     $.type_identifier,
     $.autocast_value,
+    $.memory_parameter,
     $._operator,
     $._binding_name,
     $._separator,
@@ -101,6 +102,7 @@ module.exports = grammar({
       choice(
         $.feature_directive,
         $.top_run_declaration,
+        $.memory_overlay,
         $.insert_declaration,
         $.import_declaration,
         $.load_declaration,
@@ -123,7 +125,7 @@ module.exports = grammar({
 
     top_run_declaration: ($) =>
       seq(
-        "#run",
+        "#comptime",
         choice(
           seq($.arrow, field("type", $._type), field("body", $.block)),
           field("body", $.block),
@@ -426,7 +428,19 @@ module.exports = grammar({
         choice(field("body", $.block), ";"),
       ),
 
-    parameter_list: ($) => seq("(", commaSep(choice($.parameter, $.empty_parameter, $.c_varargs_parameter)), ")"),
+    parameter_list: ($) =>
+      seq(
+        "(",
+        commaSep(
+          choice(
+            $.parameter,
+            $.comptime_parameter,
+            $.empty_parameter,
+            $.c_varargs_parameter,
+          ),
+        ),
+        ")",
+      ),
 
     fn_ptr_parameter_list: ($) =>
       seq("(", commaSep(choice($.fn_ptr_parameter, $.c_varargs_parameter)), ")"),
@@ -446,6 +460,15 @@ module.exports = grammar({
         "#empty",
         ":",
         commaSep1(field("type", $._type)),
+      ),
+
+    comptime_parameter: ($) =>
+      seq(
+        "#comptime",
+        field("name", $.binding_list),
+        ":",
+        field("type", $._type),
+        optional(seq("=", field("default", $._expression))),
       ),
 
     parameter: ($) =>
@@ -569,6 +592,8 @@ module.exports = grammar({
       choice(
         $.memory_simple_effect,
         $.memory_parameter_effect,
+        $.memory_release_effect,
+        $.memory_resource_effect,
       ),
 
     memory_simple_effect: (_) =>
@@ -578,7 +603,7 @@ module.exports = grammar({
       seq(
         field("kind", $.memory_parameter_effect_kind),
         "(",
-        field("parameter", $.identifier),
+        field("parameter", $.memory_parameter),
         ")",
       ),
 
@@ -591,6 +616,51 @@ module.exports = grammar({
         "escapes",
         "reads",
         "writes",
+      ),
+
+    memory_parameter: ($) =>
+      choice(
+        $.identifier,
+        $.memory_argument_reference,
+      ),
+
+    memory_argument_reference: ($) =>
+      seq(
+        field("function", $.identifier),
+        "(",
+        field("index", $.integer_literal),
+        ")",
+      ),
+
+    memory_release_effect: ($) =>
+      seq(
+        "released_by",
+        "(",
+        field("releaser", $.memory_qualified_name),
+        ")",
+      ),
+
+    memory_resource_effect: ($) =>
+      seq(
+        "resource",
+        "(",
+        "released_by",
+        ":",
+        field("releaser", $.memory_qualified_name),
+        ")",
+      ),
+
+    memory_qualified_name: ($) =>
+      seq($.identifier, repeat(seq(".", $.identifier))),
+
+    memory_overlay: ($) =>
+      seq(
+        "#memory",
+        field("target", $.memory_qualified_name),
+        "{",
+        commaSep1(field("effect", $.memory_effect)),
+        "}",
+        optional(";"),
       ),
 
     block: ($) => seq("{", repeat($._statement), "}"),
@@ -618,6 +688,7 @@ module.exports = grammar({
         $.insert_statement,
         $.compile_error_statement,
         $.falling_statement,
+        $.memory_overlay,
         $.variable_declaration,
         $.assignment_statement,
         $.expression_statement,
@@ -835,6 +906,7 @@ module.exports = grammar({
         $.insert_statement,
         $.compile_error_statement,
         $.falling_statement,
+        $.memory_overlay,
         $.variable_declaration,
         $.assignment_statement,
         $.expression_statement,
@@ -1252,7 +1324,7 @@ module.exports = grammar({
       prec(
         PREC.unary,
         seq(
-          "#run",
+          "#comptime",
           choice(
             seq($.arrow, field("type", $._type), field("body", $.block)),
             field("body", $.block),
@@ -1353,6 +1425,10 @@ module.exports = grammar({
           seq(field("object", $._expression), ".", "cast", "(", field("type", $._type), ")"),
           seq(field("object", $._expression), ".", "acast"),
           seq(field("object", $._expression), ".*"),
+          seq(
+            field("value", $._expression),
+            field("directive", $.memory_directive),
+          ),
           seq(
             field("object", $._expression),
             ".",

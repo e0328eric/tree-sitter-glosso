@@ -65,6 +65,10 @@
         },
         {
           "type": "SYMBOL",
+          "name": "memory_overlay"
+        },
+        {
+          "type": "SYMBOL",
           "name": "insert_declaration"
         },
         {
@@ -173,7 +177,7 @@
       "members": [
         {
           "type": "STRING",
-          "value": "#run"
+          "value": "#comptime"
         },
         {
           "type": "CHOICE",
@@ -2259,6 +2263,10 @@
                     },
                     {
                       "type": "SYMBOL",
+                      "name": "comptime_parameter"
+                    },
+                    {
+                      "type": "SYMBOL",
                       "name": "empty_parameter"
                     },
                     {
@@ -2282,6 +2290,10 @@
                           {
                             "type": "SYMBOL",
                             "name": "parameter"
+                          },
+                          {
+                            "type": "SYMBOL",
+                            "name": "comptime_parameter"
                           },
                           {
                             "type": "SYMBOL",
@@ -2491,6 +2503,60 @@
                   "type": "BLANK"
                 }
               ]
+            }
+          ]
+        }
+      ]
+    },
+    "comptime_parameter": {
+      "type": "SEQ",
+      "members": [
+        {
+          "type": "STRING",
+          "value": "#comptime"
+        },
+        {
+          "type": "FIELD",
+          "name": "name",
+          "content": {
+            "type": "SYMBOL",
+            "name": "binding_list"
+          }
+        },
+        {
+          "type": "STRING",
+          "value": ":"
+        },
+        {
+          "type": "FIELD",
+          "name": "type",
+          "content": {
+            "type": "SYMBOL",
+            "name": "_type"
+          }
+        },
+        {
+          "type": "CHOICE",
+          "members": [
+            {
+              "type": "SEQ",
+              "members": [
+                {
+                  "type": "STRING",
+                  "value": "="
+                },
+                {
+                  "type": "FIELD",
+                  "name": "default",
+                  "content": {
+                    "type": "SYMBOL",
+                    "name": "_expression"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "BLANK"
             }
           ]
         }
@@ -3173,6 +3239,14 @@
         {
           "type": "SYMBOL",
           "name": "memory_parameter_effect"
+        },
+        {
+          "type": "SYMBOL",
+          "name": "memory_release_effect"
+        },
+        {
+          "type": "SYMBOL",
+          "name": "memory_resource_effect"
         }
       ]
     },
@@ -3213,7 +3287,7 @@
           "name": "parameter",
           "content": {
             "type": "SYMBOL",
-            "name": "identifier"
+            "name": "memory_parameter"
           }
         },
         {
@@ -3252,6 +3326,213 @@
         {
           "type": "STRING",
           "value": "writes"
+        }
+      ]
+    },
+    "memory_parameter": {
+      "type": "CHOICE",
+      "members": [
+        {
+          "type": "SYMBOL",
+          "name": "identifier"
+        },
+        {
+          "type": "SYMBOL",
+          "name": "memory_argument_reference"
+        }
+      ]
+    },
+    "memory_argument_reference": {
+      "type": "SEQ",
+      "members": [
+        {
+          "type": "FIELD",
+          "name": "function",
+          "content": {
+            "type": "SYMBOL",
+            "name": "identifier"
+          }
+        },
+        {
+          "type": "STRING",
+          "value": "("
+        },
+        {
+          "type": "FIELD",
+          "name": "index",
+          "content": {
+            "type": "SYMBOL",
+            "name": "integer_literal"
+          }
+        },
+        {
+          "type": "STRING",
+          "value": ")"
+        }
+      ]
+    },
+    "memory_release_effect": {
+      "type": "SEQ",
+      "members": [
+        {
+          "type": "STRING",
+          "value": "released_by"
+        },
+        {
+          "type": "STRING",
+          "value": "("
+        },
+        {
+          "type": "FIELD",
+          "name": "releaser",
+          "content": {
+            "type": "SYMBOL",
+            "name": "memory_qualified_name"
+          }
+        },
+        {
+          "type": "STRING",
+          "value": ")"
+        }
+      ]
+    },
+    "memory_resource_effect": {
+      "type": "SEQ",
+      "members": [
+        {
+          "type": "STRING",
+          "value": "resource"
+        },
+        {
+          "type": "STRING",
+          "value": "("
+        },
+        {
+          "type": "STRING",
+          "value": "released_by"
+        },
+        {
+          "type": "STRING",
+          "value": ":"
+        },
+        {
+          "type": "FIELD",
+          "name": "releaser",
+          "content": {
+            "type": "SYMBOL",
+            "name": "memory_qualified_name"
+          }
+        },
+        {
+          "type": "STRING",
+          "value": ")"
+        }
+      ]
+    },
+    "memory_qualified_name": {
+      "type": "SEQ",
+      "members": [
+        {
+          "type": "SYMBOL",
+          "name": "identifier"
+        },
+        {
+          "type": "REPEAT",
+          "content": {
+            "type": "SEQ",
+            "members": [
+              {
+                "type": "STRING",
+                "value": "."
+              },
+              {
+                "type": "SYMBOL",
+                "name": "identifier"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "memory_overlay": {
+      "type": "SEQ",
+      "members": [
+        {
+          "type": "STRING",
+          "value": "#memory"
+        },
+        {
+          "type": "FIELD",
+          "name": "target",
+          "content": {
+            "type": "SYMBOL",
+            "name": "memory_qualified_name"
+          }
+        },
+        {
+          "type": "STRING",
+          "value": "{"
+        },
+        {
+          "type": "SEQ",
+          "members": [
+            {
+              "type": "FIELD",
+              "name": "effect",
+              "content": {
+                "type": "SYMBOL",
+                "name": "memory_effect"
+              }
+            },
+            {
+              "type": "REPEAT",
+              "content": {
+                "type": "SEQ",
+                "members": [
+                  {
+                    "type": "STRING",
+                    "value": ","
+                  },
+                  {
+                    "type": "FIELD",
+                    "name": "effect",
+                    "content": {
+                      "type": "SYMBOL",
+                      "name": "memory_effect"
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "type": "CHOICE",
+              "members": [
+                {
+                  "type": "STRING",
+                  "value": ","
+                },
+                {
+                  "type": "BLANK"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "STRING",
+          "value": "}"
+        },
+        {
+          "type": "CHOICE",
+          "members": [
+            {
+              "type": "STRING",
+              "value": ";"
+            },
+            {
+              "type": "BLANK"
+            }
+          ]
         }
       ]
     },
@@ -3361,6 +3642,10 @@
         {
           "type": "SYMBOL",
           "name": "falling_statement"
+        },
+        {
+          "type": "SYMBOL",
+          "name": "memory_overlay"
         },
         {
           "type": "SYMBOL",
@@ -4742,6 +5027,10 @@
         {
           "type": "SYMBOL",
           "name": "falling_statement"
+        },
+        {
+          "type": "SYMBOL",
+          "name": "memory_overlay"
         },
         {
           "type": "SYMBOL",
@@ -6976,7 +7265,7 @@
         "members": [
           {
             "type": "STRING",
-            "value": "#run"
+            "value": "#comptime"
           },
           {
             "type": "CHOICE",
@@ -7696,6 +7985,27 @@
               {
                 "type": "STRING",
                 "value": ".*"
+              }
+            ]
+          },
+          {
+            "type": "SEQ",
+            "members": [
+              {
+                "type": "FIELD",
+                "name": "value",
+                "content": {
+                  "type": "SYMBOL",
+                  "name": "_expression"
+                }
+              },
+              {
+                "type": "FIELD",
+                "name": "directive",
+                "content": {
+                  "type": "SYMBOL",
+                  "name": "memory_directive"
+                }
               }
             ]
           },
@@ -9264,6 +9574,7 @@
     "_pattern_primary",
     "type_identifier",
     "autocast_value",
+    "memory_parameter",
     "_operator",
     "_binding_name",
     "_separator"
