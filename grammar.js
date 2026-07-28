@@ -498,6 +498,7 @@ module.exports = grammar({
         "#magic",
         $.magic_directive,
         $.foreign_directive,
+        $.memory_directive,
         "#c_call",
         "#no_context",
         "#dump",
@@ -555,6 +556,43 @@ module.exports = grammar({
         optional(field("symbol", $.string_literal)),
       ),
 
+    memory_directive: ($) =>
+      seq(
+        "#memory",
+        choice(
+          field("effect", $.memory_effect),
+          seq("(", commaSep1(field("effect", $.memory_effect)), ")"),
+        ),
+      ),
+
+    memory_effect: ($) =>
+      choice(
+        $.memory_simple_effect,
+        $.memory_parameter_effect,
+      ),
+
+    memory_simple_effect: (_) =>
+      choice("returns_fresh", "returns_static", "unknown"),
+
+    memory_parameter_effect: ($) =>
+      seq(
+        field("kind", $.memory_parameter_effect_kind),
+        "(",
+        field("parameter", $.identifier),
+        ")",
+      ),
+
+    memory_parameter_effect_kind: (_) =>
+      choice(
+        "returns_borrow",
+        "kills",
+        "invalidates",
+        "noescape",
+        "escapes",
+        "reads",
+        "writes",
+      ),
+
     block: ($) => seq("{", repeat($._statement), "}"),
 
     _statement: ($) =>
@@ -606,7 +644,7 @@ module.exports = grammar({
     inline_asm_statement: ($) =>
       seq(
         "#asm",
-        field("template", $._expression),
+        field("template", choice($._expression, $.multiline_string_literal)),
         optional($.asm_operands),
         optional(";"),
       ),
@@ -723,6 +761,7 @@ module.exports = grammar({
       choice(
         $.block,
         alias($.if_assignment, $.assignment_statement),
+        alias($.if_variable_declaration, $.variable_declaration),
         alias($.if_call, $.expression_statement),
         $._single_statement,
       ),
@@ -741,6 +780,24 @@ module.exports = grammar({
         seq(
           /[\p{L}_][\p{L}\p{N}_]*(?:(?:\.[\p{L}_][\p{L}\p{N}_]*|\.\*)|\[[^\]\n]*\])*/,
           /\s*[+\-*\/%&|^~<>!?]*=/,
+        ),
+      ),
+
+    if_variable_declaration: ($) =>
+      prec.right(
+        2,
+        seq(
+          field("name", $.if_variable_declaration_start),
+          field("value", $._expression),
+          optional(";"),
+        ),
+      ),
+
+    if_variable_declaration_start: (_) =>
+      token(
+        seq(
+          /[\p{L}_][\p{L}\p{N}_]*/,
+          /\s*:=/,
         ),
       ),
 
@@ -989,13 +1046,14 @@ module.exports = grammar({
       seq(optional(seq(field("name", $.identifier), ":")), field("type", $._type)),
 
     generic_type: ($) =>
-      prec(
+      prec.right(
         1,
         seq(
           field("name", $.type_identifier),
           "(",
           commaSep1($._type),
           ")",
+          repeat(seq(".", field("member", choice($.identifier, $.code_splice_identifier)))),
         ),
       ),
 
@@ -1027,11 +1085,20 @@ module.exports = grammar({
     type_hole: (_) => "_",
 
     array_type_constructor_pattern: ($) =>
-      seq(
-        "[",
-        optional(choice("..", "*", $.integer_literal, $.identifier)),
-        "]",
-        optional(field("element", $.type_constructor_pattern)),
+      choice(
+        seq(
+          "[",
+          "*",
+          "]",
+          repeat(choice("const", "volatile")),
+          optional(field("element", $.type_constructor_pattern)),
+        ),
+        seq(
+          "[",
+          optional(choice("..", $.integer_literal, $.identifier)),
+          "]",
+          optional(field("element", $.type_constructor_pattern)),
+        ),
       ),
 
     pointer_type_constructor_pattern: ($) =>
@@ -1384,6 +1451,8 @@ module.exports = grammar({
 
     string_block: ($) => seq("#string", repeat1($.multiline_string_line)),
 
+    multiline_string_literal: ($) => repeat1($.multiline_string_line),
+
     char_literal: (_) =>
       token(seq("#char", /[ \t]*/, '"', repeat(choice(/[^"\\\n]/, /\\./)), '"')),
 
@@ -1490,9 +1559,16 @@ module.exports = grammar({
     arrow: (_) => token(prec(2, "->")),
 
     integer_literal: (_) =>
-      token(choice(/0[xX][0-9a-fA-F_]+/, /0[bB][01_]+/, /[0-9][0-9_]*/)),
+      token(choice(
+        /[0-9][0-9_]*#[0-9A-Za-z][0-9A-Za-z_]*/,
+        /[0-9][0-9_]*/,
+      )),
 
-    float_literal: (_) => token(/[0-9][0-9_]*\.[0-9][0-9_]*/),
+    float_literal: (_) =>
+      token(choice(
+        /[0-9][0-9_]*\.[0-9][0-9_]*(?:[eE][+-]?[0-9][0-9_]*)?/,
+        /[0-9][0-9_]*[eE][+-]?[0-9][0-9_]*/,
+      )),
 
     string_literal: (_) =>
       token(seq('"', repeat(choice(/[^"\\\n]/, /\\./)), '"')),

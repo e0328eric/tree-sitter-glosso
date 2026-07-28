@@ -1,0 +1,391 @@
+==================
+bare multiline inline assembly
+==================
+
+assemble :: (value: s64) -> s64 {
+  #asm
+    \\add $0, $0, 1
+    \\sub $0, $0, -1
+    : inout("+r", value)
+    :
+    : "cc";
+  #asm "nop";
+  return value;
+}
+
+---
+
+(source_file
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (function_declaration
+      (parameter_list
+        (parameter
+          (binding_list
+            (identifier))
+          (named_type
+            (identifier))))
+      (arrow)
+      (named_type
+        (identifier))
+      (block
+        (inline_asm_statement
+          (multiline_string_literal
+            (multiline_string_line)
+            (multiline_string_line))
+          (asm_operands
+            (asm_output_list
+              (asm_output_operand
+                (string_literal)
+                (identifier)))
+            (asm_clobber_list
+              (string_literal))))
+        (inline_asm_statement
+          (string_literal))
+        (return_statement
+          (identifier))))))
+
+==================
+memory effect directives
+==================
+
+view :: (buffer: []u8) -> []u8
+  #foreign "c" "view"
+  #memory(returns_borrow(buffer), noescape(buffer))
+  #memory reads(buffer);
+
+allocate :: () -> *u8
+  #memory returns_fresh
+  #memory returns_static
+  #memory unknown;
+
+release :: (buffer: []u8)
+  #memory(kills(buffer), invalidates(buffer), escapes(buffer), writes(buffer));
+
+---
+
+(source_file
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (function_declaration
+      (parameter_list
+        (parameter
+          (binding_list
+            (identifier))
+          (array_type
+            (named_type
+              (identifier)))))
+      (arrow)
+      (array_type
+        (named_type
+          (identifier)))
+      (foreign_directive
+        (string_literal)
+        (string_literal))
+      (memory_directive
+        (memory_effect
+          (memory_parameter_effect
+            (memory_parameter_effect_kind)
+            (identifier)))
+        (memory_effect
+          (memory_parameter_effect
+            (memory_parameter_effect_kind)
+            (identifier))))
+      (memory_directive
+        (memory_effect
+          (memory_parameter_effect
+            (memory_parameter_effect_kind)
+            (identifier))))))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (function_declaration
+      (parameter_list)
+      (arrow)
+      (pointer_type
+        (named_type
+          (identifier)))
+      (memory_directive
+        (memory_effect
+          (memory_simple_effect)))
+      (memory_directive
+        (memory_effect
+          (memory_simple_effect)))
+      (memory_directive
+        (memory_effect
+          (memory_simple_effect)))))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (function_declaration
+      (parameter_list
+        (parameter
+          (binding_list
+            (identifier))
+          (array_type
+            (named_type
+              (identifier)))))
+      (memory_directive
+        (memory_effect
+          (memory_parameter_effect
+            (memory_parameter_effect_kind)
+            (identifier)))
+        (memory_effect
+          (memory_parameter_effect
+            (memory_parameter_effect_kind)
+            (identifier)))
+        (memory_effect
+          (memory_parameter_effect
+            (memory_parameter_effect_kind)
+            (identifier)))
+        (memory_effect
+          (memory_parameter_effect
+            (memory_parameter_effect_kind)
+            (identifier)))))))
+
+==================
+based and scientific numeric literals
+==================
+
+numbers :: () {
+  binary := 2#10_01;
+  hexadecimal := 16#ffff_ffff;
+  radix_36 := 36#Z;
+  small := 1.2e-3;
+  large := 1E10;
+  explicit_sign := 1e+2;
+  if binary != 0 _ := report_failure();
+}
+
+---
+
+(source_file
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (function_declaration
+      (parameter_list)
+      (block
+        (variable_declaration
+          (binding_list
+            (identifier))
+          (integer_literal))
+        (variable_declaration
+          (binding_list
+            (identifier))
+          (integer_literal))
+        (variable_declaration
+          (binding_list
+            (identifier))
+          (integer_literal))
+        (variable_declaration
+          (binding_list
+            (identifier))
+          (float_literal))
+        (variable_declaration
+          (binding_list
+            (identifier))
+          (float_literal))
+        (variable_declaration
+          (binding_list
+            (identifier))
+          (float_literal))
+        (if_statement
+          (binary_expression
+            (identifier)
+            (operator)
+            (integer_literal))
+          (variable_declaration
+            (if_variable_declaration_start)
+            (postfix_expression
+              (identifier)
+              (argument_list))))))))
+
+==================
+multi parameter typeclass instances
+==================
+
+Sub :: typeclass (L: type, R: type) {
+  Output :: type;
+  '-' :: (left: L, right: R) -> Output #operator(left, 10);
+}
+
+(*$T, s64) :: instance Sub {
+  Output :: *T;
+  '-' :: (left: *T, right: s64) -> Output { return left; }
+}
+
+($L, $R) :: instance Sub where true {
+  Output :: Add(L, R).Output;
+  '-' :: (left: L, right: R) -> Output { return left; }
+}
+
+([*]const volatile $T, s64) :: instance Sub {
+  Output :: [*]const volatile T;
+  '-' :: (left: [*]const volatile T, right: s64) -> Output { return left; }
+}
+
+---
+
+(source_file
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (typeclass_declaration
+      (typeclass_parameter
+        (identifier)
+        (named_type
+          (identifier)))
+      (typeclass_parameter
+        (identifier)
+        (named_type
+          (identifier)))
+      (typeclass_associated_type
+        (declaration_name
+          (identifier))
+        (named_type
+          (identifier)))
+      (typeclass_method_signature
+        (declaration_name
+          (quoted_operator))
+        (function_declaration
+          (parameter_list
+            (parameter
+              (binding_list
+                (identifier))
+              (named_type
+                (identifier)))
+            (parameter
+              (binding_list
+                (identifier))
+              (named_type
+                (identifier))))
+          (arrow)
+          (named_type
+            (identifier))
+          (operator_directive
+            (identifier)
+            (integer_literal))))))
+  (instance_declaration
+    (type_constructor_pattern
+      (tuple_type_constructor_pattern
+        (type_constructor_pattern
+          (pointer_type_constructor_pattern
+            (type_constructor_pattern
+              (generic_type_variable
+                (identifier)))))
+        (type_constructor_pattern
+          (identifier))))
+    (identifier)
+    (instance_associated_type
+      (declaration_name
+        (identifier))
+      (pointer_type
+        (named_type
+          (identifier))))
+    (instance_method
+      (declaration_name
+        (quoted_operator))
+      (function_declaration
+        (parameter_list
+          (parameter
+            (binding_list
+              (identifier))
+            (pointer_type
+              (named_type
+                (identifier))))
+          (parameter
+            (binding_list
+              (identifier))
+            (named_type
+              (identifier))))
+        (arrow)
+        (named_type
+          (identifier))
+        (block
+          (return_statement
+            (identifier))))))
+  (instance_declaration
+    (type_constructor_pattern
+      (tuple_type_constructor_pattern
+        (type_constructor_pattern
+          (generic_type_variable
+            (identifier)))
+        (type_constructor_pattern
+          (generic_type_variable
+            (identifier)))))
+    (identifier)
+    (where_clause
+      (boolean_literal))
+    (instance_associated_type
+      (declaration_name
+        (identifier))
+      (generic_type
+        (identifier)
+        (named_type
+          (identifier))
+        (named_type
+          (identifier))
+        (identifier)))
+    (instance_method
+      (declaration_name
+        (quoted_operator))
+      (function_declaration
+        (parameter_list
+          (parameter
+            (binding_list
+              (identifier))
+            (named_type
+              (identifier)))
+          (parameter
+            (binding_list
+              (identifier))
+            (named_type
+              (identifier))))
+        (arrow)
+        (named_type
+          (identifier))
+        (block
+          (return_statement
+            (identifier))))))
+  (instance_declaration
+    (type_constructor_pattern
+      (tuple_type_constructor_pattern
+        (type_constructor_pattern
+          (array_type_constructor_pattern
+            (type_constructor_pattern
+              (generic_type_variable
+                (identifier)))))
+        (type_constructor_pattern
+          (identifier))))
+    (identifier)
+    (instance_associated_type
+      (declaration_name
+        (identifier))
+      (many_pointer_type
+        (named_type
+          (identifier))))
+    (instance_method
+      (declaration_name
+        (quoted_operator))
+      (function_declaration
+        (parameter_list
+          (parameter
+            (binding_list
+              (identifier))
+            (many_pointer_type
+              (named_type
+                (identifier))))
+          (parameter
+            (binding_list
+              (identifier))
+            (named_type
+              (identifier))))
+        (arrow)
+        (named_type
+          (identifier))
+        (block
+          (return_statement
+            (identifier)))))))

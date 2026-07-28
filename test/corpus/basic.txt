@@ -300,7 +300,7 @@ char literals and postfix forms
 
 main :: () {
   ch := #char "\n";
-  bytes := .[0x90, #char "A"];
+  bytes := .[16#90, #char "A"];
   item := bytes[0];
   ptr := *item;
   again := ptr.*;

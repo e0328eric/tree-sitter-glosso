@@ -40,6 +40,7 @@
   "#expand"
   "#magic"
   "#foreign"
+  "#memory"
   "#c_call"
   "#no_context"
   "#dump"
@@ -103,6 +104,8 @@
 (simd_type "Simd" @type.builtin)
 (variadic_constraint (identifier) @type)
 (minimal_method (identifier) @function)
+(memory_simple_effect) @attribute
+(memory_parameter_effect_kind) @attribute
 (import_selector mode: _ @attribute)
 (expand_directive mode: (identifier) @attribute)
 
