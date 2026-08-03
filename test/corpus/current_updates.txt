@@ -1,0 +1,278 @@
+==================
+aggregate magic returns twice and intentional leaks
+==================
+
+Context_Storage :: struct #magic "jump_context_storage_struct" {}
+Payload :: union #raw #magic "payload_union" {}
+context_save :: (storage: *Context_Storage) -> int
+  #returns_twice #magic "jump_context_save";
+global_rooms: [..]s64 #memory leak;
+
+main :: () {
+  rooms: [..]s64 #memory leak;
+  object := Create() #memory leak;
+}
+
+---
+
+(source_file
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (struct_declaration
+      (struct_modifier
+        (magic_directive
+          (string_literal)))))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (union_declaration
+      (magic_directive
+        (string_literal))))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (function_declaration
+      (parameter_list
+        (parameter
+          (binding_list
+            (identifier))
+          (pointer_type
+            (named_type
+              (identifier)))))
+      (arrow)
+      (named_type
+        (identifier))
+      (magic_directive
+        (string_literal))))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (global_variable_declaration_tail
+      (array_type
+        (named_type
+          (identifier)))
+      (memory_directive
+        (memory_effect
+          (memory_simple_effect)))))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (function_declaration
+      (parameter_list)
+      (block
+        (variable_declaration
+          (binding_list
+            (identifier))
+          (array_type
+            (named_type
+              (identifier)))
+          (memory_directive
+            (memory_effect
+              (memory_simple_effect))))
+        (variable_declaration
+          (binding_list
+            (identifier))
+          (postfix_expression
+            (postfix_expression
+              (identifier)
+              (argument_list))
+            (memory_directive
+              (memory_effect
+                (memory_simple_effect)))))))))
+
+==================
+structured inline assembly
+==================
+
+assemble :: (value: u64, destination: u64) {
+  current := value;
+  #asm {
+    \\mov {source}, {result}
+    result: out(.Register, .Early_Clobber) = destination;
+    source: in(fixed(rax)) = cast(u64)value;
+    current: inout(.Any);
+    clobber: r11, .Memory, .Condition_Codes;
+  }
+}
+
+---
+
+(source_file
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (function_declaration
+      (parameter_list
+        (parameter
+          (binding_list
+            (identifier))
+          (named_type
+            (identifier)))
+        (parameter
+          (binding_list
+            (identifier))
+          (named_type
+            (identifier))))
+      (block
+        (variable_declaration
+          (binding_list
+            (identifier))
+          (identifier))
+        (inline_asm_statement
+          (structured_asm_body
+            (multiline_string_literal
+              (multiline_string_line))
+            (structured_asm_output_operand
+              (identifier)
+              (asm_operand_direction)
+              (structured_asm_constraint
+                (structured_asm_constraint_kind))
+              (structured_asm_operand_flag)
+              (identifier))
+            (structured_asm_input_operand
+              (identifier)
+              (asm_operand_direction)
+              (structured_asm_constraint
+                (identifier))
+              (cast_expression
+                (named_type
+                  (identifier))
+                (identifier)))
+            (structured_asm_output_operand
+              (identifier)
+              (asm_operand_direction)
+              (structured_asm_constraint
+                (structured_asm_constraint_kind)))
+            (structured_asm_clobber_clause
+              (identifier)
+              (structured_asm_clobber_kind)
+              (structured_asm_clobber_kind))))))))
+
+==================
+nonlocal labels and quoted operator calls
+==================
+
+main :: () {
+  target := worker,,'entry;
+  generic_target := worker(s64),,'task;
+  first := values Slice,,[0];
+  total := 1 Num,,+ 2;
+  '[]='(values, 0, total);
+}
+
+---
+
+(source_file
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (function_declaration
+      (parameter_list)
+      (block
+        (variable_declaration
+          (binding_list
+            (identifier))
+          (postfix_expression
+            (identifier)
+            (nonlocal_label_suffix
+              (label))))
+        (variable_declaration
+          (binding_list
+            (identifier))
+          (postfix_expression
+            (postfix_expression
+              (identifier)
+              (argument_list
+                (identifier)))
+            (nonlocal_label_suffix
+              (label))))
+        (variable_declaration
+          (binding_list
+            (identifier))
+          (postfix_expression
+            (identifier)
+            (qualified_index_suffix
+              (identifier)
+              (index_suffix
+                (integer_literal)))))
+        (variable_declaration
+          (binding_list
+            (identifier))
+          (binary_expression
+            (integer_literal)
+            (qualified_operator
+              (identifier)
+              (operator))
+            (integer_literal)))
+        (expression_statement
+          (postfix_expression
+            (quoted_operator)
+            (argument_list
+              (identifier)
+              (integer_literal)
+              (identifier))))))))
+
+==================
+single line calls and else if
+==================
+
+main :: () {
+  if ready invoke(
+    value);
+  if (first & 16#e0) == 16#c0 wanted = 2;
+  else if (first & 16#f0) == 16#e0 wanted = 3;
+  else if (first & 16#f8) == 16#f0 wanted = 4;
+}
+
+---
+
+(source_file
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (function_declaration
+      (parameter_list)
+      (block
+        (if_statement
+          (identifier)
+          (expression_statement
+            (if_call_start)
+            (if_call_arguments
+              (identifier))))
+        (if_statement
+          (binary_expression
+            (parenthesized_expression
+              (binary_expression
+                (identifier)
+                (operator)
+                (integer_literal)))
+            (operator)
+            (integer_literal))
+          (assignment_statement
+            (if_assignment_start)
+            (integer_literal))
+          (if_statement
+            (binary_expression
+              (parenthesized_expression
+                (binary_expression
+                  (identifier)
+                  (operator)
+                  (integer_literal)))
+              (operator)
+              (integer_literal))
+            (assignment_statement
+              (if_assignment_start)
+              (integer_literal))
+            (if_statement
+              (binary_expression
+                (parenthesized_expression
+                  (binary_expression
+                    (identifier)
+                    (operator)
+                    (integer_literal)))
+                (operator)
+                (integer_literal))
+              (assignment_statement
+                (if_assignment_start)
+                (integer_literal)))))))))

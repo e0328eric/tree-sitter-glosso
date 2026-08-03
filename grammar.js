@@ -26,6 +26,7 @@ module.exports = grammar({
     [$.binary_expression, $.meaningful_expression, $.postfix_expression],
     [$.binary_expression, $.cast_expression, $.postfix_expression],
     [$.binary_expression, $.unary_expression, $.postfix_expression],
+    [$._expression, $._prefix_operator],
     [$.declaration_name, $.type_constructor_pattern],
     [$.declaration_name, $.binding_list],
     [$.declaration_name, $.binding_list, $.type_constructor_pattern],
@@ -46,6 +47,7 @@ module.exports = grammar({
     [$._expression, $.pattern_binding],
     [$._expression, $.qualified_operator],
     [$._expression, $.qualified_operator, $.pattern_binding],
+    [$._expression, $.qualified_operator, $.qualified_index_suffix],
     [$.binding_list, $._expression, $.qualified_operator, $.qualified_index_suffix],
     [$.binding_list, $._expression],
     [$.binding_list, $._expression, $.qualified_operator],
@@ -333,16 +335,19 @@ module.exports = grammar({
       ),
 
     global_variable_declaration_tail: ($) =>
-      seq(
-        choice(
-          seq(":=", field("value", $._expression)),
-          seq(
-            ":",
-            optional(field("type", $._type)),
-            optional(seq("=", field("value", $._expression))),
+      prec.right(
+        seq(
+          choice(
+            seq(":=", field("value", $._expression)),
+            seq(
+              ":",
+              optional(field("type", $._type)),
+              optional(seq("=", field("value", $._expression))),
+            ),
           ),
+          repeat(field("directive", $.memory_directive)),
+          optional(";"),
         ),
-        optional(";"),
       ),
 
     typed_constant_declaration_tail: ($) =>
@@ -368,6 +373,7 @@ module.exports = grammar({
         "#c_call",
         $.modify_directive,
         $.derive_directive,
+        $.magic_directive,
       ),
 
     empty_field: ($) =>
@@ -405,7 +411,7 @@ module.exports = grammar({
     union_declaration: ($) =>
       seq(
         "union",
-        repeat(choice("#raw", $.derive_directive)),
+        repeat(choice("#raw", $.derive_directive, $.magic_directive)),
         "{",
         repeat($.union_field),
         "}",
@@ -528,6 +534,7 @@ module.exports = grammar({
         "#fallback",
         "#must",
         "#noreturn",
+        "#returns_twice",
         $.inline_directive,
       ),
 
@@ -597,7 +604,7 @@ module.exports = grammar({
       ),
 
     memory_simple_effect: (_) =>
-      choice("returns_fresh", "returns_static", "unknown"),
+      choice("returns_fresh", "returns_static", "leak", "unknown"),
 
     memory_parameter_effect: ($) =>
       seq(
@@ -713,12 +720,91 @@ module.exports = grammar({
       seq("#bytes", field("value", $._expression), optional(";")),
 
     inline_asm_statement: ($) =>
-      seq(
-        "#asm",
-        field("template", choice($._expression, $.multiline_string_literal)),
-        optional($.asm_operands),
-        optional(";"),
+      choice(
+        seq(
+          "#asm",
+          field("body", $.structured_asm_body),
+          optional(";"),
+        ),
+        seq(
+          "#asm",
+          field("template", choice($._expression, $.multiline_string_literal)),
+          optional($.asm_operands),
+          optional(";"),
+        ),
       ),
+
+    structured_asm_body: ($) =>
+      seq(
+        "{",
+        field("template", $.multiline_string_literal),
+        repeat(field("operand", choice($.structured_asm_input_operand, $.structured_asm_output_operand))),
+        optional(field("clobbers", $.structured_asm_clobber_clause)),
+        "}",
+      ),
+
+    structured_asm_input_operand: ($) =>
+      seq(
+        field("name", $.identifier),
+        ":",
+        field("direction", alias("in", $.asm_operand_direction)),
+        "(",
+        field("constraint", $.structured_asm_constraint),
+        ")",
+        optional(seq("=", field("value", $._expression))),
+        ";",
+      ),
+
+    structured_asm_output_operand: ($) =>
+      seq(
+        field("name", $.identifier),
+        ":",
+        field("direction", $.asm_operand_direction),
+        "(",
+        field("constraint", $.structured_asm_constraint),
+        optional(seq(",", field("flag", $.structured_asm_operand_flag))),
+        ")",
+        optional(seq("=", field("target", $.identifier))),
+        ";",
+      ),
+
+    asm_operand_direction: (_) => choice("out", "inout"),
+
+    structured_asm_constraint: ($) =>
+      choice(
+        field("kind", $.structured_asm_constraint_kind),
+        seq("fixed", "(", field("register", $.identifier), ")"),
+      ),
+
+    structured_asm_constraint_kind: (_) =>
+      choice(
+        ".Register",
+        ".Byte_Register",
+        ".Floating_Register",
+        ".Vector_Register",
+        ".Predicate_Register",
+        ".Memory",
+        ".Immediate",
+        ".Constant",
+        ".Address",
+        ".Register_Or_Memory",
+        ".Register_Or_Immediate",
+        ".Register_Memory_Or_Immediate",
+        ".Any",
+      ),
+
+    structured_asm_operand_flag: (_) => ".Early_Clobber",
+
+    structured_asm_clobber_clause: ($) =>
+      seq(
+        "clobber",
+        ":",
+        sep1(choice($.identifier, $.structured_asm_clobber_kind), ","),
+        ";",
+      ),
+
+    structured_asm_clobber_kind: (_) =>
+      choice(".Memory", ".Condition_Codes"),
 
     asm_operands: ($) =>
       prec.right(
@@ -880,7 +966,16 @@ module.exports = grammar({
       ),
 
     if_call_start: (_) =>
-      token(seq(/[\p{L}_][\p{L}\p{N}_]*/, /\s*\(/)),
+      token(
+        seq(
+          choice(
+            "i",
+            /[\p{L}_&&[^i]][\p{L}\p{N}_]*/,
+            /i(?:[\p{L}\p{N}_&&[^f]][\p{L}\p{N}_]*|f[\p{L}\p{N}_]+)/,
+          ),
+          /\s*\(/,
+        ),
+      ),
 
     if_call_arguments: ($) =>
       seq(commaSep(choice($.named_argument, $._expression)), ")"),
@@ -984,6 +1079,10 @@ module.exports = grammar({
               seq("=", field("value", $._expression), optional(";")),
               seq("::", field("value", $._expression), optional(";")),
               seq(":", field("value", $._expression), optional(";")),
+              seq(
+                repeat1(field("directive", $.memory_directive)),
+                optional(";"),
+              ),
               ";",
             ),
           ),
@@ -1282,8 +1381,7 @@ module.exports = grammar({
     qualified_operator: ($) =>
       seq(
         field("scope", $.identifier),
-        ",",
-        ",",
+        ",,",
         field("operator", choice($.operator, $.quoted_operator, $.range_operator)),
       ),
 
@@ -1422,6 +1520,10 @@ module.exports = grammar({
           seq(field("function", $._expression), field("arguments", $.argument_list)),
           seq(field("object", $._expression), field("index", $.index_suffix)),
           seq(field("object", $._expression), field("index", $.qualified_index_suffix)),
+          seq(
+            field("procedure", $._expression),
+            field("label", $.nonlocal_label_suffix),
+          ),
           seq(field("object", $._expression), ".", "cast", "(", field("type", $._type), ")"),
           seq(field("object", $._expression), ".", "acast"),
           seq(field("object", $._expression), ".*"),
@@ -1466,10 +1568,12 @@ module.exports = grammar({
     qualified_index_suffix: ($) =>
       seq(
         field("scope", $.identifier),
-        ",",
-        ",",
+        ",,",
         field("index", $.index_suffix),
       ),
+
+    nonlocal_label_suffix: ($) =>
+      seq(",,", field("name", $.label)),
 
     _primary_expression: ($) =>
       choice(
@@ -1490,6 +1594,7 @@ module.exports = grammar({
         $.array_literal,
         $.simd_literal,
         $.struct_literal,
+        $.quoted_operator,
         $.non_hygienic_identifier,
         $.code_splice_identifier,
         $.generic_type_variable,
@@ -1659,4 +1764,8 @@ function commaSep(rule) {
 
 function commaSep1(rule) {
   return seq(rule, repeat(seq(",", rule)), optional(","));
+}
+
+function sep1(rule, separator) {
+  return seq(rule, repeat(seq(separator, rule)));
 }

@@ -47,6 +47,7 @@
   "#fallback"
   "#must"
   "#noreturn"
+  "#returns_twice"
   "#inline"
   "#bytes"
   "#asm"
@@ -109,6 +110,12 @@
 (memory_parameter_effect_kind) @attribute
 (memory_release_effect "released_by" @attribute)
 (memory_resource_effect ["resource" "released_by"] @attribute)
+(asm_operand_direction) @keyword
+(structured_asm_constraint_kind) @constant.builtin
+(structured_asm_operand_flag) @attribute
+(structured_asm_clobber_kind) @constant.builtin
+(structured_asm_input_operand name: (identifier) @variable.parameter)
+(structured_asm_output_operand name: (identifier) @variable.parameter)
 (import_selector mode: _ @attribute)
 (expand_directive mode: (identifier) @attribute)
 
