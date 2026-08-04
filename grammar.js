@@ -322,9 +322,18 @@ module.exports = grammar({
       seq(
         "#fn_ptr",
         field("parameters", $.fn_ptr_parameter_list),
-        optional(seq($.arrow, field("return_type", $._type))),
-        repeat(choice("#c_call", "#no_context")),
-        optional(";"),
+        choice(
+          seq(
+            $.arrow,
+            field("return_type", $._fn_ptr_return_type),
+            repeat(choice("#c_call", "#no_context")),
+            ";",
+          ),
+          seq(
+            repeat(choice("#c_call", "#no_context")),
+            optional(";"),
+          ),
+        ),
       ),
 
     constant_declaration_body: ($) =>
@@ -685,6 +694,7 @@ module.exports = grammar({
         $.while_statement,
         $.for_statement,
         $.inline_statement,
+        $.try_defer_statement,
         $.defer_statement,
         $.using_statement,
         $.switch_statement,
@@ -870,6 +880,9 @@ module.exports = grammar({
     inline_statement: ($) =>
       seq("#inline", field("statement", choice($.while_statement, $.for_statement))),
 
+    try_defer_statement: ($) =>
+      seq("#try", "defer", field("statement", $._statement)),
+
     defer_statement: ($) => seq("defer", field("statement", $._statement)),
 
     using_statement: ($) =>
@@ -991,6 +1004,7 @@ module.exports = grammar({
         $.while_statement,
         $.for_statement,
         $.inline_statement,
+        $.try_defer_statement,
         $.defer_statement,
         $.using_statement,
         $.switch_statement,
@@ -1120,6 +1134,36 @@ module.exports = grammar({
         $.named_type,
       ),
 
+    _fn_ptr_return_type: ($) =>
+      choice(
+        alias($.fn_ptr_generic_type, $.generic_type),
+        $.matrix_type,
+        $.simd_type,
+        $.many_pointer_type,
+        $.array_type,
+        $.layout_type,
+        $.c_pointer_type,
+        $.pointer_type,
+        $.function_type,
+        $.tuple_type,
+        $.parenthesized_type,
+        $.generic_type_variable,
+        $.context_type,
+        $.named_type,
+      ),
+
+    fn_ptr_generic_type: ($) =>
+      prec.right(
+        10,
+        seq(
+          field("name", $.type_identifier),
+          "(",
+          commaSep1($._type),
+          ")",
+          repeat(seq(".", field("member", choice($.identifier, $.code_splice_identifier)))),
+        ),
+      ),
+
     generic_type_variable: ($) => seq("$", field("name", $.identifier)),
 
     matrix_type: ($) =>
@@ -1158,11 +1202,19 @@ module.exports = grammar({
       ),
 
     array_type: ($) =>
-      seq(
-        "[",
-        optional(field("length", choice("..", $.integer_literal, $.identifier))),
-        "]",
-        field("element", $._type),
+      choice(
+        seq(
+          "[",
+          "]",
+          repeat(choice("const", "volatile")),
+          field("element", $._type),
+        ),
+        seq(
+          "[",
+          field("length", choice("..", $.integer_literal, $.identifier)),
+          "]",
+          field("element", $._type),
+        ),
       ),
 
     many_pointer_type: ($) =>
@@ -1266,7 +1318,13 @@ module.exports = grammar({
         ),
         seq(
           "[",
-          optional(choice("..", $.integer_literal, $.identifier)),
+          "]",
+          repeat(choice("const", "volatile")),
+          optional(field("element", $.type_constructor_pattern)),
+        ),
+        seq(
+          "[",
+          choice("..", $.integer_literal, $.identifier),
           "]",
           optional(field("element", $.type_constructor_pattern)),
         ),
@@ -1317,6 +1375,7 @@ module.exports = grammar({
         $.unary_expression,
         $.cast_expression,
         $.run_expression,
+        $.try_expression,
         $.pattern_test_expression,
         $.meaningful_expression,
         $.postfix_expression,
@@ -1431,6 +1490,12 @@ module.exports = grammar({
         ),
       ),
 
+    try_expression: ($) =>
+      prec(
+        PREC.unary,
+        seq("#try", "{", field("value", $._expression), "}"),
+      ),
+
     meaningful_expression: ($) =>
       prec(
         PREC.unary,
@@ -1540,6 +1605,10 @@ module.exports = grammar({
           seq(
             field("argument", $._expression),
             field("operator", $.quoted_operator),
+          ),
+          seq(
+            field("argument", $._expression),
+            field("operator", $.try_operator),
           ),
         ),
       ),
@@ -1711,6 +1780,8 @@ module.exports = grammar({
       token(prec(1, choice("!", "-", "+", "~", "*", "&"))),
 
     range_operator: (_) => token(prec(2, choice("..=", ".."))),
+
+    try_operator: (_) => token(prec(2, "?")),
 
     _ellipsis: (_) => token(prec(3, "...")),
 

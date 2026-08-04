@@ -57,6 +57,7 @@
   "#insert"
   "#compile_error"
   "#pattern"
+  "#try"
   "#minimal"
   "#falling"
   "#meaningful"
@@ -126,3 +127,4 @@
 (quoted_operator) @operator
 (operator) @operator
 (prefix_operator) @operator
+(try_operator) @operator

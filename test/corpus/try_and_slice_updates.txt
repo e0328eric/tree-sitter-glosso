@@ -1,0 +1,179 @@
+==================
+try propagation blocks and error-only defer
+==================
+
+cleanup :: () {}
+
+probe :: () -> Result(s64, string) {
+  value := operation()?;
+  scoped := #try { first()? + second()? };
+  #try defer cleanup();
+  #try defer { cleanup(); }
+  return value + scoped;
+}
+
+---
+
+(source_file
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (function_declaration
+      (parameter_list)
+      (block)))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (function_declaration
+      (parameter_list)
+      (arrow)
+      (generic_type
+        (identifier)
+        (named_type
+          (identifier))
+        (named_type
+          (identifier)))
+      (block
+        (variable_declaration
+          (binding_list
+            (identifier))
+          (postfix_expression
+            (postfix_expression
+              (identifier)
+              (argument_list))
+            (try_operator)))
+        (variable_declaration
+          (binding_list
+            (identifier))
+          (try_expression
+            (binary_expression
+              (postfix_expression
+                (postfix_expression
+                  (identifier)
+                  (argument_list))
+                (try_operator))
+              (operator)
+              (postfix_expression
+                (postfix_expression
+                  (identifier)
+                  (argument_list))
+                (try_operator)))))
+        (try_defer_statement
+          (expression_statement
+            (postfix_expression
+              (identifier)
+              (argument_list))))
+        (try_defer_statement
+          (block
+            (expression_statement
+              (postfix_expression
+                (identifier)
+                (argument_list)))))
+        (return_statement
+          (binary_expression
+            (identifier)
+            (operator)
+            (identifier)))))))
+
+==================
+qualified borrowed slices
+==================
+
+borrow :: (
+  plain: []T,
+  immutable: []const T,
+  volatile_view: []volatile T,
+  both_orders: []volatile const T,
+) -> []const volatile T {
+  return immutable;
+}
+
+([]const $T, []volatile const $U) :: instance Borrowed {}
+
+---
+
+(source_file
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (function_declaration
+      (parameter_list
+        (parameter
+          (binding_list
+            (identifier))
+          (array_type
+            (named_type
+              (identifier))))
+        (parameter
+          (binding_list
+            (identifier))
+          (array_type
+            (named_type
+              (identifier))))
+        (parameter
+          (binding_list
+            (identifier))
+          (array_type
+            (named_type
+              (identifier))))
+        (parameter
+          (binding_list
+            (identifier))
+          (array_type
+            (named_type
+              (identifier)))))
+      (arrow)
+      (array_type
+        (named_type
+          (identifier)))
+      (block
+        (return_statement
+          (identifier)))))
+  (instance_declaration
+    (type_constructor_pattern
+      (tuple_type_constructor_pattern
+        (type_constructor_pattern
+          (array_type_constructor_pattern
+            (type_constructor_pattern
+              (generic_type_variable
+                (identifier)))))
+        (type_constructor_pattern
+          (array_type_constructor_pattern
+            (type_constructor_pattern
+              (generic_type_variable
+                (identifier)))))))
+    (identifier)))
+
+==================
+generic function pointer return type
+==================
+
+Callback :: #fn_ptr(
+  data: []u8,
+  at_end: bool,
+) -> Result(s64, Error);
+
+---
+
+(source_file
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (function_pointer_type_declaration
+      (fn_ptr_parameter_list
+        (fn_ptr_parameter
+          (identifier)
+          (array_type
+            (named_type
+              (identifier))))
+        (fn_ptr_parameter
+          (identifier)
+          (named_type
+            (identifier))))
+      (arrow)
+      (generic_type
+        (identifier)
+        (named_type
+          (identifier))
+        (named_type
+          (identifier))))))
