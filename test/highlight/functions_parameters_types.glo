@@ -1,0 +1,22 @@
+Value :: struct {}
+// <- type.definition
+
+global := 1;
+// <- variable
+
+highlight_me :: (
+// <- function
+argument:
+// <- variable.parameter
+Value
+// <- type
+) ->
+Value {
+// <- type
+    return
+highlight_me(
+// <- function.call
+argument
+// <- variable.parameter
+    );
+}

@@ -10,6 +10,8 @@
         "glo"
       ],
       "injection-regex": "^glosso$",
+      "highlights": "queries/highlights.scm",
+      "locals": "queries/locals.scm",
       "class-name": "TreeSitterGlosso"
     }
   ],
