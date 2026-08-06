@@ -4,6 +4,12 @@ Value :: struct {}
 global := 1;
 // <- variable
 
+TEXT :: #string,oneline,escape
+//              ^ attribute
+//                      ^ attribute
+\\highlighted string
+// <- string
+
 highlight_me :: (
 // <- function
 argument:

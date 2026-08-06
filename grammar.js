@@ -1699,7 +1699,14 @@ module.exports = grammar({
         optional(seq(":", field("type", $._type))),
       ),
 
-    string_block: ($) => seq("#string", repeat1($.multiline_string_line)),
+    string_block: ($) =>
+      seq(
+        "#string",
+        repeat(seq(",", field("modifier", $.string_modifier))),
+        repeat1($.multiline_string_line),
+      ),
+
+    string_modifier: (_) => choice("oneline", "escape"),
 
     multiline_string_literal: ($) => repeat1($.multiline_string_line),
 

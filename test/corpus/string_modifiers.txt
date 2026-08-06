@@ -1,0 +1,62 @@
+==================
+multiline string modifiers
+==================
+
+RAW :: #string
+\\raw
+\\text
+ONELINE :: #string,oneline
+\\one
+\\line
+ESCAPED :: #string,escape
+\\escaped\t
+BOTH :: #string,oneline,escape
+\\both
+\\options
+REVERSED :: #string,escape,oneline
+\\reverse
+\\order
+
+---
+
+(source_file
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (constant_declaration_body
+      (string_block
+        (multiline_string_line)
+        (multiline_string_line))))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (constant_declaration_body
+      (string_block
+        (string_modifier)
+        (multiline_string_line)
+        (multiline_string_line))))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (constant_declaration_body
+      (string_block
+        (string_modifier)
+        (multiline_string_line))))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (constant_declaration_body
+      (string_block
+        (string_modifier)
+        (string_modifier)
+        (multiline_string_line)
+        (multiline_string_line))))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (constant_declaration_body
+      (string_block
+        (string_modifier)
+        (string_modifier)
+        (multiline_string_line)
+        (multiline_string_line)))))

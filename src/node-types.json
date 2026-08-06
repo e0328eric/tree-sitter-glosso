@@ -4519,7 +4519,18 @@
   {
     "type": "string_block",
     "named": true,
-    "fields": {},
+    "fields": {
+      "modifier": {
+        "multiple": true,
+        "required": false,
+        "types": [
+          {
+            "type": "string_modifier",
+            "named": true
+          }
+        ]
+      }
+    },
     "children": {
       "multiple": true,
       "required": true,
@@ -4530,6 +4541,11 @@
         }
       ]
     }
+  },
+  {
+    "type": "string_modifier",
+    "named": true,
+    "fields": {}
   },
   {
     "type": "struct_declaration",
@@ -6132,6 +6148,10 @@
     "named": false
   },
   {
+    "type": "escape",
+    "named": false
+  },
+  {
     "type": "escapes",
     "named": false
   },
@@ -6234,6 +6254,10 @@
   {
     "type": "null_literal",
     "named": true
+  },
+  {
+    "type": "oneline",
+    "named": false
   },
   {
     "type": "only",

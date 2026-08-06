@@ -239,6 +239,7 @@
 
 (library_modifier) @attribute
 (inline_modifier) @attribute
+(string_modifier) @attribute
 (partial_directive) @attribute
 (pattern_rest) @operator
 (matrix_type "Matrix" @type.builtin)
