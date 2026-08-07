@@ -1,0 +1,92 @@
+==================
+lazy parameters, packed structs, and multi-pointer dereference
+==================
+
+Packed :: struct #packed { value: s64; }
+
+runtime_lazy :: (#lazy value: bool) -> bool { return value; }
+comptime_lazy :: (#comptime #lazy value: s64) -> s64 { return value; }
+lazy_comptime :: (#lazy #comptime value: s64) -> s64 { return value; }
+
+deref_twice :: (value: **s64) -> s64 { return **value; }
+
+---
+
+(source_file
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (struct_declaration
+      (struct_modifier)
+      (struct_field
+        (identifier)
+        (named_type
+          (identifier)))))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (function_declaration
+      (parameter_list
+        (parameter
+          (binding_list
+            (identifier))
+          (named_type
+            (identifier))))
+      (arrow)
+      (named_type
+        (identifier))
+      (block
+        (return_statement
+          (identifier)))))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (function_declaration
+      (parameter_list
+        (comptime_parameter
+          (binding_list
+            (identifier))
+          (named_type
+            (identifier))))
+      (arrow)
+      (named_type
+        (identifier))
+      (block
+        (return_statement
+          (identifier)))))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (function_declaration
+      (parameter_list
+        (comptime_parameter
+          (binding_list
+            (identifier))
+          (named_type
+            (identifier))))
+      (arrow)
+      (named_type
+        (identifier))
+      (block
+        (return_statement
+          (identifier)))))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (function_declaration
+      (parameter_list
+        (parameter
+          (binding_list
+            (identifier))
+          (pointer_type
+            (pointer_type
+              (named_type
+                (identifier))))))
+      (arrow)
+      (named_type
+        (identifier))
+      (block
+        (return_statement
+          (unary_expression
+            (prefix_operator)
+            (identifier)))))))

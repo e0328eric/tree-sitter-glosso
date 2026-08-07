@@ -1,6 +1,9 @@
 Value :: struct {}
 // <- type.definition
 
+Packed_Value :: struct #packed {}
+//                       ^ attribute
+
 global := 1;
 // <- variable
 
@@ -12,8 +15,9 @@ TEXT :: #string,oneline,escape
 
 highlight_me :: (
 // <- function
-argument:
-// <- variable.parameter
+    #lazy argument:
+//  ^ attribute
+//        ^ variable.parameter
 Value
 // <- type
 ) ->

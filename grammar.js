@@ -380,6 +380,7 @@ module.exports = grammar({
     struct_modifier: ($) =>
       choice(
         "#c_call",
+        "#packed",
         $.modify_directive,
         $.derive_directive,
         $.magic_directive,
@@ -479,7 +480,10 @@ module.exports = grammar({
 
     comptime_parameter: ($) =>
       seq(
-        "#comptime",
+        choice(
+          seq("#comptime", optional("#lazy")),
+          seq("#lazy", "#comptime"),
+        ),
         field("name", $.binding_list),
         ":",
         field("type", $._type),
@@ -487,19 +491,21 @@ module.exports = grammar({
       ),
 
     parameter: ($) =>
-      choice(
-        seq(
-          repeat(choice("using", "noalias")),
-          field("name", $._binding_name),
-          ":=",
-          field("default", $._expression),
-        ),
-        seq(
-          repeat(choice("using", "noalias")),
-          field("name", $.binding_list),
-          ":",
-          field("type", choice($.variadic_type, $._type)),
-          optional(seq("=", field("default", $._expression))),
+      seq(
+        repeat(choice("using", "noalias")),
+        optional("#lazy"),
+        choice(
+          seq(
+            field("name", $._binding_name),
+            ":=",
+            field("default", $._expression),
+          ),
+          seq(
+            field("name", $.binding_list),
+            ":",
+            field("type", choice($.variadic_type, $._type)),
+            optional(seq("=", field("default", $._expression))),
+          ),
         ),
       ),
     binding_list: ($) => seq($._binding_name, repeat(seq(",", $._binding_name))),
@@ -1784,7 +1790,7 @@ module.exports = grammar({
       ),
 
     prefix_operator: (_) =>
-      token(prec(1, choice("!", "-", "+", "~", "*", "&"))),
+      token(prec(1, choice("!", "-", "+", "~", /\*+/, "&"))),
 
     range_operator: (_) => token(prec(2, choice("..=", ".."))),
 

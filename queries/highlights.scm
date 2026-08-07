@@ -22,6 +22,7 @@
 
 [
   "#comptime"
+  "#lazy"
   "#import"
   "#load"
   "#private_section"
@@ -42,6 +43,7 @@
   "#foreign"
   "#memory"
   "#c_call"
+  "#packed"
   "#no_context"
   "#dump"
   "#fallback"
