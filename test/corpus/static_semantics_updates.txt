@@ -1,0 +1,271 @@
+==================
+assertions nominal types patterns and ifx
+==================
+
+Meters :: distinct f64;
+
+Combined_Error :: union {
+  #from io: Io_Error;
+}
+
+open :: (path: string) -> Handle
+  #memory(
+    unknown(returned.Ok),
+    returns_borrow(returned.Ok, path),
+    released_by(returned.Ok, close),
+    resource(returned.Ok, released_by: close)
+  );
+
+main :: () {
+  #assert true, "ready";
+  #assert #comptime 1 == 1;
+  if true run()?;
+  prefix := !! 7;
+  suffix := prefix ++;
+
+  if #pattern {
+  case true; run();
+  else; return;
+  }
+
+  item := Left(5);
+  if #pattern Left(value) | Right(value) = item run();
+  pair := .{ .first = 5, .second = 9 };
+  if #pattern whole @ .{ .first = 0..=9, ... } = pair run();
+  values: [3]s64 = .[1, 2, 3];
+  if #pattern .[head, ..., tail] = values[..] run();
+
+  label := ifx true "yes" else "no";
+  grade := ifx 90 == {
+  case 90; "A";
+  else; "B";
+  };
+  number := ifx #pattern item == {
+  case Left(value) if value > 0; value;
+  else; 0;
+  };
+}
+
+---
+
+(source_file
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (distinct_type_declaration
+      (named_type
+        (identifier))))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (union_declaration
+      (union_field
+        (from_directive)
+        (identifier)
+        (named_type
+          (identifier)))))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (function_declaration
+      (parameter_list
+        (parameter
+          (binding_list
+            (identifier))
+          (named_type
+            (identifier))))
+      (arrow)
+      (named_type
+        (identifier))
+      (memory_directive
+        (memory_effect
+          (memory_simple_effect
+            (memory_qualified_name
+              (identifier)
+              (identifier))))
+        (memory_effect
+          (memory_borrow_place_effect
+            (memory_qualified_name
+              (identifier)
+              (identifier))
+            (identifier)))
+        (memory_effect
+          (memory_release_effect
+            (memory_qualified_name
+              (identifier)
+              (identifier))
+            (memory_qualified_name
+              (identifier))))
+        (memory_effect
+          (memory_resource_effect
+            (memory_qualified_name
+              (identifier)
+              (identifier))
+            (memory_qualified_name
+              (identifier)))))))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (function_declaration
+      (parameter_list)
+      (block
+        (assert_statement
+          (boolean_literal)
+          (string_literal))
+        (assert_statement
+          (comptime_modifier)
+          (binary_expression
+            (integer_literal)
+            (operator)
+            (integer_literal)))
+        (if_statement
+          (boolean_literal)
+          (expression_statement
+            (if_call_start)
+            (if_call_arguments)
+            (try_operator)))
+        (variable_declaration
+          (binding_list
+            (identifier))
+          (unary_expression
+            (prefix_operator)
+            (integer_literal)))
+        (variable_declaration
+          (binding_list
+            (identifier))
+          (postfix_expression
+            (identifier)
+            (suffix_operator)))
+        (switch_statement
+          (pattern_case_clause
+            (boolean_literal)
+            (expression_statement
+              (postfix_expression
+                (identifier)
+                (argument_list))))
+          (default_clause
+            (return_statement)))
+        (variable_declaration
+          (binding_list
+            (identifier))
+          (postfix_expression
+            (identifier)
+            (argument_list
+              (integer_literal))))
+        (if_statement
+          (pattern_test_expression
+            (pattern_arm
+              (or_pattern
+                (pattern_postfix_expression
+                  (pattern_binding
+                    (identifier))
+                  (pattern_argument_list
+                    (pattern_binding
+                      (identifier))))
+                (pattern_postfix_expression
+                  (pattern_binding
+                    (identifier))
+                  (pattern_argument_list
+                    (pattern_binding
+                      (identifier)))))
+              (identifier)))
+          (expression_statement
+            (if_call_start)
+            (if_call_arguments)))
+        (variable_declaration
+          (binding_list
+            (identifier))
+          (struct_literal
+            (struct_literal_field
+              (identifier)
+              (integer_literal))
+            (struct_literal_field
+              (identifier)
+              (integer_literal))))
+        (if_statement
+          (pattern_test_expression
+            (pattern_arm
+              (pattern_binding
+                (identifier)
+                (binding_operator)
+                (struct_pattern
+                  (struct_pattern_field
+                    (identifier)
+                    (range_pattern
+                      (integer_literal)
+                      (range_operator)
+                      (integer_literal)))
+                  (struct_pattern_field
+                    (pattern_rest))))
+              (identifier)))
+          (expression_statement
+            (if_call_start)
+            (if_call_arguments)))
+        (variable_declaration
+          (binding_list
+            (identifier))
+          (array_type
+            (integer_literal)
+            (named_type
+              (identifier)))
+          (array_literal
+            (integer_literal)
+            (integer_literal)
+            (integer_literal)))
+        (if_statement
+          (pattern_test_expression
+            (pattern_arm
+              (slice_pattern
+                (pattern_binding
+                  (identifier))
+                (pattern_rest)
+                (pattern_binding
+                  (identifier)))
+              (postfix_expression
+                (identifier)
+                (index_suffix
+                  (range_expression
+                    (range_operator))))))
+          (expression_statement
+            (if_call_start)
+            (if_call_arguments)))
+        (variable_declaration
+          (binding_list
+            (identifier))
+          (ifx_expression
+            (boolean_literal)
+            (string_literal)
+            (string_literal)))
+        (variable_declaration
+          (binding_list
+            (identifier))
+          (ifx_expression
+            (integer_literal)
+            (operator)
+            (case_clause
+              (integer_literal)
+              (expression_statement
+                (string_literal)))
+            (default_clause
+              (expression_statement
+                (string_literal)))))
+        (variable_declaration
+          (binding_list
+            (identifier))
+          (ifx_expression
+            (identifier)
+            (operator)
+            (pattern_case_clause
+              (postfix_expression
+                (identifier)
+                (argument_list
+                  (identifier)))
+              (binary_expression
+                (identifier)
+                (operator)
+                (integer_literal))
+              (expression_statement
+                (identifier)))
+            (default_clause
+              (expression_statement
+                (integer_literal)))))))))

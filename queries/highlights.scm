@@ -1,5 +1,6 @@
 [
   "if"
+  "ifx"
   "else"
   "while"
   "for"
@@ -18,6 +19,7 @@
   "acast"
   "typeclass"
   "instance"
+  "distinct"
 ] @keyword
 
 [
@@ -69,7 +71,11 @@
   "#enable"
   "#disable"
   "#derive"
+  "#assert"
 ] @attribute
+
+(from_directive) @attribute
+(comptime_modifier) @attribute
 
 (comment) @comment
 (string_literal) @string
@@ -93,6 +99,9 @@
 (quoted_operator) @operator
 (operator) @operator
 (prefix_operator) @operator
+(suffix_operator) @operator
+(range_operator) @operator
+(binding_operator) @operator
 (try_operator) @operator
 
 ; Types
@@ -132,6 +141,7 @@
   [
     (function_pointer_type_declaration)
     (typeclass_declaration)
+    (distinct_type_declaration)
     (struct_declaration)
     (enum_flags_declaration)
     (enum_declaration)
@@ -250,6 +260,7 @@
 (minimal_method (identifier) @function)
 (memory_simple_effect) @attribute
 (memory_parameter_effect_kind) @attribute
+(memory_borrow_place_effect "returns_borrow" @attribute)
 (memory_release_effect "released_by" @attribute)
 (memory_resource_effect ["resource" "released_by"] @attribute)
 (asm_operand_direction) @keyword
