@@ -66,6 +66,10 @@
         "named": true
       },
       {
+        "type": "break_expression",
+        "named": true
+      },
+      {
         "type": "cast_expression",
         "named": true
       },
@@ -83,6 +87,10 @@
       },
       {
         "type": "context_expression",
+        "named": true
+      },
+      {
+        "type": "continue_expression",
         "named": true
       },
       {
@@ -134,6 +142,10 @@
         "named": true
       },
       {
+        "type": "pattern_binding_expression",
+        "named": true
+      },
+      {
         "type": "pattern_test_expression",
         "named": true
       },
@@ -147,6 +159,10 @@
       },
       {
         "type": "range_expression",
+        "named": true
+      },
+      {
+        "type": "return_expression",
         "named": true
       },
       {
@@ -200,6 +216,10 @@
         "named": true
       },
       {
+        "type": "code_splice_identifier",
+        "named": true
+      },
+      {
         "type": "constant_pattern",
         "named": true
       },
@@ -209,6 +229,10 @@
       },
       {
         "type": "integer_literal",
+        "named": true
+      },
+      {
+        "type": "non_hygienic_identifier",
         "named": true
       },
       {
@@ -420,11 +444,19 @@
         "named": true
       },
       {
+        "type": "optional_type",
+        "named": true
+      },
+      {
         "type": "parenthesized_type",
         "named": true
       },
       {
         "type": "pointer_type",
+        "named": true
+      },
+      {
+        "type": "result_type",
         "named": true
       },
       {
@@ -484,7 +516,63 @@
         "required": true,
         "types": [
           {
-            "type": "_type",
+            "type": "array_type",
+            "named": true
+          },
+          {
+            "type": "c_pointer_type",
+            "named": true
+          },
+          {
+            "type": "context_type",
+            "named": true
+          },
+          {
+            "type": "function_type",
+            "named": true
+          },
+          {
+            "type": "generic_type",
+            "named": true
+          },
+          {
+            "type": "generic_type_variable",
+            "named": true
+          },
+          {
+            "type": "layout_type",
+            "named": true
+          },
+          {
+            "type": "many_pointer_type",
+            "named": true
+          },
+          {
+            "type": "matrix_type",
+            "named": true
+          },
+          {
+            "type": "named_type",
+            "named": true
+          },
+          {
+            "type": "optional_type",
+            "named": true
+          },
+          {
+            "type": "parenthesized_type",
+            "named": true
+          },
+          {
+            "type": "pointer_type",
+            "named": true
+          },
+          {
+            "type": "simd_type",
+            "named": true
+          },
+          {
+            "type": "tuple_type",
             "named": true
           }
         ]
@@ -890,6 +978,11 @@
     "fields": {}
   },
   {
+    "type": "break_expression",
+    "named": true,
+    "fields": {}
+  },
+  {
     "type": "break_statement",
     "named": true,
     "fields": {}
@@ -920,7 +1013,7 @@
     "named": true,
     "fields": {
       "value": {
-        "multiple": false,
+        "multiple": true,
         "required": true,
         "types": [
           {
@@ -1074,6 +1167,16 @@
     "type": "constant_pattern",
     "named": true,
     "fields": {
+      "operator": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "constant_pattern_operator",
+            "named": true
+          }
+        ]
+      },
       "value": {
         "multiple": false,
         "required": true,
@@ -1087,11 +1190,19 @@
             "named": true
           },
           {
+            "type": "code_splice_identifier",
+            "named": true
+          },
+          {
             "type": "float_literal",
             "named": true
           },
           {
             "type": "integer_literal",
+            "named": true
+          },
+          {
+            "type": "non_hygienic_identifier",
             "named": true
           },
           {
@@ -1137,6 +1248,16 @@
         ]
       }
     }
+  },
+  {
+    "type": "constant_pattern_operator",
+    "named": true,
+    "fields": {}
+  },
+  {
+    "type": "continue_expression",
+    "named": true,
+    "fields": {}
   },
   {
     "type": "continue_statement",
@@ -1485,6 +1606,88 @@
     }
   },
   {
+    "type": "fn_ptr_result_type",
+    "named": true,
+    "fields": {
+      "error": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "array_type",
+            "named": true
+          },
+          {
+            "type": "c_pointer_type",
+            "named": true
+          },
+          {
+            "type": "context_type",
+            "named": true
+          },
+          {
+            "type": "function_type",
+            "named": true
+          },
+          {
+            "type": "generic_type",
+            "named": true
+          },
+          {
+            "type": "generic_type_variable",
+            "named": true
+          },
+          {
+            "type": "layout_type",
+            "named": true
+          },
+          {
+            "type": "many_pointer_type",
+            "named": true
+          },
+          {
+            "type": "matrix_type",
+            "named": true
+          },
+          {
+            "type": "named_type",
+            "named": true
+          },
+          {
+            "type": "optional_type",
+            "named": true
+          },
+          {
+            "type": "parenthesized_type",
+            "named": true
+          },
+          {
+            "type": "pointer_type",
+            "named": true
+          },
+          {
+            "type": "simd_type",
+            "named": true
+          },
+          {
+            "type": "tuple_type",
+            "named": true
+          }
+        ]
+      },
+      "type": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "_type",
+            "named": true
+          }
+        ]
+      }
+    }
+  },
+  {
     "type": "for_statement",
     "named": true,
     "fields": {
@@ -1793,6 +1996,10 @@
             "named": true
           },
           {
+            "type": "fn_ptr_result_type",
+            "named": true
+          },
+          {
             "type": "function_type",
             "named": true
           },
@@ -1818,6 +2025,10 @@
           },
           {
             "type": "named_type",
+            "named": true
+          },
+          {
+            "type": "optional_type",
             "named": true
           },
           {
@@ -2811,7 +3022,63 @@
         "required": true,
         "types": [
           {
-            "type": "_type",
+            "type": "array_type",
+            "named": true
+          },
+          {
+            "type": "c_pointer_type",
+            "named": true
+          },
+          {
+            "type": "context_type",
+            "named": true
+          },
+          {
+            "type": "function_type",
+            "named": true
+          },
+          {
+            "type": "generic_type",
+            "named": true
+          },
+          {
+            "type": "generic_type_variable",
+            "named": true
+          },
+          {
+            "type": "layout_type",
+            "named": true
+          },
+          {
+            "type": "many_pointer_type",
+            "named": true
+          },
+          {
+            "type": "matrix_type",
+            "named": true
+          },
+          {
+            "type": "named_type",
+            "named": true
+          },
+          {
+            "type": "optional_type",
+            "named": true
+          },
+          {
+            "type": "parenthesized_type",
+            "named": true
+          },
+          {
+            "type": "pointer_type",
+            "named": true
+          },
+          {
+            "type": "simd_type",
+            "named": true
+          },
+          {
+            "type": "tuple_type",
             "named": true
           }
         ]
@@ -2890,7 +3157,63 @@
         "required": true,
         "types": [
           {
-            "type": "_type",
+            "type": "array_type",
+            "named": true
+          },
+          {
+            "type": "c_pointer_type",
+            "named": true
+          },
+          {
+            "type": "context_type",
+            "named": true
+          },
+          {
+            "type": "function_type",
+            "named": true
+          },
+          {
+            "type": "generic_type",
+            "named": true
+          },
+          {
+            "type": "generic_type_variable",
+            "named": true
+          },
+          {
+            "type": "layout_type",
+            "named": true
+          },
+          {
+            "type": "many_pointer_type",
+            "named": true
+          },
+          {
+            "type": "matrix_type",
+            "named": true
+          },
+          {
+            "type": "named_type",
+            "named": true
+          },
+          {
+            "type": "optional_type",
+            "named": true
+          },
+          {
+            "type": "parenthesized_type",
+            "named": true
+          },
+          {
+            "type": "pointer_type",
+            "named": true
+          },
+          {
+            "type": "simd_type",
+            "named": true
+          },
+          {
+            "type": "tuple_type",
             "named": true
           }
         ]
@@ -3524,6 +3847,11 @@
     }
   },
   {
+    "type": "operator",
+    "named": true,
+    "fields": {}
+  },
+  {
     "type": "operator_directive",
     "named": true,
     "fields": {
@@ -3560,6 +3888,94 @@
     }
   },
   {
+    "type": "optional_type",
+    "named": true,
+    "fields": {
+      "type": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "array_type",
+            "named": true
+          },
+          {
+            "type": "c_pointer_type",
+            "named": true
+          },
+          {
+            "type": "context_type",
+            "named": true
+          },
+          {
+            "type": "function_type",
+            "named": true
+          },
+          {
+            "type": "generic_type",
+            "named": true
+          },
+          {
+            "type": "generic_type_variable",
+            "named": true
+          },
+          {
+            "type": "layout_type",
+            "named": true
+          },
+          {
+            "type": "many_pointer_type",
+            "named": true
+          },
+          {
+            "type": "matrix_type",
+            "named": true
+          },
+          {
+            "type": "named_type",
+            "named": true
+          },
+          {
+            "type": "optional_type",
+            "named": true
+          },
+          {
+            "type": "parenthesized_type",
+            "named": true
+          },
+          {
+            "type": "pointer_type",
+            "named": true
+          },
+          {
+            "type": "simd_type",
+            "named": true
+          },
+          {
+            "type": "tuple_type",
+            "named": true
+          }
+        ]
+      }
+    }
+  },
+  {
+    "type": "optional_type_constructor_pattern",
+    "named": true,
+    "fields": {
+      "type": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "type_constructor_pattern",
+            "named": true
+          }
+        ]
+      }
+    }
+  },
+  {
     "type": "or_pattern",
     "named": true,
     "fields": {
@@ -3586,6 +4002,10 @@
             "named": true
           },
           {
+            "type": "code_splice_identifier",
+            "named": true
+          },
+          {
             "type": "constant_pattern",
             "named": true
           },
@@ -3595,6 +4015,10 @@
           },
           {
             "type": "integer_literal",
+            "named": true
+          },
+          {
+            "type": "non_hygienic_identifier",
             "named": true
           },
           {
@@ -3862,6 +4286,10 @@
             "named": true
           },
           {
+            "type": "code_splice_identifier",
+            "named": true
+          },
+          {
             "type": "constant_pattern",
             "named": true
           },
@@ -3871,6 +4299,10 @@
           },
           {
             "type": "integer_literal",
+            "named": true
+          },
+          {
+            "type": "non_hygienic_identifier",
             "named": true
           },
           {
@@ -3911,6 +4343,42 @@
           },
           {
             "type": "struct_pattern",
+            "named": true
+          }
+        ]
+      }
+    }
+  },
+  {
+    "type": "pattern_binding_expression",
+    "named": true,
+    "fields": {
+      "alternative": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "block",
+            "named": true
+          }
+        ]
+      },
+      "pattern": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "_pattern",
+            "named": true
+          }
+        ]
+      },
+      "value": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "_expression",
             "named": true
           }
         ]
@@ -3998,11 +4466,19 @@
             "named": true
           },
           {
+            "type": "code_splice_identifier",
+            "named": true
+          },
+          {
             "type": "float_literal",
             "named": true
           },
           {
             "type": "integer_literal",
+            "named": true
+          },
+          {
+            "type": "non_hygienic_identifier",
             "named": true
           },
           {
@@ -4070,11 +4546,19 @@
             "named": true
           },
           {
+            "type": "code_splice_identifier",
+            "named": true
+          },
+          {
             "type": "float_literal",
             "named": true
           },
           {
             "type": "integer_literal",
+            "named": true
+          },
+          {
+            "type": "non_hygienic_identifier",
             "named": true
           },
           {
@@ -4132,11 +4616,19 @@
             "named": true
           },
           {
+            "type": "code_splice_identifier",
+            "named": true
+          },
+          {
             "type": "float_literal",
             "named": true
           },
           {
             "type": "integer_literal",
+            "named": true
+          },
+          {
+            "type": "non_hygienic_identifier",
             "named": true
           },
           {
@@ -4239,7 +4731,63 @@
         "required": true,
         "types": [
           {
-            "type": "_type",
+            "type": "array_type",
+            "named": true
+          },
+          {
+            "type": "c_pointer_type",
+            "named": true
+          },
+          {
+            "type": "context_type",
+            "named": true
+          },
+          {
+            "type": "function_type",
+            "named": true
+          },
+          {
+            "type": "generic_type",
+            "named": true
+          },
+          {
+            "type": "generic_type_variable",
+            "named": true
+          },
+          {
+            "type": "layout_type",
+            "named": true
+          },
+          {
+            "type": "many_pointer_type",
+            "named": true
+          },
+          {
+            "type": "matrix_type",
+            "named": true
+          },
+          {
+            "type": "named_type",
+            "named": true
+          },
+          {
+            "type": "optional_type",
+            "named": true
+          },
+          {
+            "type": "parenthesized_type",
+            "named": true
+          },
+          {
+            "type": "pointer_type",
+            "named": true
+          },
+          {
+            "type": "simd_type",
+            "named": true
+          },
+          {
+            "type": "tuple_type",
             "named": true
           }
         ]
@@ -4271,7 +4819,99 @@
         "required": false,
         "types": [
           {
-            "type": "_expression",
+            "type": "array_literal",
+            "named": true
+          },
+          {
+            "type": "boolean_literal",
+            "named": true
+          },
+          {
+            "type": "char_literal",
+            "named": true
+          },
+          {
+            "type": "code_expression",
+            "named": true
+          },
+          {
+            "type": "code_splice_identifier",
+            "named": true
+          },
+          {
+            "type": "context_expression",
+            "named": true
+          },
+          {
+            "type": "float_literal",
+            "named": true
+          },
+          {
+            "type": "generic_type_variable",
+            "named": true
+          },
+          {
+            "type": "identifier",
+            "named": true
+          },
+          {
+            "type": "integer_literal",
+            "named": true
+          },
+          {
+            "type": "label",
+            "named": true
+          },
+          {
+            "type": "label_none_literal",
+            "named": true
+          },
+          {
+            "type": "lambda_expression",
+            "named": true
+          },
+          {
+            "type": "non_hygienic_identifier",
+            "named": true
+          },
+          {
+            "type": "null_literal",
+            "named": true
+          },
+          {
+            "type": "parenthesized_expression",
+            "named": true
+          },
+          {
+            "type": "postfix_expression",
+            "named": true
+          },
+          {
+            "type": "quoted_operator",
+            "named": true
+          },
+          {
+            "type": "shorthand_member_expression",
+            "named": true
+          },
+          {
+            "type": "simd_literal",
+            "named": true
+          },
+          {
+            "type": "string_block",
+            "named": true
+          },
+          {
+            "type": "string_literal",
+            "named": true
+          },
+          {
+            "type": "struct_literal",
+            "named": true
+          },
+          {
+            "type": "tuple_literal",
             "named": true
           }
         ]
@@ -4319,7 +4959,99 @@
         "required": false,
         "types": [
           {
-            "type": "_expression",
+            "type": "array_literal",
+            "named": true
+          },
+          {
+            "type": "boolean_literal",
+            "named": true
+          },
+          {
+            "type": "char_literal",
+            "named": true
+          },
+          {
+            "type": "code_expression",
+            "named": true
+          },
+          {
+            "type": "code_splice_identifier",
+            "named": true
+          },
+          {
+            "type": "context_expression",
+            "named": true
+          },
+          {
+            "type": "float_literal",
+            "named": true
+          },
+          {
+            "type": "generic_type_variable",
+            "named": true
+          },
+          {
+            "type": "identifier",
+            "named": true
+          },
+          {
+            "type": "integer_literal",
+            "named": true
+          },
+          {
+            "type": "label",
+            "named": true
+          },
+          {
+            "type": "label_none_literal",
+            "named": true
+          },
+          {
+            "type": "lambda_expression",
+            "named": true
+          },
+          {
+            "type": "non_hygienic_identifier",
+            "named": true
+          },
+          {
+            "type": "null_literal",
+            "named": true
+          },
+          {
+            "type": "parenthesized_expression",
+            "named": true
+          },
+          {
+            "type": "postfix_expression",
+            "named": true
+          },
+          {
+            "type": "quoted_operator",
+            "named": true
+          },
+          {
+            "type": "shorthand_member_expression",
+            "named": true
+          },
+          {
+            "type": "simd_literal",
+            "named": true
+          },
+          {
+            "type": "string_block",
+            "named": true
+          },
+          {
+            "type": "string_literal",
+            "named": true
+          },
+          {
+            "type": "struct_literal",
+            "named": true
+          },
+          {
+            "type": "tuple_literal",
             "named": true
           }
         ]
@@ -4363,7 +5095,99 @@
         "required": false,
         "types": [
           {
-            "type": "_expression",
+            "type": "array_literal",
+            "named": true
+          },
+          {
+            "type": "boolean_literal",
+            "named": true
+          },
+          {
+            "type": "char_literal",
+            "named": true
+          },
+          {
+            "type": "code_expression",
+            "named": true
+          },
+          {
+            "type": "code_splice_identifier",
+            "named": true
+          },
+          {
+            "type": "context_expression",
+            "named": true
+          },
+          {
+            "type": "float_literal",
+            "named": true
+          },
+          {
+            "type": "generic_type_variable",
+            "named": true
+          },
+          {
+            "type": "identifier",
+            "named": true
+          },
+          {
+            "type": "integer_literal",
+            "named": true
+          },
+          {
+            "type": "label",
+            "named": true
+          },
+          {
+            "type": "label_none_literal",
+            "named": true
+          },
+          {
+            "type": "lambda_expression",
+            "named": true
+          },
+          {
+            "type": "non_hygienic_identifier",
+            "named": true
+          },
+          {
+            "type": "null_literal",
+            "named": true
+          },
+          {
+            "type": "parenthesized_expression",
+            "named": true
+          },
+          {
+            "type": "postfix_expression",
+            "named": true
+          },
+          {
+            "type": "quoted_operator",
+            "named": true
+          },
+          {
+            "type": "shorthand_member_expression",
+            "named": true
+          },
+          {
+            "type": "simd_literal",
+            "named": true
+          },
+          {
+            "type": "string_block",
+            "named": true
+          },
+          {
+            "type": "string_literal",
+            "named": true
+          },
+          {
+            "type": "struct_literal",
+            "named": true
+          },
+          {
+            "type": "tuple_literal",
             "named": true
           }
         ]
@@ -4391,7 +5215,99 @@
         "required": false,
         "types": [
           {
-            "type": "_expression",
+            "type": "array_literal",
+            "named": true
+          },
+          {
+            "type": "boolean_literal",
+            "named": true
+          },
+          {
+            "type": "char_literal",
+            "named": true
+          },
+          {
+            "type": "code_expression",
+            "named": true
+          },
+          {
+            "type": "code_splice_identifier",
+            "named": true
+          },
+          {
+            "type": "context_expression",
+            "named": true
+          },
+          {
+            "type": "float_literal",
+            "named": true
+          },
+          {
+            "type": "generic_type_variable",
+            "named": true
+          },
+          {
+            "type": "identifier",
+            "named": true
+          },
+          {
+            "type": "integer_literal",
+            "named": true
+          },
+          {
+            "type": "label",
+            "named": true
+          },
+          {
+            "type": "label_none_literal",
+            "named": true
+          },
+          {
+            "type": "lambda_expression",
+            "named": true
+          },
+          {
+            "type": "non_hygienic_identifier",
+            "named": true
+          },
+          {
+            "type": "null_literal",
+            "named": true
+          },
+          {
+            "type": "parenthesized_expression",
+            "named": true
+          },
+          {
+            "type": "postfix_expression",
+            "named": true
+          },
+          {
+            "type": "quoted_operator",
+            "named": true
+          },
+          {
+            "type": "shorthand_member_expression",
+            "named": true
+          },
+          {
+            "type": "simd_literal",
+            "named": true
+          },
+          {
+            "type": "string_block",
+            "named": true
+          },
+          {
+            "type": "string_literal",
+            "named": true
+          },
+          {
+            "type": "struct_literal",
+            "named": true
+          },
+          {
+            "type": "tuple_literal",
             "named": true
           }
         ]
@@ -4401,11 +5317,99 @@
         "required": false,
         "types": [
           {
-            "type": "_expression",
+            "type": "_type",
             "named": true
           },
           {
-            "type": "_type",
+            "type": "array_literal",
+            "named": true
+          },
+          {
+            "type": "boolean_literal",
+            "named": true
+          },
+          {
+            "type": "char_literal",
+            "named": true
+          },
+          {
+            "type": "code_expression",
+            "named": true
+          },
+          {
+            "type": "code_splice_identifier",
+            "named": true
+          },
+          {
+            "type": "context_expression",
+            "named": true
+          },
+          {
+            "type": "float_literal",
+            "named": true
+          },
+          {
+            "type": "identifier",
+            "named": true
+          },
+          {
+            "type": "integer_literal",
+            "named": true
+          },
+          {
+            "type": "label",
+            "named": true
+          },
+          {
+            "type": "label_none_literal",
+            "named": true
+          },
+          {
+            "type": "lambda_expression",
+            "named": true
+          },
+          {
+            "type": "non_hygienic_identifier",
+            "named": true
+          },
+          {
+            "type": "null_literal",
+            "named": true
+          },
+          {
+            "type": "parenthesized_expression",
+            "named": true
+          },
+          {
+            "type": "postfix_expression",
+            "named": true
+          },
+          {
+            "type": "quoted_operator",
+            "named": true
+          },
+          {
+            "type": "shorthand_member_expression",
+            "named": true
+          },
+          {
+            "type": "simd_literal",
+            "named": true
+          },
+          {
+            "type": "string_block",
+            "named": true
+          },
+          {
+            "type": "string_literal",
+            "named": true
+          },
+          {
+            "type": "struct_literal",
+            "named": true
+          },
+          {
+            "type": "tuple_literal",
             "named": true
           }
         ]
@@ -4415,7 +5419,99 @@
         "required": false,
         "types": [
           {
-            "type": "_expression",
+            "type": "array_literal",
+            "named": true
+          },
+          {
+            "type": "boolean_literal",
+            "named": true
+          },
+          {
+            "type": "char_literal",
+            "named": true
+          },
+          {
+            "type": "code_expression",
+            "named": true
+          },
+          {
+            "type": "code_splice_identifier",
+            "named": true
+          },
+          {
+            "type": "context_expression",
+            "named": true
+          },
+          {
+            "type": "float_literal",
+            "named": true
+          },
+          {
+            "type": "generic_type_variable",
+            "named": true
+          },
+          {
+            "type": "identifier",
+            "named": true
+          },
+          {
+            "type": "integer_literal",
+            "named": true
+          },
+          {
+            "type": "label",
+            "named": true
+          },
+          {
+            "type": "label_none_literal",
+            "named": true
+          },
+          {
+            "type": "lambda_expression",
+            "named": true
+          },
+          {
+            "type": "non_hygienic_identifier",
+            "named": true
+          },
+          {
+            "type": "null_literal",
+            "named": true
+          },
+          {
+            "type": "parenthesized_expression",
+            "named": true
+          },
+          {
+            "type": "postfix_expression",
+            "named": true
+          },
+          {
+            "type": "quoted_operator",
+            "named": true
+          },
+          {
+            "type": "shorthand_member_expression",
+            "named": true
+          },
+          {
+            "type": "simd_literal",
+            "named": true
+          },
+          {
+            "type": "string_block",
+            "named": true
+          },
+          {
+            "type": "string_literal",
+            "named": true
+          },
+          {
+            "type": "struct_literal",
+            "named": true
+          },
+          {
+            "type": "tuple_literal",
             "named": true
           }
         ]
@@ -4650,6 +5746,10 @@
             "named": true
           },
           {
+            "type": "code_splice_identifier",
+            "named": true
+          },
+          {
             "type": "constant_pattern",
             "named": true
           },
@@ -4659,6 +5759,10 @@
           },
           {
             "type": "integer_literal",
+            "named": true
+          },
+          {
+            "type": "non_hygienic_identifier",
             "named": true
           },
           {
@@ -4726,6 +5830,10 @@
             "named": true
           },
           {
+            "type": "code_splice_identifier",
+            "named": true
+          },
+          {
             "type": "constant_pattern",
             "named": true
           },
@@ -4735,6 +5843,10 @@
           },
           {
             "type": "integer_literal",
+            "named": true
+          },
+          {
+            "type": "non_hygienic_identifier",
             "named": true
           },
           {
@@ -4775,6 +5887,130 @@
           },
           {
             "type": "struct_pattern",
+            "named": true
+          }
+        ]
+      }
+    }
+  },
+  {
+    "type": "result_type",
+    "named": true,
+    "fields": {
+      "error": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "array_type",
+            "named": true
+          },
+          {
+            "type": "c_pointer_type",
+            "named": true
+          },
+          {
+            "type": "context_type",
+            "named": true
+          },
+          {
+            "type": "function_type",
+            "named": true
+          },
+          {
+            "type": "generic_type",
+            "named": true
+          },
+          {
+            "type": "generic_type_variable",
+            "named": true
+          },
+          {
+            "type": "layout_type",
+            "named": true
+          },
+          {
+            "type": "many_pointer_type",
+            "named": true
+          },
+          {
+            "type": "matrix_type",
+            "named": true
+          },
+          {
+            "type": "named_type",
+            "named": true
+          },
+          {
+            "type": "optional_type",
+            "named": true
+          },
+          {
+            "type": "parenthesized_type",
+            "named": true
+          },
+          {
+            "type": "pointer_type",
+            "named": true
+          },
+          {
+            "type": "simd_type",
+            "named": true
+          },
+          {
+            "type": "tuple_type",
+            "named": true
+          }
+        ]
+      },
+      "type": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "_type",
+            "named": true
+          }
+        ]
+      }
+    }
+  },
+  {
+    "type": "result_type_constructor_pattern",
+    "named": true,
+    "fields": {
+      "error": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "type_constructor_pattern",
+            "named": true
+          }
+        ]
+      },
+      "type": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "type_constructor_pattern",
+            "named": true
+          }
+        ]
+      }
+    }
+  },
+  {
+    "type": "return_expression",
+    "named": true,
+    "fields": {
+      "value": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "_expression",
             "named": true
           }
         ]
@@ -4960,7 +6196,7 @@
     "named": true,
     "fields": {
       "value": {
-        "multiple": false,
+        "multiple": true,
         "required": true,
         "types": [
           {
@@ -5999,7 +7235,15 @@
           "named": true
         },
         {
+          "type": "optional_type_constructor_pattern",
+          "named": true
+        },
+        {
           "type": "pointer_type_constructor_pattern",
+          "named": true
+        },
+        {
+          "type": "result_type_constructor_pattern",
           "named": true
         },
         {
@@ -6893,6 +8137,10 @@
     "named": false
   },
   {
+    "type": "?",
+    "named": false
+  },
+  {
     "type": "Matrix",
     "named": false
   },
@@ -7124,10 +8372,6 @@
   {
     "type": "only",
     "named": false
-  },
-  {
-    "type": "operator",
-    "named": true
   },
   {
     "type": "out",

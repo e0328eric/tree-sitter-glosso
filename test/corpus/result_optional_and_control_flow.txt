@@ -1,0 +1,287 @@
+==================
+optional and result types
+==================
+
+Callback :: #fn_ptr(value: ?*s32) -> First_Error!Second_Error!?[*]const u8;
+
+?$T :: instance Optional_Class {}
+$E!$T :: instance Result_Class {}
+?$E!$T :: instance Optional_Error_Class {}
+(?$T, E!T) :: instance Combined_Class {}
+
+types :: () {
+  pointer_to_optional: *?s32;
+  optional_pointer: ?*s32;
+  optional_error: ?Io_Error!u8;
+  fallible_slice: Io_Error![]u8;
+  slice_of_fallible: []Io_Error!u8;
+  optional_value :: ?*s32;
+  result_value :: Io_Error!?*s32;
+}
+
+---
+
+(source_file
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (function_pointer_type_declaration
+      (fn_ptr_parameter_list
+        (fn_ptr_parameter
+          (identifier)
+          (optional_type
+            (pointer_type
+              (named_type
+                (identifier))))))
+      (arrow)
+      (fn_ptr_result_type
+        (named_type
+          (identifier))
+        (result_type
+          (named_type
+            (identifier))
+          (optional_type
+            (many_pointer_type
+              (named_type
+                (identifier))))))))
+  (instance_declaration
+    (type_constructor_pattern
+      (optional_type_constructor_pattern
+        (type_constructor_pattern
+          (generic_type_variable
+            (identifier)))))
+    (identifier))
+  (instance_declaration
+    (type_constructor_pattern
+      (result_type_constructor_pattern
+        (type_constructor_pattern
+          (generic_type_variable
+            (identifier)))
+        (type_constructor_pattern
+          (generic_type_variable
+            (identifier)))))
+    (identifier))
+  (instance_declaration
+    (type_constructor_pattern
+      (result_type_constructor_pattern
+        (type_constructor_pattern
+          (optional_type_constructor_pattern
+            (type_constructor_pattern
+              (generic_type_variable
+                (identifier)))))
+        (type_constructor_pattern
+          (generic_type_variable
+            (identifier)))))
+    (identifier))
+  (instance_declaration
+    (type_constructor_pattern
+      (tuple_type_constructor_pattern
+        (type_constructor_pattern
+          (optional_type_constructor_pattern
+            (type_constructor_pattern
+              (generic_type_variable
+                (identifier)))))
+        (type_constructor_pattern
+          (result_type_constructor_pattern
+            (type_constructor_pattern
+              (identifier))
+            (type_constructor_pattern
+              (identifier))))))
+    (identifier))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (function_declaration
+      (parameter_list)
+      (block
+        (variable_declaration
+          (binding_list
+            (identifier))
+          (pointer_type
+            (optional_type
+              (named_type
+                (identifier)))))
+        (variable_declaration
+          (binding_list
+            (identifier))
+          (optional_type
+            (pointer_type
+              (named_type
+                (identifier)))))
+        (variable_declaration
+          (binding_list
+            (identifier))
+          (result_type
+            (optional_type
+              (named_type
+                (identifier)))
+            (named_type
+              (identifier))))
+        (variable_declaration
+          (binding_list
+            (identifier))
+          (result_type
+            (named_type
+              (identifier))
+            (array_type
+              (named_type
+                (identifier)))))
+        (variable_declaration
+          (binding_list
+            (identifier))
+          (result_type
+            (array_type
+              (named_type
+                (identifier)))
+            (named_type
+              (identifier))))
+        (variable_declaration
+          (binding_list
+            (identifier))
+          (unary_expression
+            (prefix_operator)
+            (unary_expression
+              (prefix_operator)
+              (identifier))))
+        (variable_declaration
+          (binding_list
+            (identifier))
+          (binary_expression
+            (identifier)
+            (operator)
+            (unary_expression
+              (prefix_operator)
+              (unary_expression
+                (prefix_operator)
+                (identifier)))))))))
+
+==================
+pattern binding and control flow expressions
+==================
+
+unwrap :: (value: ?*s32) -> Io_Error!s32 {
+  #pattern .Some(pointer) := value else {
+    return .Err(Io_Error.Missing);
+  };
+  answer := return pointer.*;
+  return answer;
+}
+
+looping :: () {
+  while true {
+    stopped := break;
+    skipped := continue;
+  }
+}
+
+compare :: (value: s32) {
+  if #pattern == `expected = value return;
+  if #pattern == ``generated = value return;
+  if value == {
+  case 1, 2, 3; return;
+  else; return;
+  }
+}
+
+---
+
+(source_file
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (function_declaration
+      (parameter_list
+        (parameter
+          (binding_list
+            (identifier))
+          (optional_type
+            (pointer_type
+              (named_type
+                (identifier))))))
+      (arrow)
+      (result_type
+        (named_type
+          (identifier))
+        (named_type
+          (identifier)))
+      (block
+        (expression_statement
+          (pattern_binding_expression
+            (pattern_postfix_expression
+              (shorthand_member_pattern
+                (identifier))
+              (pattern_argument_list
+                (pattern_binding
+                  (identifier))))
+            (identifier)
+            (block
+              (return_statement
+                (postfix_expression
+                  (shorthand_member_expression
+                    (identifier))
+                  (argument_list
+                    (postfix_expression
+                      (identifier)
+                      (identifier))))))))
+        (variable_declaration
+          (binding_list
+            (identifier))
+          (return_expression
+            (postfix_expression
+              (identifier))))
+        (return_statement
+          (identifier)))))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (function_declaration
+      (parameter_list)
+      (block
+        (while_statement
+          (boolean_literal)
+          (block
+            (variable_declaration
+              (binding_list
+                (identifier))
+              (break_expression))
+            (variable_declaration
+              (binding_list
+                (identifier))
+              (continue_expression)))))))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (function_declaration
+      (parameter_list
+        (parameter
+          (binding_list
+            (identifier))
+          (named_type
+            (identifier))))
+      (block
+        (if_statement
+          (pattern_test_expression
+            (pattern_arm
+              (constant_pattern
+                (constant_pattern_operator)
+                (non_hygienic_identifier))
+              (identifier)))
+          (return_statement))
+        (if_statement
+          (pattern_test_expression
+            (pattern_arm
+              (constant_pattern
+                (constant_pattern_operator)
+                (code_splice_identifier))
+              (identifier)))
+          (return_statement))
+        (switch_statement
+          (identifier)
+          (operator)
+          (case_clause
+            (integer_literal)
+            (integer_literal)
+            (integer_literal)
+            (return_statement))
+          (default_clause
+            (return_statement)))))))

@@ -102,6 +102,7 @@
 (suffix_operator) @operator
 (range_operator) @operator
 (binding_operator) @operator
+(constant_pattern_operator) @operator
 (try_operator) @operator
 
 ; Types
