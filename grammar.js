@@ -48,7 +48,6 @@ module.exports = grammar({
     [$.parameter, $.function_type],
     [$.empty_field],
     [$.empty_parameter],
-    [$.memory_borrow_place_effect, $.memory_parameter_effect_kind],
     [$.range_expression],
     [$.switch_statement, $.pattern_arm_block],
     [$.struct_literal, $.struct_pattern],
@@ -63,6 +62,7 @@ module.exports = grammar({
     [$.type_constructor_pattern],
     [$.type_constructor_pattern, $._expression],
     [$._single_statement, $.static_if_statement],
+    [$.for_statement, $._prefix_operator],
   ],
 
   supertypes: ($) => [
@@ -279,7 +279,17 @@ module.exports = grammar({
       seq(
         "distinct",
         field("underlying_type", $._type),
+        repeat(field("derive", $.distinct_derive_directive)),
         optional(";"),
+      ),
+
+    distinct_derive_directive: ($) =>
+      seq(
+        "#derive",
+        choice(
+          seq("(", commaSep1(field("class", $._type)), ")"),
+          seq(",", field("mode", alias("all", $.identifier))),
+        ),
       ),
 
     instance_declaration: ($) =>
@@ -328,19 +338,21 @@ module.exports = grammar({
     library_modifier: (_) => choice("system", "dyn", "static"),
 
     function_pointer_type_declaration: ($) =>
-      seq(
-        "#fn_ptr",
-        field("parameters", $.fn_ptr_parameter_list),
-        choice(
-          seq(
-            $.arrow,
-            field("return_type", $._fn_ptr_return_type),
-            repeat(choice("#c_call", "#no_context")),
-            ";",
-          ),
-          seq(
-            repeat(choice("#c_call", "#no_context")),
-            optional(";"),
+      prec.right(
+        seq(
+          "#fn_ptr",
+          field("parameters", $.fn_ptr_parameter_list),
+          choice(
+            seq(
+              $.arrow,
+              field("return_type", $._fn_ptr_return_type),
+              repeat(choice("#c_call", "#no_context", $.memory_directive)),
+              ";",
+            ),
+            seq(
+              repeat(choice("#c_call", "#no_context", $.memory_directive)),
+              optional(";"),
+            ),
           ),
         ),
       ),
@@ -618,34 +630,54 @@ module.exports = grammar({
         "#memory",
         choice(
           field("effect", $.memory_effect),
-          seq("(", commaSep1(field("effect", $.memory_effect)), ")"),
+          seq("(", commaSep(field("effect", $.memory_effect)), ")"),
+          seq("{", commaSep(field("effect", $.memory_effect)), "}"),
         ),
       ),
 
     memory_effect: ($) =>
       choice(
         $.memory_simple_effect,
+        $.memory_leak_place_effect,
+        $.memory_return_place_effect,
         $.memory_borrow_place_effect,
         $.memory_parameter_effect,
+        $.memory_destination_effect,
+        $.memory_give_effect,
         $.memory_release_effect,
-        $.memory_resource_effect,
+        $.memory_unknown_effect,
       ),
 
-    memory_simple_effect: ($) =>
-      choice(
-        "leak",
-        prec.right(seq(
-          choice("returns_fresh", "returns_static", "unknown"),
-          optional(seq("(", field("place", $.memory_qualified_name), ")")),
-        )),
+    memory_simple_effect: (_) =>
+      choice("returns_fresh", "returns_static", "unknown", "leak"),
+
+    memory_leak_place_effect: ($) =>
+      prec(1, seq("leak", "(", field("place", $.memory_qualified_name), ")")),
+
+    memory_return_place_effect: ($) =>
+      prec(
+        1,
+        seq(
+          field("kind", choice("returns_fresh", "returns_static")),
+          "(",
+          commaSep1(field("place", $.memory_parameter)),
+          ")",
+        ),
       ),
 
     memory_borrow_place_effect: ($) =>
       seq(
-        "returns_borrow",
+        field("kind", choice("returns_borrow", "returns_unique_borrow")),
         "(",
-        field("place", $.memory_qualified_name),
-        ",",
+        optional(
+          seq(
+            field(
+              "place",
+              choice($.memory_qualified_name, $.memory_argument_reference),
+            ),
+            ",",
+          ),
+        ),
         field("parameter", $.memory_parameter),
         ")",
       ),
@@ -654,24 +686,26 @@ module.exports = grammar({
       seq(
         field("kind", $.memory_parameter_effect_kind),
         "(",
-        field("parameter", $.memory_parameter),
+        commaSep1(field("parameter", $.memory_parameter)),
         ")",
       ),
 
     memory_parameter_effect_kind: (_) =>
       choice(
-        "returns_borrow",
         "kills",
+        "maybe_kills",
         "invalidates",
+        "maybe_invalidates",
         "noescape",
-        "escapes",
         "reads",
+        "maybe_reads",
         "writes",
+        "maybe_writes",
       ),
 
     memory_parameter: ($) =>
       choice(
-        $.identifier,
+        seq($.identifier, repeat(seq(".", $._memory_path_step))),
         $.memory_argument_reference,
       ),
 
@@ -681,30 +715,86 @@ module.exports = grammar({
         "(",
         field("index", $.integer_literal),
         ")",
+        repeat(seq(".", $._memory_path_step)),
+      ),
+
+    memory_destination_effect: ($) =>
+      seq(
+        field(
+          "kind",
+          choice("owns", "maybe_owns", "escapes", "maybe_escapes"),
+        ),
+        "(",
+        sep1(field("parameter", $.memory_parameter), ","),
+        optional(seq(",", "into", ":", field("destination", $.memory_parameter))),
+        ")",
+      ),
+
+    memory_give_effect: ($) =>
+      seq(
+        field("kind", choice("gives", "maybe_gives")),
+        "(",
+        sep1(field("parameter", $.memory_parameter), ","),
+        optional(
+          seq(
+            ",",
+            "released_by",
+            ":",
+            field("releaser", $.memory_qualified_name),
+          ),
+        ),
+        ")",
       ),
 
     memory_release_effect: ($) =>
       seq(
         "released_by",
         "(",
-        optional(seq(field("place", $.memory_qualified_name), ",")),
-        field("releaser", $.memory_qualified_name),
+        choice(
+          commaSep1(field("argument", $.memory_release_argument)),
+          seq(
+            field("operand", $.memory_qualified_name),
+            optional(
+              seq(
+                ",",
+                field("operand", $.memory_parameter),
+                optional(seq(",", field("operand", $.memory_parameter))),
+              ),
+            ),
+          ),
+        ),
         ")",
       ),
 
-    memory_resource_effect: ($) =>
-      seq(
-        "resource",
-        "(",
-        optional(seq(field("place", $.memory_qualified_name), ",")),
-        "released_by",
-        ":",
-        field("releaser", $.memory_qualified_name),
-        ")",
+    memory_release_argument: ($) =>
+      choice(
+        seq("place", ":", field("place", $.memory_parameter)),
+        seq("by", ":", field("releaser", $.memory_qualified_name)),
+        seq("instance", ":", field("instance", $.memory_parameter)),
+      ),
+
+    memory_unknown_effect: ($) =>
+      prec(
+        1,
+        seq(
+          "unknown",
+          "(",
+          commaSep1(field("argument", $.memory_unknown_argument)),
+          ")",
+        ),
+      ),
+
+    memory_unknown_argument: ($) =>
+      choice(
+        seq("arg", ":", field("value", $.memory_parameter)),
+        seq("result", ":", field("value", $.memory_qualified_name)),
+        seq("reason", ":", field("value", $.string_literal)),
       ),
 
     memory_qualified_name: ($) =>
-      seq($.identifier, repeat(seq(".", $.identifier))),
+      seq($.identifier, repeat(seq(".", $._memory_path_step))),
+
+    _memory_path_step: ($) => choice($.identifier, $.integer_literal),
 
     memory_overlay: ($) =>
       seq(
@@ -714,6 +804,16 @@ module.exports = grammar({
         commaSep1(field("effect", $.memory_effect)),
         "}",
         optional(";"),
+      ),
+
+    memory_trusted_statement: ($) =>
+      seq(
+        "#memory",
+        "trusted",
+        "(",
+        field("reason", $.string_literal),
+        ")",
+        field("body", $.block),
       ),
 
     block: ($) => seq("{", repeat($._statement), "}"),
@@ -743,6 +843,7 @@ module.exports = grammar({
         $.insert_statement,
         $.compile_error_statement,
         $.falling_statement,
+        $.memory_trusted_statement,
         $.memory_overlay,
         $.variable_declaration,
         $.assignment_statement,
@@ -914,13 +1015,25 @@ module.exports = grammar({
         optional(seq(":", field("expansion", $.identifier))),
         optional(
           choice(
-            seq(field("name", $.identifier), ",", field("index", $.identifier), ":"),
-            seq(field("name", $.identifier), ":"),
+            seq(
+              optional(field("mode", alias($.prefix_operator, $.for_pointer_binder))),
+              field("name", $.identifier),
+              ",",
+              field("index", $.identifier),
+              ":",
+            ),
+            seq(
+              optional(field("mode", alias($.prefix_operator, $.for_pointer_binder))),
+              field("name", $.identifier),
+              ":",
+            ),
           ),
         ),
         field("value", prec.dynamic(2, $._expression)),
         field("body", $._if_body),
       ),
+
+    for_pointer_binder: (_) => "*",
 
     inline_statement: ($) =>
       seq("#inline", field("statement", choice($.while_statement, $.for_statement))),
@@ -1080,6 +1193,7 @@ module.exports = grammar({
         $.insert_statement,
         $.compile_error_statement,
         $.falling_statement,
+        $.memory_trusted_statement,
         $.memory_overlay,
         $.variable_declaration,
         $.assignment_statement,

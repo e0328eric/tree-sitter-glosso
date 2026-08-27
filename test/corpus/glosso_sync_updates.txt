@@ -1,0 +1,366 @@
+==================
+current memory contract vocabulary
+==================
+
+release :: (value: *u8, allocator: *void) #memory{
+  returns_fresh(returned.0, returned.1),
+  returns_borrow(returned.Ok, value),
+  returns_borrow(arg(0).field, value),
+  returns_unique_borrow(value),
+  returns_static(returned.Some),
+  kills(value, arg(1).field.0),
+  maybe_kills(value),
+  invalidates(value),
+  maybe_invalidates(value),
+  noescape(value, allocator),
+  reads(value, arg(0)),
+  maybe_reads(value),
+  writes(value),
+  maybe_writes(value),
+  owns(value, arg(0), into: returned),
+  maybe_owns(value),
+  escapes(value, into: returned),
+  maybe_escapes(value),
+  gives(value, released_by: destroy),
+  maybe_gives(value),
+  released_by(place: returned.Ok, by: destroy, instance: allocator),
+  unknown(arg: value, result: returned.Err, reason: "implementation-defined")
+};
+
+plain :: () #memory() #memory{} #memory returns_fresh;
+global: *u8 #memory leak(global);
+
+---
+
+(source_file
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (function_declaration
+      (parameter_list
+        (parameter
+          (binding_list
+            (identifier))
+          (pointer_type
+            (named_type
+              (identifier))))
+        (parameter
+          (binding_list
+            (identifier))
+          (pointer_type
+            (named_type
+              (identifier)))))
+      (memory_directive
+        (memory_effect
+          (memory_return_place_effect
+            (identifier)
+            (integer_literal)
+            (identifier)
+            (integer_literal)))
+        (memory_effect
+          (memory_borrow_place_effect
+            (memory_qualified_name
+              (identifier)
+              (identifier))
+            (identifier)))
+        (memory_effect
+          (memory_borrow_place_effect
+            (memory_argument_reference
+              (identifier)
+              (integer_literal)
+              (identifier))
+            (identifier)))
+        (memory_effect
+          (memory_borrow_place_effect
+            (identifier)))
+        (memory_effect
+          (memory_return_place_effect
+            (identifier)
+            (identifier)))
+        (memory_effect
+          (memory_parameter_effect
+            (memory_parameter_effect_kind)
+            (identifier)
+            (memory_argument_reference
+              (identifier)
+              (integer_literal)
+              (identifier)
+              (integer_literal))))
+        (memory_effect
+          (memory_parameter_effect
+            (memory_parameter_effect_kind)
+            (identifier)))
+        (memory_effect
+          (memory_parameter_effect
+            (memory_parameter_effect_kind)
+            (identifier)))
+        (memory_effect
+          (memory_parameter_effect
+            (memory_parameter_effect_kind)
+            (identifier)))
+        (memory_effect
+          (memory_parameter_effect
+            (memory_parameter_effect_kind)
+            (identifier)
+            (identifier)))
+        (memory_effect
+          (memory_parameter_effect
+            (memory_parameter_effect_kind)
+            (identifier)
+            (memory_argument_reference
+              (identifier)
+              (integer_literal))))
+        (memory_effect
+          (memory_parameter_effect
+            (memory_parameter_effect_kind)
+            (identifier)))
+        (memory_effect
+          (memory_parameter_effect
+            (memory_parameter_effect_kind)
+            (identifier)))
+        (memory_effect
+          (memory_parameter_effect
+            (memory_parameter_effect_kind)
+            (identifier)))
+        (memory_effect
+          (memory_destination_effect
+            (identifier)
+            (memory_argument_reference
+              (identifier)
+              (integer_literal))
+            (identifier)))
+        (memory_effect
+          (memory_destination_effect
+            (identifier)))
+        (memory_effect
+          (memory_destination_effect
+            (identifier)
+            (identifier)))
+        (memory_effect
+          (memory_destination_effect
+            (identifier)))
+        (memory_effect
+          (memory_give_effect
+            (identifier)
+            (memory_qualified_name
+              (identifier))))
+        (memory_effect
+          (memory_give_effect
+            (identifier)))
+        (memory_effect
+          (memory_release_effect
+            (memory_release_argument
+              (identifier)
+              (identifier))
+            (memory_release_argument
+              (memory_qualified_name
+                (identifier)))
+            (memory_release_argument
+              (identifier))))
+        (memory_effect
+          (memory_unknown_effect
+            (memory_unknown_argument
+              (identifier))
+            (memory_unknown_argument
+              (memory_qualified_name
+                (identifier)
+                (identifier)))
+            (memory_unknown_argument
+              (string_literal)))))))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (function_declaration
+      (parameter_list)
+      (memory_directive)
+      (memory_directive)
+      (memory_directive
+        (memory_effect
+          (memory_simple_effect)))))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (global_variable_declaration_tail
+      (pointer_type
+        (named_type
+          (identifier)))
+      (memory_directive
+        (memory_effect
+          (memory_leak_place_effect
+            (memory_qualified_name
+              (identifier))))))))
+
+==================
+memory contracts on use sites function pointers overlays and trusted blocks
+==================
+
+Callback :: #fn_ptr(data: *void) -> ?*void #c_call
+  #memory{returns_borrow(data), reads(data), noescape(data)};
+
+#memory Runtime.acquire {
+  returns_fresh,
+  released_by(place: returned, by: Runtime.destroy),
+  noescape(arg(0)),
+};
+
+main :: () {
+  value := Runtime.acquire()
+    #memory{released_by(Runtime.destroy), noescape(arg(0))};
+  #memory trusted("external allocator invariant") {
+    Runtime.use(value);
+  }
+}
+
+---
+
+(source_file
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (function_pointer_type_declaration
+      (fn_ptr_parameter_list
+        (fn_ptr_parameter
+          (identifier)
+          (pointer_type
+            (named_type
+              (identifier)))))
+      (arrow)
+      (optional_type
+        (pointer_type
+          (named_type
+            (identifier))))
+      (memory_directive
+        (memory_effect
+          (memory_borrow_place_effect
+            (identifier)))
+        (memory_effect
+          (memory_parameter_effect
+            (memory_parameter_effect_kind)
+            (identifier)))
+        (memory_effect
+          (memory_parameter_effect
+            (memory_parameter_effect_kind)
+            (identifier))))))
+  (memory_overlay
+    (memory_qualified_name
+      (identifier)
+      (identifier))
+    (memory_effect
+      (memory_simple_effect))
+    (memory_effect
+      (memory_release_effect
+        (memory_release_argument
+          (identifier))
+        (memory_release_argument
+          (memory_qualified_name
+            (identifier)
+            (identifier)))))
+    (memory_effect
+      (memory_parameter_effect
+        (memory_parameter_effect_kind)
+        (memory_argument_reference
+          (identifier)
+          (integer_literal)))))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (function_declaration
+      (parameter_list)
+      (block
+        (variable_declaration
+          (binding_list
+            (identifier))
+          (postfix_expression
+            (postfix_expression
+              (postfix_expression
+                (identifier)
+                (identifier))
+              (argument_list))
+            (memory_directive
+              (memory_effect
+                (memory_release_effect
+                  (memory_qualified_name
+                    (identifier)
+                    (identifier))))
+              (memory_effect
+                (memory_parameter_effect
+                  (memory_parameter_effect_kind)
+                  (memory_argument_reference
+                    (identifier)
+                    (integer_literal)))))))
+        (memory_trusted_statement
+          (string_literal)
+          (block
+            (expression_statement
+              (postfix_expression
+                (postfix_expression
+                  (identifier)
+                  (identifier))
+                (argument_list
+                  (identifier))))))))))
+
+==================
+distinct derives and pointer loop binders
+==================
+
+Meters :: distinct f64 #derive(Add, Mul(Meters, f64));
+Count :: distinct s64 #derive,all;
+
+clear :: (values: [..]s64) {
+  for < *slot: values slot.* = 0;
+  for *values.data { break; }
+}
+
+---
+
+(source_file
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (distinct_type_declaration
+      (named_type
+        (identifier))
+      (distinct_derive_directive
+        (named_type
+          (identifier))
+        (generic_type
+          (identifier)
+          (named_type
+            (identifier))
+          (named_type
+            (identifier))))))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (distinct_type_declaration
+      (named_type
+        (identifier))
+      (distinct_derive_directive
+        (identifier))))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (function_declaration
+      (parameter_list
+        (parameter
+          (binding_list
+            (identifier))
+          (array_type
+            (named_type
+              (identifier)))))
+      (block
+        (for_statement
+          (operator)
+          (for_pointer_binder)
+          (identifier)
+          (identifier)
+          (assignment_statement
+            (if_assignment_start)
+            (integer_literal)))
+        (for_statement
+          (operator)
+          (postfix_expression
+            (identifier)
+            (identifier))
+          (block
+            (break_statement)))))))

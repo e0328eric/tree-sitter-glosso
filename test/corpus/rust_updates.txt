@@ -86,8 +86,7 @@ release :: (buffer: []u8)
         (string_literal))
       (memory_directive
         (memory_effect
-          (memory_parameter_effect
-            (memory_parameter_effect_kind)
+          (memory_borrow_place_effect
             (identifier)))
         (memory_effect
           (memory_parameter_effect
@@ -137,8 +136,7 @@ release :: (buffer: []u8)
             (memory_parameter_effect_kind)
             (identifier)))
         (memory_effect
-          (memory_parameter_effect
-            (memory_parameter_effect_kind)
+          (memory_destination_effect
             (identifier)))
         (memory_effect
           (memory_parameter_effect
@@ -483,7 +481,7 @@ UnloadTexture :: (texture: Texture) #foreign "raylib" "UnloadTexture";
 
 main :: () {
   texture := LoadTexture("atlas.png")
-    #memory(resource(released_by: Graphics.UnloadTexture), noescape(arg(0)));
+    #memory{released_by(Graphics.UnloadTexture), noescape(arg(0))};
 }
 
 ---
@@ -559,7 +557,7 @@ main :: () {
                 (string_literal)))
             (memory_directive
               (memory_effect
-                (memory_resource_effect
+                (memory_release_effect
                   (memory_qualified_name
                     (identifier)
                     (identifier))))

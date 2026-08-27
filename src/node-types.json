@@ -358,6 +358,10 @@
         "named": true
       },
       {
+        "type": "memory_trusted_statement",
+        "named": true
+      },
+      {
         "type": "nested_declaration",
         "named": true
       },
@@ -1353,9 +1357,45 @@
     }
   },
   {
+    "type": "distinct_derive_directive",
+    "named": true,
+    "fields": {
+      "class": {
+        "multiple": true,
+        "required": false,
+        "types": [
+          {
+            "type": "_type",
+            "named": true
+          }
+        ]
+      },
+      "mode": {
+        "multiple": false,
+        "required": false,
+        "types": [
+          {
+            "type": "identifier",
+            "named": true
+          }
+        ]
+      }
+    }
+  },
+  {
     "type": "distinct_type_declaration",
     "named": true,
     "fields": {
+      "derive": {
+        "multiple": true,
+        "required": false,
+        "types": [
+          {
+            "type": "distinct_derive_directive",
+            "named": true
+          }
+        ]
+      },
       "underlying_type": {
         "multiple": false,
         "required": true,
@@ -1764,6 +1804,10 @@
             "named": true
           },
           {
+            "type": "memory_trusted_statement",
+            "named": true
+          },
+          {
             "type": "push_allocator_statement",
             "named": true
           },
@@ -1827,6 +1871,16 @@
         "types": [
           {
             "type": "identifier",
+            "named": true
+          }
+        ]
+      },
+      "mode": {
+        "multiple": false,
+        "required": false,
+        "types": [
+          {
+            "type": "for_pointer_binder",
             "named": true
           }
         ]
@@ -2051,11 +2105,15 @@
       }
     },
     "children": {
-      "multiple": false,
+      "multiple": true,
       "required": false,
       "types": [
         {
           "type": "arrow",
+          "named": true
+        },
+        {
+          "type": "memory_directive",
           "named": true
         }
       ]
@@ -2351,6 +2409,10 @@
             "named": true
           },
           {
+            "type": "memory_trusted_statement",
+            "named": true
+          },
+          {
             "type": "push_allocator_statement",
             "named": true
           },
@@ -2468,6 +2530,10 @@
           },
           {
             "type": "memory_overlay",
+            "named": true
+          },
+          {
+            "type": "memory_trusted_statement",
             "named": true
           },
           {
@@ -3306,18 +3372,54 @@
           }
         ]
       }
+    },
+    "children": {
+      "multiple": true,
+      "required": false,
+      "types": [
+        {
+          "type": "identifier",
+          "named": true
+        },
+        {
+          "type": "integer_literal",
+          "named": true
+        }
+      ]
     }
   },
   {
     "type": "memory_borrow_place_effect",
     "named": true,
     "fields": {
-      "parameter": {
+      "kind": {
         "multiple": false,
         "required": true,
         "types": [
           {
+            "type": "returns_borrow",
+            "named": false
+          },
+          {
+            "type": "returns_unique_borrow",
+            "named": false
+          }
+        ]
+      },
+      "parameter": {
+        "multiple": true,
+        "required": true,
+        "types": [
+          {
+            "type": ".",
+            "named": false
+          },
+          {
             "type": "identifier",
+            "named": true
+          },
+          {
+            "type": "integer_literal",
             "named": true
           },
           {
@@ -3328,10 +3430,86 @@
       },
       "place": {
         "multiple": false,
+        "required": false,
+        "types": [
+          {
+            "type": "memory_argument_reference",
+            "named": true
+          },
+          {
+            "type": "memory_qualified_name",
+            "named": true
+          }
+        ]
+      }
+    }
+  },
+  {
+    "type": "memory_destination_effect",
+    "named": true,
+    "fields": {
+      "destination": {
+        "multiple": true,
+        "required": false,
+        "types": [
+          {
+            "type": ".",
+            "named": false
+          },
+          {
+            "type": "identifier",
+            "named": true
+          },
+          {
+            "type": "integer_literal",
+            "named": true
+          },
+          {
+            "type": "memory_argument_reference",
+            "named": true
+          }
+        ]
+      },
+      "kind": {
+        "multiple": false,
         "required": true,
         "types": [
           {
-            "type": "memory_qualified_name",
+            "type": "escapes",
+            "named": false
+          },
+          {
+            "type": "maybe_escapes",
+            "named": false
+          },
+          {
+            "type": "maybe_owns",
+            "named": false
+          },
+          {
+            "type": "owns",
+            "named": false
+          }
+        ]
+      },
+      "parameter": {
+        "multiple": true,
+        "required": true,
+        "types": [
+          {
+            "type": ".",
+            "named": false
+          },
+          {
+            "type": "identifier",
+            "named": true
+          },
+          {
+            "type": "integer_literal",
+            "named": true
+          },
+          {
+            "type": "memory_argument_reference",
             "named": true
           }
         ]
@@ -3344,7 +3522,7 @@
     "fields": {
       "effect": {
         "multiple": true,
-        "required": true,
+        "required": false,
         "types": [
           {
             "type": "memory_effect",
@@ -3367,6 +3545,18 @@
           "named": true
         },
         {
+          "type": "memory_destination_effect",
+          "named": true
+        },
+        {
+          "type": "memory_give_effect",
+          "named": true
+        },
+        {
+          "type": "memory_leak_place_effect",
+          "named": true
+        },
+        {
           "type": "memory_parameter_effect",
           "named": true
         },
@@ -3375,14 +3565,86 @@
           "named": true
         },
         {
-          "type": "memory_resource_effect",
+          "type": "memory_return_place_effect",
           "named": true
         },
         {
           "type": "memory_simple_effect",
           "named": true
+        },
+        {
+          "type": "memory_unknown_effect",
+          "named": true
         }
       ]
+    }
+  },
+  {
+    "type": "memory_give_effect",
+    "named": true,
+    "fields": {
+      "kind": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "gives",
+            "named": false
+          },
+          {
+            "type": "maybe_gives",
+            "named": false
+          }
+        ]
+      },
+      "parameter": {
+        "multiple": true,
+        "required": true,
+        "types": [
+          {
+            "type": ".",
+            "named": false
+          },
+          {
+            "type": "identifier",
+            "named": true
+          },
+          {
+            "type": "integer_literal",
+            "named": true
+          },
+          {
+            "type": "memory_argument_reference",
+            "named": true
+          }
+        ]
+      },
+      "releaser": {
+        "multiple": false,
+        "required": false,
+        "types": [
+          {
+            "type": "memory_qualified_name",
+            "named": true
+          }
+        ]
+      }
+    }
+  },
+  {
+    "type": "memory_leak_place_effect",
+    "named": true,
+    "fields": {
+      "place": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "memory_qualified_name",
+            "named": true
+          }
+        ]
+      }
     }
   },
   {
@@ -3426,11 +3688,19 @@
         ]
       },
       "parameter": {
-        "multiple": false,
+        "multiple": true,
         "required": true,
         "types": [
           {
+            "type": ".",
+            "named": false
+          },
+          {
             "type": "identifier",
+            "named": true
+          },
+          {
+            "type": "integer_literal",
             "named": true
           },
           {
@@ -3457,27 +3727,65 @@
         {
           "type": "identifier",
           "named": true
+        },
+        {
+          "type": "integer_literal",
+          "named": true
         }
       ]
     }
   },
   {
-    "type": "memory_release_effect",
+    "type": "memory_release_argument",
     "named": true,
     "fields": {
-      "place": {
-        "multiple": false,
+      "instance": {
+        "multiple": true,
         "required": false,
         "types": [
           {
-            "type": "memory_qualified_name",
+            "type": ".",
+            "named": false
+          },
+          {
+            "type": "identifier",
+            "named": true
+          },
+          {
+            "type": "integer_literal",
+            "named": true
+          },
+          {
+            "type": "memory_argument_reference",
+            "named": true
+          }
+        ]
+      },
+      "place": {
+        "multiple": true,
+        "required": false,
+        "types": [
+          {
+            "type": ".",
+            "named": false
+          },
+          {
+            "type": "identifier",
+            "named": true
+          },
+          {
+            "type": "integer_literal",
+            "named": true
+          },
+          {
+            "type": "memory_argument_reference",
             "named": true
           }
         ]
       },
       "releaser": {
         "multiple": false,
-        "required": true,
+        "required": false,
         "types": [
           {
             "type": "memory_qualified_name",
@@ -3488,25 +3796,83 @@
     }
   },
   {
-    "type": "memory_resource_effect",
+    "type": "memory_release_effect",
     "named": true,
     "fields": {
-      "place": {
-        "multiple": false,
+      "argument": {
+        "multiple": true,
         "required": false,
         "types": [
+          {
+            "type": "memory_release_argument",
+            "named": true
+          }
+        ]
+      },
+      "operand": {
+        "multiple": true,
+        "required": false,
+        "types": [
+          {
+            "type": ".",
+            "named": false
+          },
+          {
+            "type": "identifier",
+            "named": true
+          },
+          {
+            "type": "integer_literal",
+            "named": true
+          },
+          {
+            "type": "memory_argument_reference",
+            "named": true
+          },
           {
             "type": "memory_qualified_name",
             "named": true
           }
         ]
-      },
-      "releaser": {
+      }
+    }
+  },
+  {
+    "type": "memory_return_place_effect",
+    "named": true,
+    "fields": {
+      "kind": {
         "multiple": false,
         "required": true,
         "types": [
           {
-            "type": "memory_qualified_name",
+            "type": "returns_fresh",
+            "named": false
+          },
+          {
+            "type": "returns_static",
+            "named": false
+          }
+        ]
+      },
+      "place": {
+        "multiple": true,
+        "required": true,
+        "types": [
+          {
+            "type": ".",
+            "named": false
+          },
+          {
+            "type": "identifier",
+            "named": true
+          },
+          {
+            "type": "integer_literal",
+            "named": true
+          },
+          {
+            "type": "memory_argument_reference",
             "named": true
           }
         ]
@@ -3516,13 +3882,80 @@
   {
     "type": "memory_simple_effect",
     "named": true,
+    "fields": {}
+  },
+  {
+    "type": "memory_trusted_statement",
+    "named": true,
     "fields": {
-      "place": {
+      "body": {
         "multiple": false,
-        "required": false,
+        "required": true,
         "types": [
           {
+            "type": "block",
+            "named": true
+          }
+        ]
+      },
+      "reason": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "string_literal",
+            "named": true
+          }
+        ]
+      }
+    }
+  },
+  {
+    "type": "memory_unknown_argument",
+    "named": true,
+    "fields": {
+      "value": {
+        "multiple": true,
+        "required": true,
+        "types": [
+          {
+            "type": ".",
+            "named": false
+          },
+          {
+            "type": "identifier",
+            "named": true
+          },
+          {
+            "type": "integer_literal",
+            "named": true
+          },
+          {
+            "type": "memory_argument_reference",
+            "named": true
+          },
+          {
             "type": "memory_qualified_name",
+            "named": true
+          },
+          {
+            "type": "string_literal",
+            "named": true
+          }
+        ]
+      }
+    }
+  },
+  {
+    "type": "memory_unknown_effect",
+    "named": true,
+    "fields": {
+      "argument": {
+        "multiple": true,
+        "required": true,
+        "types": [
+          {
+            "type": "memory_unknown_argument",
             "named": true
           }
         ]
@@ -6381,6 +6814,10 @@
             "named": true
           },
           {
+            "type": "memory_trusted_statement",
+            "named": true
+          },
+          {
             "type": "push_allocator_statement",
             "named": true
           },
@@ -6498,6 +6935,10 @@
           },
           {
             "type": "memory_overlay",
+            "named": true
+          },
+          {
+            "type": "memory_trusted_statement",
             "named": true
           },
           {
@@ -7747,6 +8188,10 @@
             "named": true
           },
           {
+            "type": "memory_trusted_statement",
+            "named": true
+          },
+          {
             "type": "push_allocator_statement",
             "named": true
           },
@@ -8165,6 +8610,10 @@
     "named": false
   },
   {
+    "type": "arg",
+    "named": false
+  },
+  {
     "type": "arrow",
     "named": true
   },
@@ -8178,6 +8627,10 @@
   },
   {
     "type": "break",
+    "named": false
+  },
+  {
+    "type": "by",
     "named": false
   },
   {
@@ -8274,8 +8727,16 @@
     "named": false
   },
   {
+    "type": "for_pointer_binder",
+    "named": true
+  },
+  {
     "type": "from_directive",
     "named": true
+  },
+  {
+    "type": "gives",
+    "named": false
   },
   {
     "type": "hide",
@@ -8322,6 +8783,10 @@
     "named": true
   },
   {
+    "type": "into",
+    "named": false
+  },
+  {
     "type": "invalidates",
     "named": false
   },
@@ -8339,6 +8804,34 @@
   },
   {
     "type": "leak",
+    "named": false
+  },
+  {
+    "type": "maybe_escapes",
+    "named": false
+  },
+  {
+    "type": "maybe_gives",
+    "named": false
+  },
+  {
+    "type": "maybe_invalidates",
+    "named": false
+  },
+  {
+    "type": "maybe_kills",
+    "named": false
+  },
+  {
+    "type": "maybe_owns",
+    "named": false
+  },
+  {
+    "type": "maybe_reads",
+    "named": false
+  },
+  {
+    "type": "maybe_writes",
     "named": false
   },
   {
@@ -8378,8 +8871,16 @@
     "named": false
   },
   {
+    "type": "owns",
+    "named": false
+  },
+  {
     "type": "partial_directive",
     "named": true
+  },
+  {
+    "type": "place",
+    "named": false
   },
   {
     "type": "prefix_operator",
@@ -8398,11 +8899,15 @@
     "named": false
   },
   {
+    "type": "reason",
+    "named": false
+  },
+  {
     "type": "released_by",
     "named": false
   },
   {
-    "type": "resource",
+    "type": "result",
     "named": false
   },
   {
@@ -8419,6 +8924,10 @@
   },
   {
     "type": "returns_static",
+    "named": false
+  },
+  {
+    "type": "returns_unique_borrow",
     "named": false
   },
   {
@@ -8451,6 +8960,10 @@
   },
   {
     "type": "true",
+    "named": false
+  },
+  {
+    "type": "trusted",
     "named": false
   },
   {

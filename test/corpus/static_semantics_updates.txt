@@ -9,12 +9,11 @@ Combined_Error :: union {
 }
 
 open :: (path: string) -> Handle
-  #memory(
-    unknown(returned.Ok),
+  #memory{
+    unknown(result: returned.Ok, reason: "implementation-defined provenance"),
     returns_borrow(returned.Ok, path),
-    released_by(returned.Ok, close),
-    resource(returned.Ok, released_by: close)
-  );
+    released_by(place: returned.Ok, by: close)
+  };
 
 main :: () {
   #assert true, "ready";
@@ -79,10 +78,13 @@ main :: () {
         (identifier))
       (memory_directive
         (memory_effect
-          (memory_simple_effect
-            (memory_qualified_name
-              (identifier)
-              (identifier))))
+          (memory_unknown_effect
+            (memory_unknown_argument
+              (memory_qualified_name
+                (identifier)
+                (identifier)))
+            (memory_unknown_argument
+              (string_literal))))
         (memory_effect
           (memory_borrow_place_effect
             (memory_qualified_name
@@ -91,18 +93,12 @@ main :: () {
             (identifier)))
         (memory_effect
           (memory_release_effect
-            (memory_qualified_name
+            (memory_release_argument
               (identifier)
               (identifier))
-            (memory_qualified_name
-              (identifier))))
-        (memory_effect
-          (memory_resource_effect
-            (memory_qualified_name
-              (identifier)
-              (identifier))
-            (memory_qualified_name
-              (identifier)))))))
+            (memory_release_argument
+              (memory_qualified_name
+                (identifier))))))))
   (named_declaration
     (declaration_name
       (identifier))
