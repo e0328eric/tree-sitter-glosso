@@ -58,10 +58,10 @@ view :: (buffer: []u8) -> []u8
 allocate :: () -> *u8
   #memory returns_fresh
   #memory returns_static
-  #memory unknown;
+  #memory unknown {}
 
 release :: (buffer: []u8)
-  #memory(kills(buffer), invalidates(buffer), escapes(buffer), writes(buffer));
+  #memory(kills(buffer), invalidates(buffer), escapes(buffer), writes(buffer)) {}
 
 ---
 
@@ -114,7 +114,8 @@ release :: (buffer: []u8)
           (memory_simple_effect)))
       (memory_directive
         (memory_effect
-          (memory_simple_effect)))))
+          (memory_simple_effect)))
+      (block)))
   (named_declaration
     (declaration_name
       (identifier))
@@ -141,7 +142,8 @@ release :: (buffer: []u8)
         (memory_effect
           (memory_parameter_effect
             (memory_parameter_effect_kind)
-            (identifier)))))))
+            (identifier))))
+      (block))))
 
 ==================
 based and scientific numeric literals
@@ -210,17 +212,17 @@ Sub :: typeclass (L: type, R: type) {
   '-' :: (left: L, right: R) -> Output #operator(left, 10);
 }
 
-(*$T, s64) :: instance Sub {
+(*$T, s64) ::: instance Sub {
   Output :: *T;
   '-' :: (left: *T, right: s64) -> Output { return left; }
 }
 
-($L, $R) :: instance Sub where true {
+($L, $R) ::: instance Sub where true {
   Output :: Add(L, R).Output;
   '-' :: (left: L, right: R) -> Output { return left; }
 }
 
-([*]const volatile $T, s64) :: instance Sub {
+([*]const volatile $T, s64) ::: instance Sub {
   Output :: [*]const volatile T;
   '-' :: (left: [*]const volatile T, right: s64) -> Output { return left; }
 }

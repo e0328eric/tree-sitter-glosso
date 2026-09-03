@@ -7,7 +7,7 @@ Vec :: struct {
   y: int = 2;
 }
 
-Color :: enum { Red; Green :: 2, Blue; }
+Color :: enum { Red; Green :: 2; Blue; }
 
 Shape :: union #raw {
   point: Vec;
@@ -85,10 +85,11 @@ directives and code blocks
 
 #import "Prelude";
 #load "parts/geometry.glo";
-#private_section,siblings;
+#enable(private_section,siblings);
 MSG :: #string
 \\hello
 \\world
+;
 
 macro :: (body: Code) #expand {
   `tmp := #comptime 1 + 2;
@@ -102,7 +103,9 @@ macro :: (body: Code) #expand {
     (string_literal))
   (load_declaration
     (string_literal))
-  (private_section_declaration)
+  (feature_directive
+    (identifier)
+    (identifier))
   (named_declaration
     (declaration_name
       (identifier))
@@ -184,8 +187,8 @@ FILE :: struct {}
 BinOp :: #fn_ptr(a: int, b: int) -> int;
 G1 := 42;
 G2 : string = "hello";
-c_len :: (s: #c_ptr *const s8) -> u64 #foreign "libc" "strlen";
-puts :: (text: #c_ptr *const s8) -> s32 #foreign libc;
+c_len :: (s: *const s8) -> u64 #foreign "libc" "strlen";
+puts :: (text: *const s8) -> s32 #foreign libc;
 ctx :: () -> #Context { return context; }
 
 ---
@@ -256,10 +259,9 @@ ctx :: () -> #Context { return context; }
         (parameter
           (binding_list
             (identifier))
-          (c_pointer_type
-            (pointer_type
-              (named_type
-                (identifier))))))
+          (pointer_type
+            (named_type
+              (identifier)))))
       (arrow)
       (named_type
         (identifier))
@@ -274,10 +276,9 @@ ctx :: () -> #Context { return context; }
         (parameter
           (binding_list
             (identifier))
-          (c_pointer_type
-            (pointer_type
-              (named_type
-                (identifier))))))
+          (pointer_type
+            (named_type
+              (identifier)))))
       (arrow)
       (named_type
         (identifier))
@@ -405,7 +406,7 @@ zero :: (#empty: $T, $U) -> T where IsInteger(T) { return 0; }
           (integer_literal))))))
 
 ==================
-fallback and long_goto
+magic operator and long_goto
 ==================
 
 worker :: (from: int, flag: bool) -> int {
@@ -413,10 +414,10 @@ worker :: (from: int, flag: bool) -> int {
   return from;
 }
 
-'.*' :: (p: *$T) -> T #operator(suffix) #fallback #magic "ptr_deref";
+'.*' :: (p: *$T) -> T #operator(suffix) #magic "ptr_deref";
 
 VALUE :: #comptime -> int {
-  target : label = ---;
+  target : label = #undefined;
   x := long_goto(worker, 'task, 40, true);
   return x;
 }
@@ -736,7 +737,7 @@ function directive order and noreturn
 
 OnlyInt :: (T: type) -> bool { return T == int; }
 
-'%%' :: (a: $T, b: T) -> T #fallback #operator(left, 10) #magic "int_add" where OnlyInt(T);
+'%%' :: (a: $T, b: T) -> T #operator(left, 10) #magic "int_add" where OnlyInt(T);
 stop :: () #no_context #noreturn { exit(0); }
 plain_inline :: () #inline { }
 always_inline :: () #inline,always { }
@@ -834,13 +835,12 @@ compile errors partial switches and patterns
 Foo :: struct { x: int; y: f64; z: Bar; }
 Bar :: union { Pax: int; None: void; }
 
-#if OUT.os == {
-case .Windows; raylib_case :: #library,dyn "raylib.dll";
-else; #compile_error "unsupported";
-}
-
 main :: () {
-  Io :: #import "Io";
+  #if OUT.os == {
+  case .Windows; print("windows");
+  else; #compile_error "unsupported";
+  }
+
   #compile_error "stop here";
 
   if #partial x == {
@@ -903,34 +903,28 @@ main :: () {
         (identifier)
         (named_type
           (identifier)))))
-  (static_if_declaration
-    (postfix_expression
-      (identifier)
-      (identifier))
-    (operator)
-    (static_declaration_case_clause
-      (shorthand_member_expression
-        (identifier))
-      (named_declaration
-        (declaration_name
-          (identifier))
-        (library_declaration
-          (library_modifier)
-          (string_literal))))
-    (static_declaration_default_clause
-      (compile_error_statement
-        (string_literal))))
   (named_declaration
     (declaration_name
       (identifier))
     (function_declaration
       (parameter_list)
       (block
-        (nested_declaration
-          (declaration_name
+        (static_if_statement
+          (postfix_expression
+            (identifier)
             (identifier))
-          (qualified_import_declaration
-            (string_literal)))
+          (operator)
+          (case_clause
+            (shorthand_member_expression
+              (identifier))
+            (expression_statement
+              (postfix_expression
+                (identifier)
+                (argument_list
+                  (string_literal)))))
+          (default_clause
+            (compile_error_statement
+              (string_literal))))
         (compile_error_statement
           (string_literal))
         (switch_statement

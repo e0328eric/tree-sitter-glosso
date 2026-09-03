@@ -4,10 +4,10 @@ optional and result types
 
 Callback :: #fn_ptr(value: ?*s32) -> First_Error!Second_Error!?[*]const u8;
 
-?$T :: instance Optional_Class {}
-$E!$T :: instance Result_Class {}
-?$E!$T :: instance Optional_Error_Class {}
-(?$T, E!T) :: instance Combined_Class {}
+?$T ::: instance Optional_Class {}
+$E!$T ::: instance Result_Class {}
+?$E!$T ::: instance Optional_Error_Class {}
+(?$T, E!T) ::: instance Combined_Class {}
 
 types :: () {
   pointer_to_optional: *?s32;

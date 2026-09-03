@@ -106,14 +106,13 @@ lambdas minimal instances and single line loops
 ==================
 
 Witness :: typeclass (T: type)
-  #fallback
   #minimal(extract, (convert | '==')) {
   extract :: (value: T) -> T;
   convert :: (value: T) -> T;
   '==' :: (left: T, right: T) -> bool;
 }
 
-([]$T, ($T) -> bool) :: instance Witness where PartialEq(T) {
+([]$T, ($T) -> bool) ::: instance Witness where PartialEq(T) {
   extract :: (value: []T) -> []T { return value; }
   convert :: (value: []T) -> []T { return value; }
   '==' :: (left: []T, right: []T) -> bool { return true; }

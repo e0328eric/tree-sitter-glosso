@@ -5,17 +5,22 @@ multiline string modifiers
 RAW :: #string
 \\raw
 \\text
+;
 ONELINE :: #string,oneline
 \\one
 \\line
+;
 ESCAPED :: #string,escape
 \\escaped\t
+;
 BOTH :: #string,oneline,escape
 \\both
 \\options
+;
 REVERSED :: #string,escape,oneline
 \\reverse
 \\order
+;
 
 ---
 

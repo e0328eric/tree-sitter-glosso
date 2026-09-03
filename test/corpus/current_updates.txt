@@ -6,7 +6,7 @@ Context_Storage :: struct #magic "jump_context_storage_struct" {}
 Payload :: union #raw #magic "payload_union" {}
 context_save :: (storage: *Context_Storage) -> int
   #returns_twice #magic "jump_context_save";
-global_rooms: [..]s64 #memory leak;
+global_rooms: [..]s64;
 
 main :: () {
   rooms: [..]s64 #memory leak;
@@ -51,10 +51,7 @@ main :: () {
     (global_variable_declaration_tail
       (array_type
         (named_type
-          (identifier)))
-      (memory_directive
-        (memory_effect
-          (memory_simple_effect)))))
+          (identifier)))))
   (named_declaration
     (declaration_name
       (identifier))

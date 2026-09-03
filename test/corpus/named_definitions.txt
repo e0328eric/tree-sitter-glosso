@@ -1,0 +1,132 @@
+==================
+typed and inferred named definitions
+==================
+
+Foo : type : struct { x: int; }
+main : () -> void : () {}
+IO : namespace : #import "Io";
+fooo : namespace : #load "foo.glo";
+kernel32 : library : #library,system "kernel32";
+Bar : typeclass(type) : typeclass(T: type) {}
+macro : macro((int) -> void) : (x: int) #expand {}
+Alias : type :: distinct int;
+Auto_Type := struct { x: int; }
+auto_main ::= () {}
+foo := (x: Foo) {}
+Foo ::: instance Bar {}
+
+---
+
+(source_file
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (named_type
+      (identifier))
+    (struct_declaration
+      (struct_field
+        (identifier)
+        (named_type
+          (identifier)))))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (function_type
+      (arrow)
+      (named_type
+        (identifier)))
+    (function_declaration
+      (parameter_list)
+      (block)))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (named_type
+      (identifier))
+    (qualified_import_declaration
+      (string_literal)))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (named_type
+      (identifier))
+    (qualified_load_declaration
+      (string_literal)))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (named_type
+      (identifier))
+    (library_declaration
+      (library_modifier)
+      (string_literal)))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (generic_type
+      (identifier)
+      (named_type
+        (identifier)))
+    (typeclass_declaration
+      (typeclass_parameter
+        (identifier)
+        (named_type
+          (identifier)))))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (generic_type
+      (identifier)
+      (function_type
+        (type_element
+          (named_type
+            (identifier)))
+        (arrow)
+        (named_type
+          (identifier))))
+    (function_declaration
+      (parameter_list
+        (parameter
+          (binding_list
+            (identifier))
+          (named_type
+            (identifier))))
+      (expand_directive)
+      (block)))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (named_type
+      (identifier))
+    (distinct_type_declaration
+      (named_type
+        (identifier))))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (struct_declaration
+      (struct_field
+        (identifier)
+        (named_type
+          (identifier)))))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (function_declaration
+      (parameter_list)
+      (block)))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (function_declaration
+      (parameter_list
+        (parameter
+          (binding_list
+            (identifier))
+          (named_type
+            (identifier))))
+      (block)))
+  (instance_declaration
+    (type_constructor_pattern
+      (identifier))
+    (identifier)))

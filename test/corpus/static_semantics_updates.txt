@@ -13,7 +13,7 @@ open :: (path: string) -> Handle
     unknown(result: returned.Ok, reason: "implementation-defined provenance"),
     returns_borrow(returned.Ok, path),
     released_by(place: returned.Ok, by: close)
-  };
+  } {}
 
 main :: () {
   #assert true, "ready";
@@ -98,7 +98,8 @@ main :: () {
               (identifier))
             (memory_release_argument
               (memory_qualified_name
-                (identifier))))))))
+                (identifier))))))
+      (block)))
   (named_declaration
     (declaration_name
       (identifier))

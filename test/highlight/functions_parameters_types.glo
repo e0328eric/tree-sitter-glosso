@@ -12,6 +12,7 @@ TEXT :: #string,oneline,escape
 //                      ^ attribute
 \\highlighted string
 // <- string
+;
 
 highlight_me :: (
 // <- function

@@ -1,0 +1,930 @@
+==================
+current declaration terminators and braced exceptions
+==================
+
+#enable(private_section,siblings)
+#disable(private_section);
+#import "Io";
+#load "other.glo";
+#insert generated;
+
+Alias :: int;
+VALUE :: 5;
+GLOBAL : int = 7;
+INFERRED := 1 + 2;
+COMPTIME ::= 9;
+Callback :: #fn_ptr(value: int);
+
+MESSAGE :: #string
+\\ready
+;
+
+BLOCK :: #comptime { return 1; }
+TYPED_BLOCK :: #comptime -> int { return 2; };
+#comptime run();
+#comptime -> int { return 3; };
+#comptime { run(); }
+
+#memory allocator { reads(buffer) }
+#memory allocator { writes(buffer) };
+
+Record :: struct { value: int; }
+Choice :: enum { First; Second; }
+Payload :: union { value: int; }
+run :: () {}
+
+---
+
+(source_file
+  (feature_directive
+    (identifier)
+    (identifier))
+  (feature_directive
+    (identifier))
+  (import_declaration
+    (string_literal))
+  (load_declaration
+    (string_literal))
+  (insert_declaration
+    (identifier))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (constant_declaration_body
+      (identifier)))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (constant_declaration_body
+      (integer_literal)))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (global_variable_declaration_tail
+      (named_type
+        (identifier))
+      (integer_literal)))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (global_variable_declaration_tail
+      (binary_expression
+        (integer_literal)
+        (operator)
+        (integer_literal))))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (global_variable_declaration_tail
+      (integer_literal)))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (function_pointer_type_declaration
+      (fn_ptr_parameter_list
+        (fn_ptr_parameter
+          (identifier)
+          (named_type
+            (identifier))))))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (constant_declaration_body
+      (string_block
+        (multiline_string_line))))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (constant_declaration_body
+      (run_expression
+        (block
+          (return_statement
+            (integer_literal))))))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (constant_declaration_body
+      (run_expression
+        (arrow)
+        (named_type
+          (identifier))
+        (block
+          (return_statement
+            (integer_literal))))))
+  (top_run_declaration
+    (postfix_expression
+      (identifier)
+      (argument_list)))
+  (top_run_declaration
+    (arrow)
+    (named_type
+      (identifier))
+    (block
+      (return_statement
+        (integer_literal))))
+  (top_run_declaration
+    (block
+      (expression_statement
+        (postfix_expression
+          (identifier)
+          (argument_list)))))
+  (memory_overlay
+    (memory_qualified_name
+      (identifier))
+    (memory_effect
+      (memory_parameter_effect
+        (memory_parameter_effect_kind)
+        (identifier))))
+  (memory_overlay
+    (memory_qualified_name
+      (identifier))
+    (memory_effect
+      (memory_parameter_effect
+        (memory_parameter_effect_kind)
+        (identifier))))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (struct_declaration
+      (struct_field
+        (identifier)
+        (named_type
+          (identifier)))))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (enum_declaration
+      (enum_variant
+        (identifier))
+      (enum_variant
+        (identifier))))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (union_declaration
+      (union_field
+        (identifier)
+        (named_type
+          (identifier)))))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (function_declaration
+      (parameter_list)
+      (block))))
+
+==================
+backed and inline aggregate field types
+==================
+
+Status :: enum u8 { Ready :: 1; Done; }
+
+Envelope :: struct {
+  state: enum u8 {
+    Ready :: 1;
+    Done;
+  };
+  payload: union {
+    Pair: struct {
+      x: int;
+      y: int;
+    };
+    Empty: void;
+  };
+  flags: enum_flags u8 {
+    Hot;
+    Cold;
+  };
+}
+
+---
+
+(source_file
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (enum_declaration
+      (named_type
+        (identifier))
+      (enum_variant
+        (identifier)
+        (integer_literal))
+      (enum_variant
+        (identifier))))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (struct_declaration
+      (struct_field
+        (identifier)
+        (enum_declaration
+          (named_type
+            (identifier))
+          (enum_variant
+            (identifier)
+            (integer_literal))
+          (enum_variant
+            (identifier))))
+      (struct_field
+        (identifier)
+        (union_declaration
+          (union_field
+            (identifier)
+            (struct_declaration
+              (struct_field
+                (identifier)
+                (named_type
+                  (identifier)))
+              (struct_field
+                (identifier)
+                (named_type
+                  (identifier)))))
+          (union_field
+            (identifier)
+            (named_type
+              (identifier)))))
+      (struct_field
+        (identifier)
+        (enum_flags_declaration
+          (named_type
+            (identifier))
+          (enum_variant
+            (identifier))
+          (enum_variant
+            (identifier)))))))
+
+==================
+compile-time bindings inferred arrays and labels
+==================
+
+GLOBAL ::= 1;
+TYPED : int := 2;
+INFERRED : := 3;
+
+main :: () {
+'colon:
+'semicolon;
+  a ::= 0;
+  b : int := 0;
+  c : := 0;
+  values: [_]s64 = .[1, 2, 3];
+  Local :: distinct int
+}
+
+---
+
+(source_file
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (global_variable_declaration_tail
+      (integer_literal)))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (global_variable_declaration_tail
+      (named_type
+        (identifier))
+      (integer_literal)))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (global_variable_declaration_tail
+      (integer_literal)))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (function_declaration
+      (parameter_list)
+      (block
+        (label_statement
+          (label))
+        (label_statement
+          (label))
+        (variable_declaration
+          (binding_list
+            (identifier))
+          (integer_literal))
+        (variable_declaration
+          (binding_list
+            (identifier))
+          (named_type
+            (identifier))
+          (integer_literal))
+        (variable_declaration
+          (binding_list
+            (identifier))
+          (integer_literal))
+        (variable_declaration
+          (binding_list
+            (identifier))
+          (array_type
+            (type_hole)
+            (named_type
+              (identifier)))
+          (array_literal
+            (integer_literal)
+            (integer_literal)
+            (integer_literal)))
+        (nested_declaration
+          (declaration_name
+            (identifier))
+          (distinct_type_declaration
+            (named_type
+              (identifier))))))))
+
+==================
+associated type terminators
+==================
+
+Container :: typeclass (T: type) {
+  Item :: type;
+  Error :: type
+}
+
+T ::: instance Container {
+  Item :: int;
+  Error :: string
+}
+
+---
+
+(source_file
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (typeclass_declaration
+      (typeclass_parameter
+        (identifier)
+        (named_type
+          (identifier)))
+      (typeclass_associated_type
+        (declaration_name
+          (identifier))
+        (named_type
+          (identifier)))
+      (typeclass_associated_type
+        (declaration_name
+          (identifier))
+        (named_type
+          (identifier)))))
+  (instance_declaration
+    (type_constructor_pattern
+      (identifier))
+    (identifier)
+    (instance_associated_type
+      (declaration_name
+        (identifier))
+      (named_type
+        (identifier)))
+    (instance_associated_type
+      (declaration_name
+        (identifier))
+      (named_type
+        (identifier)))))
+
+==================
+missing import terminator
+==================
+
+#import "Io"
+
+---
+
+(source_file
+  (import_declaration
+    (string_literal)
+    (MISSING ";")))
+
+==================
+missing load terminator
+==================
+
+#load "Other.glo"
+
+---
+
+(source_file
+  (load_declaration
+    (string_literal)
+    (MISSING ";")))
+
+==================
+missing constant terminator
+==================
+
+K :: 5
+
+---
+
+(source_file
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (constant_declaration_body
+      (integer_literal)
+      (MISSING ";"))))
+
+==================
+missing global terminator
+==================
+
+G: int = 7
+
+---
+
+(source_file
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (global_variable_declaration_tail
+      (named_type
+        (identifier))
+      (integer_literal)
+      (MISSING ";"))))
+
+==================
+missing inferred global terminator
+==================
+
+H := 1 + 2
+
+---
+
+(source_file
+  (ERROR
+    (declaration_name
+      (identifier))
+    (integer_literal)
+    (operator)
+    (integer_literal)))
+
+==================
+missing alias terminator
+==================
+
+Alias :: int
+
+---
+
+(source_file
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (constant_declaration_body
+      (identifier)
+      (MISSING ";"))))
+
+==================
+missing struct literal constant terminator
+==================
+
+P :: Point.{ .x = 1 }
+
+---
+
+(source_file
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (constant_declaration_body
+      (postfix_expression
+        (identifier)
+        (struct_literal
+          (struct_literal_field
+            (identifier)
+            (integer_literal))))
+      (MISSING ";"))))
+
+==================
+stray semicolons after declarations
+==================
+
+S :: struct { x: int; };
+E :: enum { A; };
+f :: () {};
+K :: 5;;
+
+---
+
+(source_file
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (struct_declaration
+      (struct_field
+        (identifier)
+        (named_type
+          (identifier)))))
+  (ERROR)
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (enum_declaration
+      (enum_variant
+        (identifier))))
+  (ERROR)
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (function_declaration
+      (parameter_list)
+      (block)))
+  (ERROR)
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (constant_declaration_body
+      (integer_literal)))
+  (ERROR))
+
+==================
+aggregate commas and missing semicolons are rejected
+==================
+
+S :: struct { x: int, y: int; }
+E :: enum { A, B; }
+U :: union { x: int, y: int; }
+
+---
+
+(source_file
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (struct_declaration
+      (struct_field
+        (identifier)
+        (ERROR
+          (named_type
+            (identifier))
+          (identifier))
+        (named_type
+          (identifier)))))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (enum_declaration
+      (ERROR
+        (identifier))
+      (enum_variant
+        (identifier))))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (union_declaration
+      (union_field
+        (identifier)
+        (ERROR
+          (named_type
+            (identifier))
+          (identifier))
+        (named_type
+          (identifier))))))
+
+==================
+removed direct private section is rejected
+==================
+
+#private_section,siblings;
+
+---
+
+(source_file
+  (ERROR
+    (UNEXPECTED 'i')
+    (identifier)
+    (identifier)))
+
+==================
+removed c pointer is rejected
+==================
+
+main :: () {
+  pointer: #c_ptr *s32 = #undefined;
+}
+
+---
+
+(source_file
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (function_declaration
+      (parameter_list)
+      (block
+        (variable_declaration
+          (binding_list
+            (identifier))
+          (ERROR
+            (UNEXPECTED 'p')
+            (identifier))
+          (pointer_type
+            (named_type
+              (identifier)))
+          (label_none_literal))))))
+
+==================
+removed triple dash is rejected
+==================
+
+main :: () {
+  value: s32 = ---;
+}
+
+---
+
+(source_file
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (function_declaration
+      (parameter_list)
+      (block
+        (variable_declaration
+          (binding_list
+            (identifier))
+          (named_type
+            (identifier))
+          (unary_expression
+            (prefix_operator)
+            (unary_expression
+              (prefix_operator)
+              (unary_expression
+                (prefix_operator)
+                (MISSING identifier)))))))))
+
+==================
+removed fallback modifier is rejected
+==================
+
+bad :: () #fallback #magic "bad";
+
+---
+
+(source_file
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (ERROR
+      (parameter_list)
+      (UNEXPECTED 'b')
+      (identifier))
+    (constant_declaration_body
+      (string_literal))))
+
+==================
+thread local globals precedence defaults and code values
+==================
+
+#thread_local tls: int = 0;
+'%%' :: (a: int, b: int) -> int #precedence(left) { return a; }
+CODE :: #code { 1 };
+RETURN_CODE :: #code { return 1 };
+BINDING_CODE :: #code { value := 1 };
+
+---
+
+(source_file
+  (thread_local_declaration
+    (named_declaration
+      (declaration_name
+        (identifier))
+      (global_variable_declaration_tail
+        (named_type
+          (identifier))
+        (integer_literal))))
+  (named_declaration
+    (declaration_name
+      (quoted_operator))
+    (function_declaration
+      (parameter_list
+        (parameter
+          (binding_list
+            (identifier))
+          (named_type
+            (identifier)))
+        (parameter
+          (binding_list
+            (identifier))
+          (named_type
+            (identifier))))
+      (arrow)
+      (named_type
+        (identifier))
+      (precedence_directive
+        (identifier))
+      (block
+        (return_statement
+          (identifier)))))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (constant_declaration_body
+      (code_expression
+        (code_block
+          (expression_statement
+            (integer_literal))))))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (constant_declaration_body
+      (code_expression
+        (code_block
+          (return_statement
+            (integer_literal))))))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (constant_declaration_body
+      (code_expression
+        (code_block
+          (variable_declaration
+            (binding_list
+              (identifier))
+            (integer_literal)))))))
+
+==================
+empty globals are rejected
+==================
+
+empty:;
+
+---
+
+(source_file
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (global_variable_declaration_tail
+      (named_type
+        (MISSING identifier)))))
+
+==================
+thread local functions are rejected
+==================
+
+#thread_local worker :: () {}
+
+---
+
+(source_file
+  (ERROR
+    (declaration_name
+      (identifier))
+    (ERROR)))
+
+==================
+ordinary signature only functions are rejected
+==================
+
+worker :: (value: int) -> int;
+
+---
+
+(source_file
+  (ERROR
+    (declaration_name
+      (identifier))
+    (parameter_list
+      (parameter
+        (binding_list
+          (identifier))
+        (named_type
+          (identifier))))
+    (arrow)
+    (named_type
+      (identifier))))
+
+==================
+global memory tails are rejected
+==================
+
+buffer: *u8 #memory leak(buffer);
+
+---
+
+(source_file
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (global_variable_declaration_tail
+      (pointer_type
+        (named_type
+          (identifier)))
+      (MISSING ";")))
+  (ERROR
+    (identifier)
+    (type_constructor_pattern
+      (tuple_type_constructor_pattern
+        (type_constructor_pattern
+          (identifier))))))
+
+==================
+missing local declaration terminator
+==================
+
+main :: () { value := 1 }
+
+---
+
+(source_file
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (function_declaration
+      (parameter_list)
+      (block
+        (variable_declaration
+          (binding_list
+            (identifier))
+          (integer_literal)
+          (MISSING ";"))))))
+
+==================
+missing assignment terminator
+==================
+
+main :: () { value := 1; value = 2 }
+
+---
+
+(source_file
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (function_declaration
+      (parameter_list)
+      (block
+        (variable_declaration
+          (binding_list
+            (identifier))
+          (integer_literal))
+        (assignment_statement
+          (identifier)
+          (integer_literal)
+          (MISSING ";"))))))
+
+==================
+missing expression terminator
+==================
+
+main :: () { run() }
+
+---
+
+(source_file
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (function_declaration
+      (parameter_list)
+      (block
+        (ERROR
+          (postfix_expression
+            (identifier)
+            (argument_list)))))))
+
+==================
+missing return terminator
+==================
+
+main :: () { return 1 }
+
+---
+
+(source_file
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (function_declaration
+      (parameter_list)
+      (block
+        (ERROR
+          (return_expression
+            (integer_literal)))))))
+
+==================
+bodyless typeclass directives reject bodies
+==================
+
+Bad :: typeclass () {
+  intrinsic :: () #magic "intrinsic" {}
+}
+
+---
+
+(source_file
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (typeclass_declaration
+      (typeclass_method_signature
+        (declaration_name
+          (identifier))
+        (function_declaration
+          (parameter_list)
+          (ERROR
+            (magic_directive
+              (string_literal)))
+          (block))))))

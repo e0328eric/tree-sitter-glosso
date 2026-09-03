@@ -25,10 +25,10 @@ release :: (value: *u8, allocator: *void) #memory{
   maybe_gives(value),
   released_by(place: returned.Ok, by: destroy, instance: allocator),
   unknown(arg: value, result: returned.Err, reason: "implementation-defined")
-};
+} {}
 
-plain :: () #memory() #memory{} #memory returns_fresh;
-global: *u8 #memory leak(global);
+plain :: () #memory() #memory{} #memory returns_fresh {}
+global: *u8;
 
 ---
 
@@ -166,7 +166,8 @@ global: *u8 #memory leak(global);
                 (identifier)
                 (identifier)))
             (memory_unknown_argument
-              (string_literal)))))))
+              (string_literal)))))
+      (block)))
   (named_declaration
     (declaration_name
       (identifier))
@@ -176,19 +177,15 @@ global: *u8 #memory leak(global);
       (memory_directive)
       (memory_directive
         (memory_effect
-          (memory_simple_effect)))))
+          (memory_simple_effect)))
+      (block)))
   (named_declaration
     (declaration_name
       (identifier))
     (global_variable_declaration_tail
       (pointer_type
         (named_type
-          (identifier)))
-      (memory_directive
-        (memory_effect
-          (memory_leak_place_effect
-            (memory_qualified_name
-              (identifier))))))))
+          (identifier))))))
 
 ==================
 memory contracts on use sites function pointers overlays and trusted blocks
