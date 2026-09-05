@@ -1,0 +1,122 @@
+==================
+single statement code quotes, scoped insertion, and caller escapes
+==================
+
+leave_caller :: () -> ssize #expand {
+    if `stop `return 42;
+    `defer print("caller-scoped defer\n");
+    return 0;
+}
+
+code :: #code print("x");
+
+main :: () {
+    repeat_three_times(#code total += 14);
+    insert_in_caller(#code print("%\n", message));
+    print("scoped=%\n", scoped_less(#code (a < b)));
+    value := (#insert,scope() comparison);
+    named := (#insert,scope(environment) comparison);
+    #insert -> string {
+        return "print(\"generated source string\\n\");";
+    }
+}
+
+---
+
+(source_file
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (function_declaration
+      (parameter_list)
+      (arrow)
+      (named_type
+        (identifier))
+      (expand_directive)
+      (block
+        (if_statement
+          (non_hygienic_identifier)
+          (caller_return_statement
+            (integer_literal)))
+        (caller_defer_statement
+          (expression_statement
+            (postfix_expression
+              (identifier)
+              (argument_list
+                (string_literal)))))
+        (return_statement
+          (integer_literal)))))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (constant_declaration_body
+      (code_expression
+        (expression_statement
+          (postfix_expression
+            (identifier)
+            (argument_list
+              (string_literal)))))))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (function_declaration
+      (parameter_list)
+      (block
+        (expression_statement
+          (postfix_expression
+            (identifier)
+            (argument_list
+              (code_expression
+                (assignment_statement
+                  (identifier)
+                  (assignment_operator)
+                  (integer_literal))))))
+        (expression_statement
+          (postfix_expression
+            (identifier)
+            (argument_list
+              (code_expression
+                (expression_statement
+                  (postfix_expression
+                    (identifier)
+                    (argument_list
+                      (string_literal)
+                      (identifier))))))))
+        (expression_statement
+          (postfix_expression
+            (identifier)
+            (argument_list
+              (string_literal)
+              (postfix_expression
+                (identifier)
+                (argument_list
+                  (code_expression
+                    (expression_statement
+                      (parenthesized_expression
+                        (binary_expression
+                          (identifier)
+                          (operator)
+                          (identifier))))))))))
+        (variable_declaration
+          (binding_list
+            (identifier))
+          (parenthesized_expression
+            (insert_expression
+              (insert_scope)
+              (identifier))))
+        (variable_declaration
+          (binding_list
+            (identifier))
+          (parenthesized_expression
+            (insert_expression
+              (insert_scope
+                (identifier))
+              (identifier))))
+        (insert_statement
+          (run_expression
+            (arrow)
+            (named_type
+              (identifier))
+            (block
+              (return_statement
+                (string_literal)))))))))

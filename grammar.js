@@ -136,7 +136,7 @@ module.exports = grammar({
       ),
 
     insert_declaration: ($) =>
-      seq("#insert", field("value", $._expression), ";"),
+      seq("#insert", $._insert_operand, optional(";")),
 
     import_declaration: ($) =>
       seq(
@@ -354,6 +354,13 @@ module.exports = grammar({
 
     constant_declaration_body: ($) =>
       choice(
+        prec(
+          11,
+          seq(
+            field("value", alias($._single_code_expression, $.code_expression)),
+            ";",
+          ),
+        ),
         prec(
           10,
           seq(
@@ -932,6 +939,7 @@ module.exports = grammar({
         $.inline_asm_statement,
         $.label_statement,
         $.return_statement,
+        $.caller_return_statement,
         $.break_statement,
         $.continue_statement,
         $.while_statement,
@@ -939,6 +947,7 @@ module.exports = grammar({
         $.inline_statement,
         $.try_defer_statement,
         $.defer_statement,
+        $.caller_defer_statement,
         $.using_statement,
         $.switch_statement,
         $.if_statement,
@@ -1104,6 +1113,12 @@ module.exports = grammar({
         prec.right(seq("return", optional(commaSep1($._expression)), ";")),
       ),
 
+    caller_return_statement: ($) =>
+      prec.dynamic(
+        2,
+        prec.right(seq("`return", optional(commaSep1($._expression)), ";")),
+      ),
+
     break_statement: (_) => prec(PREC.statement, seq("break", optional(";"))),
 
     continue_statement: (_) => prec(PREC.statement, seq("continue", optional(";"))),
@@ -1145,6 +1160,9 @@ module.exports = grammar({
       seq("#try", "defer", field("statement", $._statement)),
 
     defer_statement: ($) => seq("defer", field("statement", $._statement)),
+
+    caller_defer_statement: ($) =>
+      seq("`defer", field("statement", $._statement)),
 
     using_statement: ($) =>
       seq("using", field("name", $.identifier), optional(";")),
@@ -1298,6 +1316,7 @@ module.exports = grammar({
         $.inline_asm_statement,
         $.label_statement,
         $.return_statement,
+        $.caller_return_statement,
         $.break_statement,
         $.continue_statement,
         $.while_statement,
@@ -1305,6 +1324,7 @@ module.exports = grammar({
         $.inline_statement,
         $.try_defer_statement,
         $.defer_statement,
+        $.caller_defer_statement,
         $.using_statement,
         $.switch_statement,
         $.if_statement,
@@ -1399,7 +1419,37 @@ module.exports = grammar({
       ),
 
     insert_statement: ($) =>
-      seq("#insert", field("value", $._expression), optional(";")),
+      prec.dynamic(1, seq("#insert", $._insert_operand, optional(";"))),
+
+    _insert_operand: ($) =>
+      seq(
+        optional($.insert_scope),
+        field(
+          "value",
+          choice(
+            alias($._insert_run_expression, $.run_expression),
+            $._expression,
+          ),
+        ),
+      ),
+
+    insert_scope: ($) =>
+      seq(
+        ",",
+        "scope",
+        "(",
+        optional(field("environment", $._expression)),
+        ")",
+      ),
+
+    _insert_run_expression: ($) =>
+      prec(
+        PREC.unary,
+        choice(
+          seq($.arrow, field("type", $._type), field("body", $.block)),
+          field("body", $.block),
+        ),
+      ),
 
     compile_error_statement: ($) =>
       seq("#compile_error", field("message", $._expression), optional(";")),
@@ -1811,6 +1861,7 @@ module.exports = grammar({
         $.range_expression,
         $.unary_expression,
         $.cast_expression,
+        $.insert_expression,
         $.try_expression,
         $.pattern_test_expression,
         $.pattern_binding_expression,
@@ -1976,6 +2027,22 @@ module.exports = grammar({
       prec(
         PREC.unary,
         seq("#try", "{", field("value", $._expression), "}"),
+      ),
+
+    insert_expression: ($) =>
+      prec(
+        PREC.unary,
+        seq(
+          "#insert",
+          $.insert_scope,
+          field(
+            "value",
+            choice(
+              alias($._insert_run_expression, $.run_expression),
+              $._expression,
+            ),
+          ),
+        ),
       ),
 
     meaningful_expression: ($) =>
@@ -2196,7 +2263,14 @@ module.exports = grammar({
     argument_list: ($) =>
       seq(
         "(",
-        commaSep(choice($.named_argument, $.variadic_argument, $._expression)),
+        commaSep(
+          choice(
+            $.named_argument,
+            $.variadic_argument,
+            alias($._single_code_expression, $.code_expression),
+            $._expression,
+          ),
+        ),
         ")",
       ),
 
@@ -2253,7 +2327,59 @@ module.exports = grammar({
 
     parenthesized_expression: ($) => seq("(", $._expression, ")"),
 
-    code_expression: ($) => seq("#code", field("body", $.code_block)),
+    code_expression: ($) =>
+      seq(
+        "#code",
+        field("body", $.code_block),
+      ),
+
+    _single_code_expression: ($) =>
+      seq("#code", field("body", $._code_single_statement)),
+
+    _code_single_statement: ($) =>
+      prec.right(
+        -1,
+        choice(
+          alias(
+            $._code_final_return_statement,
+            $.return_statement,
+          ),
+          alias(
+            $._code_final_assignment_statement,
+            $.assignment_statement,
+          ),
+          alias(
+            $._code_single_expression_statement,
+            $.expression_statement,
+          ),
+        ),
+      ),
+
+    _code_single_expression_statement: ($) =>
+      prec(
+        PREC.call + 1,
+        choice(
+          alias($._code_single_call_expression, $.postfix_expression),
+          $.parenthesized_expression,
+        ),
+      ),
+
+    _code_single_call_expression: ($) =>
+      prec(
+        PREC.call + 1,
+        seq(
+          field(
+            "function",
+            choice(
+              $.identifier,
+              $.non_hygienic_identifier,
+              $.code_splice_identifier,
+              $.quoted_operator,
+            ),
+          ),
+          field("arguments", $.argument_list),
+        ),
+      ),
 
     code_block: ($) =>
       seq(
@@ -2265,27 +2391,28 @@ module.exports = grammar({
             $.instance_declaration,
           ),
         ),
-        optional(
-          choice(
-            alias(
-              $._code_final_variable_declaration,
-              $.variable_declaration,
-            ),
-            alias(
-              $._code_final_return_statement,
-              $.return_statement,
-            ),
-            alias(
-              $._code_final_assignment_statement,
-              $.assignment_statement,
-            ),
-            alias(
-              $._code_final_expression_statement,
-              $.expression_statement,
-            ),
-          ),
-        ),
+        optional($._code_final_statement),
         "}",
+      ),
+
+    _code_final_statement: ($) =>
+      choice(
+        alias(
+          $._code_final_variable_declaration,
+          $.variable_declaration,
+        ),
+        alias(
+          $._code_final_return_statement,
+          $.return_statement,
+        ),
+        alias(
+          $._code_final_assignment_statement,
+          $.assignment_statement,
+        ),
+        alias(
+          $._code_final_expression_statement,
+          $.expression_statement,
+        ),
       ),
 
     _code_final_variable_declaration: ($) =>

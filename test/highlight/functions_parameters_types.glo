@@ -31,3 +31,16 @@ argument
 // <- variable.parameter
     );
 }
+
+builtin_types :: (
+    index:
+ssize,
+// <- type.builtin
+    scalar:
+char,
+// <- type.builtin
+) ->
+rune {
+// <- type.builtin
+    return 0;
+}
