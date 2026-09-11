@@ -1,0 +1,47 @@
+==================
+source location expressions
+==================
+
+HERE :: #source_location;
+
+main :: () {
+    local := #source_location;
+    line := #source_location.line;
+    quoted :: #code {
+        generated := #source_location;
+    };
+}
+
+---
+
+(source_file
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (constant_declaration_body
+      (source_location_expression)))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (function_declaration
+      (parameter_list)
+      (block
+        (variable_declaration
+          (binding_list
+            (identifier))
+          (source_location_expression))
+        (variable_declaration
+          (binding_list
+            (identifier))
+          (postfix_expression
+            (source_location_expression)
+            (identifier)))
+        (variable_declaration
+          (binding_list
+            (identifier))
+          (code_expression
+            (code_block
+              (variable_declaration
+                (binding_list
+                  (identifier))
+                (source_location_expression)))))))))

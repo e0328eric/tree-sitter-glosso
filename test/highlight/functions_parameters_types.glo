@@ -38,9 +38,13 @@ ssize,
 // <- type.builtin
     scalar:
 char,
-// <- type.builtin
+// <- type
 ) ->
 rune {
 // <- type.builtin
     return 0;
 }
+
+LOCATION ::
+#source_location;
+// <- constant.builtin

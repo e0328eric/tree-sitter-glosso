@@ -592,7 +592,7 @@ removed direct private section is rejected
 
 (source_file
   (ERROR
-    (UNEXPECTED 'i')
+    (UNEXPECTED 'r')
     (identifier)
     (identifier)))
 
@@ -674,11 +674,11 @@ bad :: () #fallback #magic "bad";
       (string_literal))))
 
 ==================
-thread local globals precedence defaults and code values
+thread local globals operator defaults and code values
 ==================
 
 #thread_local tls: int = 0;
-'%%' :: (a: int, b: int) -> int #precedence(left) { return a; }
+'%%' :: (a: int, b: int) -> int #operator(left) { return a; }
 CODE :: #code { 1 };
 RETURN_CODE :: #code { return 1 };
 BINDING_CODE :: #code { value := 1 };
@@ -712,7 +712,7 @@ BINDING_CODE :: #code { value := 1 };
       (arrow)
       (named_type
         (identifier))
-      (precedence_directive
+      (operator_directive
         (identifier))
       (block
         (return_statement
@@ -928,3 +928,48 @@ Bad :: typeclass () {
             (magic_directive
               (string_literal)))
           (block))))))
+
+==================
+removed precedence directive is rejected
+==================
+
+Custom :: typeclass (T: type) {
+  '<>' :: (left: T, right: T) -> T #precedence(left, 18);
+}
+
+---
+
+(source_file
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (typeclass_declaration
+      (typeclass_parameter
+        (identifier)
+        (named_type
+          (identifier)))
+      (typeclass_method_signature
+        (declaration_name
+          (quoted_operator))
+        (function_declaration
+          (parameter_list
+            (parameter
+              (binding_list
+                (identifier))
+              (named_type
+                (identifier)))
+            (parameter
+              (binding_list
+                (identifier))
+              (named_type
+                (identifier))))
+          (arrow)
+          (ERROR
+            (identifier)
+            (UNEXPECTED 'r'))
+          (generic_type
+            (identifier)
+            (named_type
+              (identifier))
+            (ERROR
+              (integer_literal))))))))

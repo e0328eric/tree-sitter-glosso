@@ -107,6 +107,7 @@ module.exports = grammar({
         $.insert_declaration,
         $.import_declaration,
         $.load_declaration,
+        $.export_declaration,
         $.thread_local_declaration,
         $.instance_declaration,
         $.named_declaration,
@@ -156,7 +157,17 @@ module.exports = grammar({
       ),
 
     load_declaration: ($) =>
-      seq("#load", field("path", $.string_literal), ";"),
+      seq(
+        "#load",
+        optional($.load_modifier),
+        field("path", $.string_literal),
+        ";",
+      ),
+
+    export_declaration: ($) =>
+      seq("#export", field("path", $.string_literal), ";"),
+
+    load_modifier: (_) => seq(",", "embed"),
 
     thread_local_declaration: ($) =>
       seq(
@@ -203,6 +214,7 @@ module.exports = grammar({
       choice(
         $.qualified_import_declaration,
         $.qualified_load_declaration,
+        $.qualified_export_declaration,
         $.library_declaration,
         $.function_pointer_type_declaration,
         $.typeclass_declaration,
@@ -234,7 +246,12 @@ module.exports = grammar({
       ),
 
     typeclass_parameter: ($) =>
-      seq(field("name", $.identifier), ":", field("kind", $._type)),
+      seq(
+        optional(field("modifier", $.comptime_modifier)),
+        field("name", $.identifier),
+        ":",
+        field("kind", $._type),
+      ),
 
     typeclass_method_signature: ($) =>
       seq(
@@ -329,7 +346,15 @@ module.exports = grammar({
       ),
 
     qualified_load_declaration: ($) =>
-      seq("#load", field("path", $.string_literal), ";"),
+      seq(
+        "#load",
+        optional($.load_modifier),
+        field("path", $.string_literal),
+        ";",
+      ),
+
+    qualified_export_declaration: ($) =>
+      seq("#export", field("path", $.string_literal), ";"),
 
     library_declaration: ($) =>
       seq(
@@ -637,7 +662,6 @@ module.exports = grammar({
     _function_modifier: ($) =>
       choice(
         $.operator_directive,
-        $.precedence_directive,
         $.modify_directive,
         $.expand_directive,
         $.magic_directive,
@@ -655,7 +679,6 @@ module.exports = grammar({
     _function_non_bodyless_modifier: ($) =>
       choice(
         $.operator_directive,
-        $.precedence_directive,
         $.modify_directive,
         $.expand_directive,
         $.memory_directive,
@@ -696,15 +719,6 @@ module.exports = grammar({
         "(",
         field("mode", $.identifier),
         optional(seq(",", choice(field("level", $.integer_literal), field("modifier", $.identifier)))),
-        ")",
-      ),
-
-    precedence_directive: ($) =>
-      seq(
-        "#precedence",
-        "(",
-        field("associativity", $.identifier),
-        optional(seq(",", field("level", $.integer_literal))),
         ")",
       ),
 
@@ -1550,6 +1564,7 @@ module.exports = grammar({
         $.parenthesized_type,
         $.generic_type_variable,
         $.context_type,
+        $.string_literal,
         $.named_type,
       ),
 
@@ -1590,6 +1605,7 @@ module.exports = grammar({
         $.parenthesized_type,
         $.generic_type_variable,
         $.context_type,
+        $.string_literal,
         $.named_type,
       ),
 
@@ -1760,6 +1776,7 @@ module.exports = grammar({
         $.function_type_constructor_pattern,
         $.tuple_type_constructor_pattern,
         $.generic_type_constructor_pattern,
+        $.string_literal,
         $.type_identifier,
       ),
 
@@ -1988,6 +2005,7 @@ module.exports = grammar({
         $.label_none_literal,
         $.label,
         $.context_expression,
+        $.source_location_expression,
         $.code_expression,
         $.lambda_expression,
         $.tuple_literal,
@@ -2310,6 +2328,7 @@ module.exports = grammar({
         $.label_none_literal,
         $.label,
         $.context_expression,
+        $.source_location_expression,
         $.code_expression,
         $.lambda_expression,
         $.tuple_literal,
@@ -2480,6 +2499,8 @@ module.exports = grammar({
     label_none_literal: (_) => token(prec(2, "#undefined")),
 
     context_expression: (_) => "context",
+
+    source_location_expression: (_) => "#source_location",
 
     shorthand_member_expression: ($) =>
       seq(".", field("field", choice($.identifier, $.code_splice_identifier))),

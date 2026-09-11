@@ -4,6 +4,10 @@
     "named": true,
     "subtypes": [
       {
+        "type": "export_declaration",
+        "named": true
+      },
+      {
         "type": "feature_directive",
         "named": true
       },
@@ -171,6 +175,10 @@
       },
       {
         "type": "simd_literal",
+        "named": true
+      },
+      {
+        "type": "source_location_expression",
         "named": true
       },
       {
@@ -468,6 +476,10 @@
         "named": true
       },
       {
+        "type": "string_literal",
+        "named": true
+      },
+      {
         "type": "tuple_type",
         "named": true
       }
@@ -569,6 +581,10 @@
           },
           {
             "type": "simd_type",
+            "named": true
+          },
+          {
+            "type": "string_literal",
             "named": true
           },
           {
@@ -1323,6 +1339,10 @@
             "named": true
           },
           {
+            "type": "source_location_expression",
+            "named": true
+          },
+          {
             "type": "string_block",
             "named": true
           },
@@ -1699,6 +1719,22 @@
     }
   },
   {
+    "type": "export_declaration",
+    "named": true,
+    "fields": {
+      "path": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "string_literal",
+            "named": true
+          }
+        ]
+      }
+    }
+  },
+  {
     "type": "expression_statement",
     "named": true,
     "fields": {
@@ -1878,6 +1914,10 @@
           },
           {
             "type": "simd_type",
+            "named": true
+          },
+          {
+            "type": "string_literal",
             "named": true
           },
           {
@@ -2188,10 +2228,6 @@
           "named": true
         },
         {
-          "type": "precedence_directive",
-          "named": true
-        },
-        {
           "type": "where_clause",
           "named": true
         }
@@ -2270,6 +2306,10 @@
           },
           {
             "type": "simd_type",
+            "named": true
+          },
+          {
+            "type": "string_literal",
             "named": true
           },
           {
@@ -3383,6 +3423,10 @@
             "named": true
           },
           {
+            "type": "string_literal",
+            "named": true
+          },
+          {
             "type": "tuple_type",
             "named": true
           }
@@ -3435,7 +3479,22 @@
           }
         ]
       }
+    },
+    "children": {
+      "multiple": false,
+      "required": false,
+      "types": [
+        {
+          "type": "load_modifier",
+          "named": true
+        }
+      ]
     }
+  },
+  {
+    "type": "load_modifier",
+    "named": true,
+    "fields": {}
   },
   {
     "type": "magic_directive",
@@ -3511,6 +3570,10 @@
           },
           {
             "type": "simd_type",
+            "named": true
+          },
+          {
+            "type": "string_literal",
             "named": true
           },
           {
@@ -4413,6 +4476,10 @@
           "named": true
         },
         {
+          "type": "qualified_export_declaration",
+          "named": true
+        },
+        {
           "type": "qualified_import_declaration",
           "named": true
         },
@@ -4615,6 +4682,10 @@
           },
           {
             "type": "simd_type",
+            "named": true
+          },
+          {
+            "type": "string_literal",
             "named": true
           },
           {
@@ -5449,6 +5520,10 @@
             "named": true
           },
           {
+            "type": "string_literal",
+            "named": true
+          },
+          {
             "type": "tuple_type",
             "named": true
           }
@@ -5558,6 +5633,10 @@
           },
           {
             "type": "simd_literal",
+            "named": true
+          },
+          {
+            "type": "source_location_expression",
             "named": true
           },
           {
@@ -5701,6 +5780,10 @@
             "named": true
           },
           {
+            "type": "source_location_expression",
+            "named": true
+          },
+          {
             "type": "string_block",
             "named": true
           },
@@ -5837,6 +5920,10 @@
             "named": true
           },
           {
+            "type": "source_location_expression",
+            "named": true
+          },
+          {
             "type": "string_block",
             "named": true
           },
@@ -5957,6 +6044,10 @@
             "named": true
           },
           {
+            "type": "source_location_expression",
+            "named": true
+          },
+          {
             "type": "string_block",
             "named": true
           },
@@ -6059,11 +6150,11 @@
             "named": true
           },
           {
-            "type": "string_block",
+            "type": "source_location_expression",
             "named": true
           },
           {
-            "type": "string_literal",
+            "type": "string_block",
             "named": true
           },
           {
@@ -6161,6 +6252,10 @@
             "named": true
           },
           {
+            "type": "source_location_expression",
+            "named": true
+          },
+          {
             "type": "string_block",
             "named": true
           },
@@ -6174,32 +6269,6 @@
           },
           {
             "type": "tuple_literal",
-            "named": true
-          }
-        ]
-      }
-    }
-  },
-  {
-    "type": "precedence_directive",
-    "named": true,
-    "fields": {
-      "associativity": {
-        "multiple": false,
-        "required": true,
-        "types": [
-          {
-            "type": "identifier",
-            "named": true
-          }
-        ]
-      },
-      "level": {
-        "multiple": false,
-        "required": false,
-        "types": [
-          {
-            "type": "integer_literal",
             "named": true
           }
         ]
@@ -6242,6 +6311,22 @@
         "types": [
           {
             "type": "_expression",
+            "named": true
+          }
+        ]
+      }
+    }
+  },
+  {
+    "type": "qualified_export_declaration",
+    "named": true,
+    "fields": {
+      "path": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "string_literal",
             "named": true
           }
         ]
@@ -6314,6 +6399,16 @@
           }
         ]
       }
+    },
+    "children": {
+      "multiple": false,
+      "required": false,
+      "types": [
+        {
+          "type": "load_modifier",
+          "named": true
+        }
+      ]
     }
   },
   {
@@ -6608,6 +6703,10 @@
           },
           {
             "type": "simd_type",
+            "named": true
+          },
+          {
+            "type": "string_literal",
             "named": true
           },
           {
@@ -7827,6 +7926,10 @@
           "named": true
         },
         {
+          "type": "string_literal",
+          "named": true
+        },
+        {
           "type": "tuple_type_constructor_pattern",
           "named": true
         },
@@ -7984,6 +8087,16 @@
         "types": [
           {
             "type": "_type",
+            "named": true
+          }
+        ]
+      },
+      "modifier": {
+        "multiple": false,
+        "required": false,
+        "types": [
+          {
+            "type": "comptime_modifier",
             "named": true
           }
         ]
@@ -8474,6 +8587,10 @@
     "named": false
   },
   {
+    "type": "#export",
+    "named": false
+  },
+  {
     "type": "#falling",
     "named": false
   },
@@ -8555,10 +8672,6 @@
   },
   {
     "type": "#pattern",
-    "named": false
-  },
-  {
-    "type": "#precedence",
     "named": false
   },
   {
@@ -8871,6 +8984,10 @@
     "named": false
   },
   {
+    "type": "embed",
+    "named": false
+  },
+  {
     "type": "enum",
     "named": false
   },
@@ -9109,6 +9226,10 @@
   {
     "type": "scope",
     "named": false
+  },
+  {
+    "type": "source_location_expression",
+    "named": true
   },
   {
     "type": "static",

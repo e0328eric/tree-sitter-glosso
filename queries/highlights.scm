@@ -30,6 +30,7 @@
   "#lazy"
   "#import"
   "#load"
+  "#export"
   "#thread_local"
   "#library"
   "#fn_ptr"
@@ -39,7 +40,6 @@
   "#aos"
   "#soa"
   "#operator"
-  "#precedence"
   "#modify"
   "#expand"
   "#magic"
@@ -87,6 +87,7 @@
 (null_literal) @constant.builtin
 (label_none_literal) @constant.builtin
 (context_expression) @constant.builtin
+(source_location_expression) @constant.builtin
 (context_type) @type.builtin
 
 ; Give every identifier a baseline capture first. Context-specific captures below
@@ -143,7 +144,7 @@
     (generic_type_constructor_pattern name: (identifier) @type.builtin)
   ]
   (#any-of? @type.builtin
-    "ssize" "usize" "char" "rune" "bool"
+    "ssize" "usize" "rune" "bool"
     "string" "cstring" "string16" "cstring16"
     "type" "void" "any" "label"
     "Code" "Pattern" "Namespace" "Library" "Typeclass" "Macro"
@@ -294,5 +295,6 @@
 (structured_asm_operand_flag) @attribute
 (structured_asm_clobber_kind) @constant.builtin
 (import_selector mode: _ @attribute)
+(load_modifier "embed" @attribute)
 (expand_directive mode: (identifier) @attribute)
 (insert_scope "scope" @attribute)

@@ -1,0 +1,92 @@
+==================
+module exports, embedded loads, and value type arguments
+==================
+
+#load "parts/ordinary.glo";
+#export "parts/public.glo";
+#load,embed "parts/shared.glo";
+lib :: #load "parts/ordinary.glo";
+api : Namespace : #export "parts/public.glo";
+legacy := #load,embed "parts/shared.glo";
+
+Formatter :: typeclass(T: type, #comptime spec: string, W: type) {}
+(u8, "Z", $W) ::: instance Formatter where Writer(W) {}
+selected :: (value: Formatter(u8, "Z", Writer)) {}
+
+---
+
+(source_file
+  (load_declaration
+    (string_literal))
+  (export_declaration
+    (string_literal))
+  (load_declaration
+    (load_modifier)
+    (string_literal))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (qualified_load_declaration
+      (string_literal)))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (named_type
+      (identifier))
+    (qualified_export_declaration
+      (string_literal)))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (qualified_load_declaration
+      (load_modifier)
+      (string_literal)))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (typeclass_declaration
+      (typeclass_parameter
+        (identifier)
+        (named_type
+          (identifier)))
+      (typeclass_parameter
+        (comptime_modifier)
+        (identifier)
+        (named_type
+          (identifier)))
+      (typeclass_parameter
+        (identifier)
+        (named_type
+          (identifier)))))
+  (instance_declaration
+    (type_constructor_pattern
+      (tuple_type_constructor_pattern
+        (type_constructor_pattern
+          (identifier))
+        (type_constructor_pattern
+          (string_literal))
+        (type_constructor_pattern
+          (generic_type_variable
+            (identifier)))))
+    (identifier)
+    (where_clause
+      (postfix_expression
+        (identifier)
+        (argument_list
+          (identifier)))))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (function_declaration
+      (parameter_list
+        (parameter
+          (binding_list
+            (identifier))
+          (generic_type
+            (identifier)
+            (named_type
+              (identifier))
+            (string_literal)
+            (named_type
+              (identifier)))))
+      (block))))
