@@ -1,0 +1,1036 @@
+==================
+declaration visibility prefixes and nested groups
+==================
+
+#public exported: s64 = 0;
+#public #thread_local count: s64 = 0;
+#private hidden :: () {}
+#public(unit) Imported :: #import "std/math";
+#public Loaded :: #load "types.glo";
+#public {
+  first :: () {}
+  #private {
+    inner :: () {}
+    #public exception :: () {}
+  }
+  #public(unit) { internal :: () {} }
+  restored :: () {}
+}
+after :: () {}
+
+---
+
+(source_file
+  (named_declaration
+    (visibility_modifier)
+    (declaration_name
+      (identifier))
+    (global_variable_declaration_tail
+      (named_type
+        (identifier))
+      (integer_literal)))
+  (thread_local_declaration
+    (visibility_modifier)
+    (named_declaration
+      (declaration_name
+        (identifier))
+      (global_variable_declaration_tail
+        (named_type
+          (identifier))
+        (integer_literal))))
+  (named_declaration
+    (visibility_modifier)
+    (declaration_name
+      (identifier))
+    (function_declaration
+      (parameter_list)
+      (block)))
+  (named_declaration
+    (visibility_modifier)
+    (declaration_name
+      (identifier))
+    (qualified_import_declaration
+      (string_literal)))
+  (named_declaration
+    (visibility_modifier)
+    (declaration_name
+      (identifier))
+    (qualified_load_declaration
+      (string_literal)))
+  (visibility_group
+    (visibility_modifier)
+    (declaration_block
+      (named_declaration
+        (declaration_name
+          (identifier))
+        (function_declaration
+          (parameter_list)
+          (block)))
+      (visibility_group
+        (visibility_modifier)
+        (declaration_block
+          (named_declaration
+            (declaration_name
+              (identifier))
+            (function_declaration
+              (parameter_list)
+              (block)))
+          (named_declaration
+            (visibility_modifier)
+            (declaration_name
+              (identifier))
+            (function_declaration
+              (parameter_list)
+              (block)))))
+      (visibility_group
+        (visibility_modifier)
+        (declaration_block
+          (named_declaration
+            (declaration_name
+              (identifier))
+            (function_declaration
+              (parameter_list)
+              (block)))))
+      (named_declaration
+        (declaration_name
+          (identifier))
+        (function_declaration
+          (parameter_list)
+          (block)))))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (function_declaration
+      (parameter_list)
+      (block))))
+
+==================
+aggregate member visibility and conversion fields
+==================
+
+#public Record :: struct {
+  first: s64;
+  #private {
+    second: s64;
+    #public third: s64;
+    #empty: $T;
+  }
+  #public(unit) #as using inner: Inner;
+  #public #empty: $U;
+}
+
+Choice :: union {
+  First: s64;
+  #private {
+    Second: s64;
+    #public #from Third: u64;
+  }
+  #public(unit) Fourth: string;
+}
+
+Code :: enum {
+  First;
+  #private { Second :: 5; #public Third; }
+  #public(unit) Fourth;
+}
+
+Flags :: enum_flags u32 {
+  #public Read;
+  #private { Write; #public(unit) Execute; }
+}
+
+---
+
+(source_file
+  (named_declaration
+    (visibility_modifier)
+    (declaration_name
+      (identifier))
+    (struct_declaration
+      (struct_field
+        (identifier)
+        (named_type
+          (identifier)))
+      (struct_visibility_group
+        (visibility_modifier)
+        (struct_field
+          (identifier)
+          (named_type
+            (identifier)))
+        (struct_field
+          (visibility_modifier)
+          (identifier)
+          (named_type
+            (identifier)))
+        (empty_field
+          (generic_type_variable
+            (identifier))))
+      (struct_field
+        (visibility_modifier)
+        (identifier)
+        (named_type
+          (identifier)))
+      (empty_field
+        (visibility_modifier)
+        (generic_type_variable
+          (identifier)))))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (union_declaration
+      (union_field
+        (identifier)
+        (named_type
+          (identifier)))
+      (union_visibility_group
+        (visibility_modifier)
+        (union_field
+          (identifier)
+          (named_type
+            (identifier)))
+        (union_field
+          (visibility_modifier)
+          (from_directive)
+          (identifier)
+          (named_type
+            (identifier))))
+      (union_field
+        (visibility_modifier)
+        (identifier)
+        (named_type
+          (identifier)))))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (enum_declaration
+      (enum_variant
+        (identifier))
+      (enum_visibility_group
+        (visibility_modifier)
+        (enum_variant
+          (identifier)
+          (integer_literal))
+        (enum_variant
+          (visibility_modifier)
+          (identifier)))
+      (enum_variant
+        (visibility_modifier)
+        (identifier))))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (enum_flags_declaration
+      (named_type
+        (identifier))
+      (enum_variant
+        (visibility_modifier)
+        (identifier))
+      (enum_visibility_group
+        (visibility_modifier)
+        (enum_variant
+          (identifier))
+        (enum_variant
+          (visibility_modifier)
+          (identifier))))))
+
+==================
+inherent receiver forms and self expressions
+==================
+
+Record ::: {
+  same :: (#self) -> #Self_Type { return #self; }
+  mutate :: (*#self, value: s64) { #self.value = value; }
+  inspect :: (*const #self) -> #Self_Type { return #self.*; }
+  copy :: (noalias *#self, source: *const Record) { #self.value = source.value; }
+  compare :: (noalias *const #self, other: *const #Self_Type) -> bool {
+    return #self.value == other.value;
+  }
+  make :: () -> #Self_Type { return .{ .value = 0 }; }
+  owner :: () -> type { return #Self_Type; }
+}
+
+---
+
+(source_file
+  (inherent_declaration
+    (type_constructor_pattern
+      (identifier))
+    (inherent_method
+      (identifier)
+      (function_declaration
+        (parameter_list
+          (receiver_parameter
+            (self_expression)))
+        (arrow)
+        (self_type)
+        (block
+          (return_statement
+            (self_expression)))))
+    (inherent_method
+      (identifier)
+      (function_declaration
+        (parameter_list
+          (receiver_parameter
+            (self_expression))
+          (parameter
+            (binding_list
+              (identifier))
+            (named_type
+              (identifier))))
+        (block
+          (assignment_statement
+            (postfix_expression
+              (self_expression)
+              (identifier))
+            (identifier)))))
+    (inherent_method
+      (identifier)
+      (function_declaration
+        (parameter_list
+          (receiver_parameter
+            (self_expression)))
+        (arrow)
+        (self_type)
+        (block
+          (return_statement
+            (postfix_expression
+              (self_expression))))))
+    (inherent_method
+      (identifier)
+      (function_declaration
+        (parameter_list
+          (receiver_parameter
+            (self_expression))
+          (parameter
+            (binding_list
+              (identifier))
+            (pointer_type
+              (named_type
+                (identifier)))))
+        (block
+          (assignment_statement
+            (postfix_expression
+              (self_expression)
+              (identifier))
+            (postfix_expression
+              (identifier)
+              (identifier))))))
+    (inherent_method
+      (identifier)
+      (function_declaration
+        (parameter_list
+          (receiver_parameter
+            (self_expression))
+          (parameter
+            (binding_list
+              (identifier))
+            (pointer_type
+              (self_type))))
+        (arrow)
+        (named_type
+          (identifier))
+        (block
+          (return_statement
+            (binary_expression
+              (postfix_expression
+                (self_expression)
+                (identifier))
+              (operator)
+              (postfix_expression
+                (identifier)
+                (identifier)))))))
+    (inherent_method
+      (identifier)
+      (function_declaration
+        (parameter_list)
+        (arrow)
+        (self_type)
+        (block
+          (return_statement
+            (struct_literal
+              (struct_literal_field
+                (identifier)
+                (integer_literal)))))))
+    (inherent_method
+      (identifier)
+      (function_declaration
+        (parameter_list)
+        (arrow)
+        (named_type
+          (identifier))
+        (block
+          (return_statement
+            (self_type)))))))
+
+==================
+inherent visibility headers and generic constraints
+==================
+
+Box($T) ::: #public where true {
+  exposed :: (#self, U: type, value: U) -> U where true { return value; }
+  #private hidden :: (*#self) {}
+  #public(unit) {
+    internal :: (*const #self) {}
+    #private { nested :: () {} }
+  }
+  defaults :: (#self, U := #Self_Type, value: U, rest: ...U, finish: U = .{}) {}
+}
+
+Box($T) ::: where true {
+  #public { outside :: (#self) -> T { return #self.value; } }
+}
+
+---
+
+(source_file
+  (inherent_declaration
+    (type_constructor_pattern
+      (generic_type_constructor_pattern
+        (identifier)
+        (type_constructor_pattern
+          (generic_type_variable
+            (identifier)))))
+    (visibility_modifier)
+    (where_clause
+      (boolean_literal))
+    (inherent_method
+      (identifier)
+      (function_declaration
+        (parameter_list
+          (receiver_parameter
+            (self_expression))
+          (parameter
+            (binding_list
+              (identifier))
+            (named_type
+              (identifier)))
+          (parameter
+            (binding_list
+              (identifier))
+            (named_type
+              (identifier))))
+        (arrow)
+        (named_type
+          (identifier))
+        (where_clause
+          (boolean_literal))
+        (block
+          (return_statement
+            (identifier)))))
+    (inherent_method
+      (visibility_modifier)
+      (identifier)
+      (function_declaration
+        (parameter_list
+          (receiver_parameter
+            (self_expression)))
+        (block)))
+    (inherent_visibility_group
+      (visibility_modifier)
+      (inherent_method
+        (identifier)
+        (function_declaration
+          (parameter_list
+            (receiver_parameter
+              (self_expression)))
+          (block)))
+      (inherent_visibility_group
+        (visibility_modifier)
+        (inherent_method
+          (identifier)
+          (function_declaration
+            (parameter_list)
+            (block)))))
+    (inherent_method
+      (identifier)
+      (function_declaration
+        (parameter_list
+          (receiver_parameter
+            (self_expression))
+          (parameter
+            (identifier)
+            (self_type))
+          (parameter
+            (binding_list
+              (identifier))
+            (named_type
+              (identifier)))
+          (parameter
+            (binding_list
+              (identifier))
+            (variadic_type
+              (identifier)))
+          (parameter
+            (binding_list
+              (identifier))
+            (named_type
+              (identifier))
+            (struct_literal)))
+        (block))))
+  (inherent_declaration
+    (type_constructor_pattern
+      (generic_type_constructor_pattern
+        (identifier)
+        (type_constructor_pattern
+          (generic_type_variable
+            (identifier)))))
+    (where_clause
+      (boolean_literal))
+    (inherent_visibility_group
+      (visibility_modifier)
+      (inherent_method
+        (identifier)
+        (function_declaration
+          (parameter_list
+            (receiver_parameter
+              (self_expression)))
+          (arrow)
+          (named_type
+            (identifier))
+          (block
+            (return_statement
+              (postfix_expression
+                (self_expression)
+                (identifier)))))))))
+
+==================
+option result and array inherent owners
+==================
+
+?$T ::: #private {
+  make_none :: () -> #Self_Type { return .None; }
+  unwrap_or :: (#self, default: T) -> T { return default; }
+  map_or :: (*#self, fnt: (T) -> $U, default: U) -> U { return default; }
+}
+
+$E!$T ::: #public(unit) where true {
+  same :: (#self) -> #Self_Type { return #self; }
+}
+
+[]$T ::: {
+  view :: (#self) -> []T #magic "array_view";
+}
+
+[2]$T ::: {
+  fixed_length :: (#self) -> s64 { return cast(s64)#self.count; }
+}
+
+[..]$T ::: #public {
+  add :: (*#self, values: ...T) #magic "array_add";
+}
+
+---
+
+(source_file
+  (inherent_declaration
+    (type_constructor_pattern
+      (optional_type_constructor_pattern
+        (type_constructor_pattern
+          (generic_type_variable
+            (identifier)))))
+    (visibility_modifier)
+    (inherent_method
+      (identifier)
+      (function_declaration
+        (parameter_list)
+        (arrow)
+        (self_type)
+        (block
+          (return_statement
+            (shorthand_member_expression
+              (identifier))))))
+    (inherent_method
+      (identifier)
+      (function_declaration
+        (parameter_list
+          (receiver_parameter
+            (self_expression))
+          (parameter
+            (binding_list
+              (identifier))
+            (named_type
+              (identifier))))
+        (arrow)
+        (named_type
+          (identifier))
+        (block
+          (return_statement
+            (identifier)))))
+    (inherent_method
+      (identifier)
+      (function_declaration
+        (parameter_list
+          (receiver_parameter
+            (self_expression))
+          (parameter
+            (binding_list
+              (identifier))
+            (function_type
+              (type_element
+                (named_type
+                  (identifier)))
+              (arrow)
+              (generic_type_variable
+                (identifier))))
+          (parameter
+            (binding_list
+              (identifier))
+            (named_type
+              (identifier))))
+        (arrow)
+        (named_type
+          (identifier))
+        (block
+          (return_statement
+            (identifier))))))
+  (inherent_declaration
+    (type_constructor_pattern
+      (result_type_constructor_pattern
+        (type_constructor_pattern
+          (generic_type_variable
+            (identifier)))
+        (type_constructor_pattern
+          (generic_type_variable
+            (identifier)))))
+    (visibility_modifier)
+    (where_clause
+      (boolean_literal))
+    (inherent_method
+      (identifier)
+      (function_declaration
+        (parameter_list
+          (receiver_parameter
+            (self_expression)))
+        (arrow)
+        (self_type)
+        (block
+          (return_statement
+            (self_expression))))))
+  (inherent_declaration
+    (type_constructor_pattern
+      (array_type_constructor_pattern
+        (type_constructor_pattern
+          (generic_type_variable
+            (identifier)))))
+    (inherent_method
+      (identifier)
+      (function_declaration
+        (parameter_list
+          (receiver_parameter
+            (self_expression)))
+        (arrow)
+        (array_type
+          (named_type
+            (identifier)))
+        (magic_directive
+          (string_literal)))))
+  (inherent_declaration
+    (type_constructor_pattern
+      (array_type_constructor_pattern
+        (integer_literal)
+        (type_constructor_pattern
+          (generic_type_variable
+            (identifier)))))
+    (inherent_method
+      (identifier)
+      (function_declaration
+        (parameter_list
+          (receiver_parameter
+            (self_expression)))
+        (arrow)
+        (named_type
+          (identifier))
+        (block
+          (return_statement
+            (cast_expression
+              (named_type
+                (identifier))
+              (postfix_expression
+                (self_expression)
+                (identifier))))))))
+  (inherent_declaration
+    (type_constructor_pattern
+      (array_type_constructor_pattern
+        (type_constructor_pattern
+          (generic_type_variable
+            (identifier)))))
+    (visibility_modifier)
+    (inherent_method
+      (identifier)
+      (function_declaration
+        (parameter_list
+          (receiver_parameter
+            (self_expression))
+          (parameter
+            (binding_list
+              (identifier))
+            (variadic_type
+              (identifier))))
+        (magic_directive
+          (string_literal))))))
+
+==================
+receiver memory contracts
+==================
+
+Buffer ::: #public {
+  inspect :: (*const #self) #memory reads(#self) {}
+  modify :: (*#self) #memory{reads(#self.data), writes(#self.data)} {}
+  view :: (#self) -> []u8
+    #memory{returns_borrow(#self.data), returns_unique_borrow(#self),
+      returns_borrow(returned.0, #self)} {
+    return #self.data;
+  }
+}
+
+---
+
+(source_file
+  (inherent_declaration
+    (type_constructor_pattern
+      (identifier))
+    (visibility_modifier)
+    (inherent_method
+      (identifier)
+      (function_declaration
+        (parameter_list
+          (receiver_parameter
+            (self_expression)))
+        (memory_directive
+          (memory_effect
+            (memory_parameter_effect
+              (memory_parameter_effect_kind)
+              (self_expression))))
+        (block)))
+    (inherent_method
+      (identifier)
+      (function_declaration
+        (parameter_list
+          (receiver_parameter
+            (self_expression)))
+        (memory_directive
+          (memory_effect
+            (memory_parameter_effect
+              (memory_parameter_effect_kind)
+              (self_expression)
+              (identifier)))
+          (memory_effect
+            (memory_parameter_effect
+              (memory_parameter_effect_kind)
+              (self_expression)
+              (identifier))))
+        (block)))
+    (inherent_method
+      (identifier)
+      (function_declaration
+        (parameter_list
+          (receiver_parameter
+            (self_expression)))
+        (arrow)
+        (array_type
+          (named_type
+            (identifier)))
+        (memory_directive
+          (memory_effect
+            (memory_borrow_place_effect
+              (self_expression)
+              (identifier)))
+          (memory_effect
+            (memory_borrow_place_effect
+              (self_expression)))
+          (memory_effect
+            (memory_borrow_place_effect
+              (memory_qualified_name
+                (identifier)
+                (integer_literal))
+              (self_expression))))
+        (block
+          (return_statement
+            (postfix_expression
+              (self_expression)
+              (identifier))))))))
+
+==================
+self type in instance methods and associated types
+==================
+
+Box($T) ::: instance Clone {
+  Item :: #Self_Type;
+  clone :: (value: #Self_Type) -> #Self_Type { return value; }
+  owner :: () -> type { return #Self_Type; }
+}
+
+---
+
+(source_file
+  (instance_declaration
+    (type_constructor_pattern
+      (generic_type_constructor_pattern
+        (identifier)
+        (type_constructor_pattern
+          (generic_type_variable
+            (identifier)))))
+    (identifier)
+    (instance_associated_type
+      (declaration_name
+        (identifier))
+      (self_type))
+    (instance_method
+      (declaration_name
+        (identifier))
+      (function_declaration
+        (parameter_list
+          (parameter
+            (binding_list
+              (identifier))
+            (self_type)))
+        (arrow)
+        (self_type)
+        (block
+          (return_statement
+            (identifier)))))
+    (instance_method
+      (declaration_name
+        (identifier))
+      (function_declaration
+        (parameter_list)
+        (arrow)
+        (named_type
+          (identifier))
+        (block
+          (return_statement
+            (self_type)))))))
+
+==================
+unsupported visibility audience
+:error
+==================
+
+#public(siblings) item :: () {}
+
+---
+
+(source_file)
+
+==================
+private visibility cannot have an audience
+:error
+==================
+
+#private(unit) item :: () {}
+
+---
+
+(source_file)
+
+==================
+duplicate visibility prefixes
+:error
+==================
+
+#public #private item :: () {}
+
+---
+
+(source_file)
+
+==================
+receiver cannot have a default
+:error
+==================
+
+Thing ::: { bad :: (#self = 0) {} }
+
+---
+
+(source_file)
+
+==================
+receiver cannot have an annotation
+:error
+==================
+
+Thing ::: { bad :: (#self: Thing) {} }
+
+---
+
+(source_file)
+
+==================
+receiver cannot be a double pointer
+:error
+==================
+
+Thing ::: { bad :: (**#self) {} }
+
+---
+
+(source_file)
+
+==================
+inherent declaration inside a code quote
+==================
+
+METHODS :: #code {
+  Record ::: {
+    read :: (#self) -> #Self_Type { return #self; }
+  }
+};
+
+---
+
+(source_file
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (constant_declaration_body
+      (code_expression
+        (code_block
+          (inherent_declaration
+            (type_constructor_pattern
+              (identifier))
+            (inherent_method
+              (identifier)
+              (function_declaration
+                (parameter_list
+                  (receiver_parameter
+                    (self_expression)))
+                (arrow)
+                (self_type)
+                (block
+                  (return_statement
+                    (self_expression)))))))))))
+
+==================
+suffix try operator annotation
+==================
+
+#public Try :: typeclass (Carrier: type) {
+  Output :: type;
+  '?' :: (#empty: $Target, value: Carrier)
+    -> Try_Branch(Output, Target)
+    #operator(suffix, try(Target))
+    where Try(Target) {
+    return .Continue(value);
+  }
+}
+
+---
+
+(source_file
+  (named_declaration
+    (visibility_modifier)
+    (declaration_name
+      (identifier))
+    (typeclass_declaration
+      (typeclass_parameter
+        (identifier)
+        (named_type
+          (identifier)))
+      (typeclass_associated_type
+        (declaration_name
+          (identifier))
+        (named_type
+          (identifier)))
+      (typeclass_method_signature
+        (declaration_name
+          (quoted_operator))
+        (function_declaration
+          (parameter_list
+            (empty_parameter
+              (generic_type_variable
+                (identifier)))
+            (parameter
+              (binding_list
+                (identifier))
+              (named_type
+                (identifier))))
+          (arrow)
+          (generic_type
+            (identifier)
+            (named_type
+              (identifier))
+            (named_type
+              (identifier)))
+          (operator_directive
+            (identifier)
+            (operator_try_modifier
+              (identifier)))
+          (where_clause
+            (postfix_expression
+              (identifier)
+              (argument_list
+                (identifier))))
+          (block
+            (return_statement
+              (postfix_expression
+                (shorthand_member_expression
+                  (identifier))
+                (argument_list
+                  (identifier))))))))))
+
+==================
+receiver must precede ordinary parameters
+:error
+==================
+
+Thing ::: { bad :: (value: s64, #self) {} }
+
+---
+
+(source_file)
+
+==================
+receiver must be unique
+:error
+==================
+
+Thing ::: { bad :: (#self, #self) {} }
+
+---
+
+(source_file)
+
+==================
+visibility cannot prefix local declarations
+:error
+==================
+
+entry :: () { #public local :: () {} }
+
+---
+
+(source_file)
+
+==================
+visibility cannot prefix instance slots
+:error
+==================
+
+Record ::: instance Show { #private show :: () {} }
+
+---
+
+(source_file)
+
+==================
+visibility cannot prefix typeclass slots
+:error
+==================
+
+Class :: typeclass (T: type) { #public required :: (value: T); }
+
+---
+
+(source_file)
+
+==================
+visibility cannot prefix an inherent owner
+:error
+==================
+
+#public Record ::: {}
+
+---
+
+(source_file)

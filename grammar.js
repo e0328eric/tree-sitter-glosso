@@ -34,9 +34,7 @@ module.exports = grammar({
     [$.generic_type_constructor_pattern, $._postfix_expression_base],
     [$.type_constructor_pattern, $.generic_type_constructor_pattern, $._postfix_expression_base],
     [$._expression, $._prefix_operator],
-    [$.declaration_name, $.type_constructor_pattern],
     [$.declaration_name, $.binding_list],
-    [$.declaration_name, $.binding_list, $.type_constructor_pattern],
     [$.parenthesized_type, $.type_element],
     [$.tuple_type, $.type_element],
     [$.binding_list, $.tuple_type, $.type_element],
@@ -58,6 +56,7 @@ module.exports = grammar({
     [$.type_constructor_pattern],
     [$.type_constructor_pattern, $._expression],
     [$._code_splice_call_expression, $._postfix_expression_base],
+    [$._code_splice_member_expression, $._postfix_expression_base],
     [$._single_statement, $.static_if_statement],
     [$.for_statement, $._prefix_operator],
   ],
@@ -72,6 +71,8 @@ module.exports = grammar({
 
   inline: ($) => [
     $._declaration_body,
+    $._function_declaration_tail,
+    $._parameter,
     $._function_modifier,
     $._non_run_expression,
     $._primary_expression,
@@ -110,6 +111,9 @@ module.exports = grammar({
         $.export_declaration,
         $.thread_local_declaration,
         $.instance_declaration,
+        $.inherent_declaration,
+        $.visibility_group,
+        $.conditional_declaration,
         $.named_declaration,
       ),
 
@@ -118,9 +122,27 @@ module.exports = grammar({
         choice("#enable", "#disable"),
         "(",
         field("feature", $.identifier),
-        optional(seq(",", field("mode", $.identifier))),
         ")",
         optional(";"),
+      ),
+
+    visibility_modifier: (_) =>
+      choice("#private", seq("#public", optional(seq("(", "unit", ")")))),
+
+    visibility_group: ($) =>
+      seq(field("visibility", $.visibility_modifier), $.declaration_block),
+
+    declaration_block: ($) => seq("{", repeat($._declaration), "}"),
+
+    conditional_declaration: ($) =>
+      seq(
+        "#if",
+        field("condition", $._expression),
+        field("consequence", $.declaration_block),
+        optional(seq(
+          "else",
+          field("alternative", choice($.declaration_block, $.conditional_declaration)),
+        )),
       ),
 
     top_run_declaration: ($) =>
@@ -171,6 +193,7 @@ module.exports = grammar({
 
     thread_local_declaration: ($) =>
       seq(
+        optional(field("visibility", $.visibility_modifier)),
         "#thread_local",
         field(
           "declaration",
@@ -186,6 +209,7 @@ module.exports = grammar({
 
     named_declaration: ($) =>
       seq(
+        optional(field("visibility", $.visibility_modifier)),
         field("name", $.declaration_name),
         choice(
           seq("::", $._declaration_body),
@@ -337,6 +361,33 @@ module.exports = grammar({
         field("type", $._type),
       ),
 
+    inherent_declaration: ($) =>
+      seq(
+        field("target", $.type_constructor_pattern),
+        ":::",
+        optional(field("visibility", $.visibility_modifier)),
+        repeat($.where_clause),
+        "{",
+        repeat(choice($.inherent_method, $.inherent_visibility_group)),
+        "}",
+      ),
+
+    inherent_visibility_group: ($) =>
+      seq(
+        field("visibility", $.visibility_modifier),
+        "{",
+        repeat(choice($.inherent_method, $.inherent_visibility_group)),
+        "}",
+      ),
+
+    inherent_method: ($) =>
+      seq(
+        optional(field("visibility", $.visibility_modifier)),
+        field("name", $.identifier),
+        "::",
+        alias($._inherent_function_declaration, $.function_declaration),
+      ),
+
     qualified_import_declaration: ($) =>
       seq(
         "#import",
@@ -447,7 +498,15 @@ module.exports = grammar({
         "struct",
         repeat($.struct_modifier),
         "{",
-        repeat(choice($.struct_field, $.empty_field)),
+        repeat(choice($.struct_field, $.empty_field, $.struct_visibility_group)),
+        "}",
+      ),
+
+    struct_visibility_group: ($) =>
+      seq(
+        field("visibility", $.visibility_modifier),
+        "{",
+        repeat(choice($.struct_field, $.empty_field, $.struct_visibility_group)),
         "}",
       ),
 
@@ -462,6 +521,7 @@ module.exports = grammar({
 
     empty_field: ($) =>
       seq(
+        optional(field("visibility", $.visibility_modifier)),
         "#empty",
         ":",
         commaSep1(field("type", $._type)),
@@ -470,6 +530,7 @@ module.exports = grammar({
 
     struct_field: ($) =>
       seq(
+        optional(field("visibility", $.visibility_modifier)),
         optional("using"),
         optional(seq("#as", optional("using"))),
         field("name", $.identifier),
@@ -484,15 +545,30 @@ module.exports = grammar({
         "enum",
         optional(field("backing_type", $._type)),
         "{",
-        repeat($.enum_variant),
+        repeat(choice($.enum_variant, $.enum_visibility_group)),
         "}",
       ),
 
     enum_flags_declaration: ($) =>
-      seq("enum_flags", field("backing_type", $._type), "{", repeat($.enum_variant), "}"),
+      seq(
+        "enum_flags",
+        field("backing_type", $._type),
+        "{",
+        repeat(choice($.enum_variant, $.enum_visibility_group)),
+        "}",
+      ),
+
+    enum_visibility_group: ($) =>
+      seq(
+        field("visibility", $.visibility_modifier),
+        "{",
+        repeat(choice($.enum_variant, $.enum_visibility_group)),
+        "}",
+      ),
 
     enum_variant: ($) =>
       seq(
+        optional(field("visibility", $.visibility_modifier)),
         field("name", $.identifier),
         optional(seq("::", field("value", $.integer_literal))),
         ";",
@@ -503,12 +579,21 @@ module.exports = grammar({
         "union",
         repeat(choice("#raw", $.derive_directive, $.magic_directive)),
         "{",
-        repeat($.union_field),
+        repeat(choice($.union_field, $.union_visibility_group)),
+        "}",
+      ),
+
+    union_visibility_group: ($) =>
+      seq(
+        field("visibility", $.visibility_modifier),
+        "{",
+        repeat(choice($.union_field, $.union_visibility_group)),
         "}",
       ),
 
     union_field: ($) =>
       seq(
+        optional(field("visibility", $.visibility_modifier)),
         optional(field("conversion", $.from_directive)),
         field("name", $.identifier),
         ":",
@@ -530,6 +615,17 @@ module.exports = grammar({
     function_declaration: ($) =>
       seq(
         field("parameters", $.parameter_list),
+        $._function_declaration_tail,
+      ),
+
+    _inherent_function_declaration: ($) =>
+      seq(
+        field("parameters", alias($.inherent_parameter_list, $.parameter_list)),
+        $._function_declaration_tail,
+      ),
+
+    _function_declaration_tail: ($) =>
+      seq(
         optional(seq($.arrow, field("return_type", $._type))),
         choice(
           seq(
@@ -571,18 +667,28 @@ module.exports = grammar({
       ),
 
     parameter_list: ($) =>
+      seq("(", commaSep($._parameter), ")"),
+
+    _parameter: ($) =>
+      choice(
+        $.parameter,
+        $.comptime_parameter,
+        $.empty_parameter,
+        $.c_varargs_parameter,
+      ),
+
+    inherent_parameter_list: ($) =>
       seq(
         "(",
-        commaSep(
-          choice(
-            $.parameter,
-            $.comptime_parameter,
-            $.empty_parameter,
-            $.c_varargs_parameter,
-          ),
+        choice(
+          commaSep($._parameter),
+          seq($.receiver_parameter, optional(seq(",", commaSep($._parameter)))),
         ),
         ")",
       ),
+
+    receiver_parameter: ($) =>
+      seq(optional("noalias"), optional(seq("*", optional("const"))), $.self_expression),
 
     fn_ptr_parameter_list: ($) =>
       seq("(", commaSep(choice($.fn_ptr_parameter, $.c_varargs_parameter)), ")"),
@@ -718,9 +824,14 @@ module.exports = grammar({
         "#operator",
         "(",
         field("mode", $.identifier),
-        optional(seq(",", choice(field("level", $.integer_literal), field("modifier", $.identifier)))),
+        optional(seq(",", choice(
+          field("level", $.integer_literal),
+          field("modifier", $.operator_try_modifier),
+        ))),
         ")",
       ),
+
+    operator_try_modifier: ($) => seq("try", "(", field("target", $.identifier), ")"),
 
     magic_directive: ($) =>
       seq("#magic", field("name", $.string_literal)),
@@ -812,7 +923,7 @@ module.exports = grammar({
 
     memory_parameter: ($) =>
       choice(
-        seq($.identifier, repeat(seq(".", $._memory_path_step))),
+        seq(choice($.identifier, $.self_expression), repeat(seq(".", $._memory_path_step))),
         $.memory_argument_reference,
       ),
 
@@ -899,7 +1010,7 @@ module.exports = grammar({
       ),
 
     memory_qualified_name: ($) =>
-      seq($.identifier, repeat(seq(".", $._memory_path_step))),
+      seq(choice($.identifier, $.self_expression), repeat(seq(".", $._memory_path_step))),
 
     _memory_path_step: ($) => choice($.identifier, $.integer_literal),
 
@@ -941,8 +1052,21 @@ module.exports = grammar({
 
     _code_splice_call_expression: ($) =>
       seq(
-        field("function", $.code_splice_identifier),
+        field("function", choice(
+          $.code_splice_identifier,
+          alias($._code_splice_member_expression, $.postfix_expression),
+        )),
         field("arguments", $.argument_list),
+      ),
+
+    _code_splice_member_expression: ($) =>
+      seq(
+        field("object", choice(
+          $.code_splice_identifier,
+          alias($._code_splice_member_expression, $.postfix_expression),
+        )),
+        ".",
+        field("field", choice($.identifier, $.code_splice_identifier)),
       ),
 
     _statement: ($) =>
@@ -1262,7 +1386,7 @@ module.exports = grammar({
     if_assignment_start: (_) =>
       token(
         seq(
-          /[\p{L}_][\p{L}\p{N}_]*(?:(?:\.[\p{L}_][\p{L}\p{N}_]*|\.\*)|\[[^\]\n]*\])*/,
+          /(?:[\p{L}_][\p{L}\p{N}_]*|#self)(?:(?:\.[\p{L}_][\p{L}\p{N}_]*|\.\*)|\[(?:[^\[\]\n]|\[[^\[\]\n]*\])*\])*/,
           /\s*[+\-*\/%&|^~<>!?]*=/,
         ),
       ),
@@ -1296,8 +1420,22 @@ module.exports = grammar({
     if_call_start: (_) =>
       token(
         seq(
+          // Keep return/cast/if keywords out of the call token so a following
+          // parenthesized value remains part of the enclosing statement.
           choice(
-            /[\p{L}_&&[^ica]][\p{L}\p{N}_]*/,
+            /[\p{L}_&&[^icar]][\p{L}\p{N}_]*/,
+            "r",
+            "re",
+            "ret",
+            "retu",
+            "retur",
+            /r[\p{L}\p{N}_&&[^e]][\p{L}\p{N}_]*/,
+            /re[\p{L}\p{N}_&&[^t]][\p{L}\p{N}_]*/,
+            /ret[\p{L}\p{N}_&&[^u]][\p{L}\p{N}_]*/,
+            /retu[\p{L}\p{N}_&&[^r]][\p{L}\p{N}_]*/,
+            /retur[\p{L}\p{N}_&&[^n]][\p{L}\p{N}_]*/,
+            /return[\p{L}\p{N}_]+/,
+            "#self",
             "i",
             /i(?:[\p{L}\p{N}_&&[^f]][\p{L}\p{N}_]*|f[\p{L}\p{N}_]+)/,
             "c",
@@ -1317,6 +1455,9 @@ module.exports = grammar({
             /acas[\p{L}\p{N}_&&[^t]][\p{L}\p{N}_]*/,
             /acast[\p{L}\p{N}_][\p{L}\p{N}_]*/,
           ),
+          // Recognize the start of an unbraced member-call body before its
+          // receiver can be consumed as an operator or index qualifier.
+          /(?:\.[\p{L}_][\p{L}\p{N}_]*|\.\*|\[(?:[^\[\]\n]|\[[^\[\]\n]*\])*\])*/,
           /\s*\(/,
         ),
       ),
@@ -1564,6 +1705,7 @@ module.exports = grammar({
         $.parenthesized_type,
         $.generic_type_variable,
         $.context_type,
+        $.self_type,
         $.string_literal,
         $.named_type,
       ),
@@ -1579,7 +1721,8 @@ module.exports = grammar({
         PREC.resultType,
         seq(
           field("error", $._modified_type),
-          "!",
+          // A lambda's result return type takes priority over a unary ! body.
+          token(prec(2, "!")),
           field("type", $._type),
         ),
       ),
@@ -1605,6 +1748,7 @@ module.exports = grammar({
         $.parenthesized_type,
         $.generic_type_variable,
         $.context_type,
+        $.self_type,
         $.string_literal,
         $.named_type,
       ),
@@ -1753,6 +1897,10 @@ module.exports = grammar({
       ),
 
     context_type: (_) => "#Context",
+
+    self_type: (_) => "#Self_Type",
+
+    self_expression: (_) => "#self",
 
     named_type: ($) => $.type_identifier,
 
@@ -2005,6 +2153,8 @@ module.exports = grammar({
         $.label_none_literal,
         $.label,
         $.context_expression,
+        $.self_expression,
+        $.self_type,
         $.source_location_expression,
         $.code_expression,
         $.lambda_expression,
@@ -2328,6 +2478,8 @@ module.exports = grammar({
         $.label_none_literal,
         $.label,
         $.context_expression,
+        $.self_expression,
+        $.self_type,
         $.source_location_expression,
         $.code_expression,
         $.lambda_expression,
@@ -2408,6 +2560,7 @@ module.exports = grammar({
             $.pattern_case_clause,
             $._statement,
             $.instance_declaration,
+            $.inherent_declaration,
           ),
         ),
         optional($._code_final_statement),

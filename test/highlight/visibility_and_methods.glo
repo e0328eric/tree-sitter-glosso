@@ -1,0 +1,56 @@
+#public(unit) {
+// <- attribute
+//      ^ attribute
+Record :: struct {
+// <- type.definition
+    #private value: s64;
+//  ^ attribute
+//           ^ property
+}
+}
+
+Record ::: #public {
+// <- type
+//         ^ attribute
+    make :: (value: s64) ->
+//  ^ function
+#Self_Type {
+// <- type.builtin
+        return .{ .value = value };
+//                         ^ variable.parameter
+    }
+
+    #private {
+//  ^ attribute
+        read :: (
+//      ^ function
+            *const #self
+//           ^ keyword
+//                 ^ variable.builtin
+        ) -> s64 {
+            return
+#self.value;
+// <- variable.builtin
+//    ^ property
+        }
+    }
+
+    identity :: (#self) -> #Self_Type {
+//  ^ function
+//               ^ variable.builtin
+//                         ^ type.builtin
+        result: #Self_Type = #self;
+//              ^ type.builtin
+//                           ^ variable.builtin
+        return result;
+    }
+}
+
+propagate :: (#empty: $Target, value: s64) -> Target
+    #operator(suffix, try(Target)) {
+//  ^ attribute
+//                    ^ attribute
+//                        ^ type
+    return value;
+//         ^ variable.parameter
+}

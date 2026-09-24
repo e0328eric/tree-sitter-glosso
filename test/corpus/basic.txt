@@ -85,7 +85,7 @@ directives and code blocks
 
 #import "Prelude";
 #load "parts/geometry.glo";
-#enable(private_section,siblings);
+#enable(lossy_numerics);
 MSG :: #string
 \\hello
 \\world
@@ -104,7 +104,6 @@ macro :: (body: Code) #expand {
   (load_declaration
     (string_literal))
   (feature_directive
-    (identifier)
     (identifier))
   (named_declaration
     (declaration_name

@@ -1,0 +1,241 @@
+==================
+module conditionals contain declarations and chained branches
+==================
+
+#if true {
+  #public Chosen :: struct { value: s64; }
+  chosen :: () {}
+  Chosen ::: #public { value :: (#self) -> s64 { return #self.value; } }
+} else #if false {
+  #public Alternative :: union { Value: s64; }
+  Alternative ::: instance Show { show :: (value: Alternative) -> string { return "value"; } }
+} else {
+  #private Fallback :: enum { Empty; }
+}
+
+---
+
+(source_file
+  (conditional_declaration
+    (boolean_literal)
+    (declaration_block
+      (named_declaration
+        (visibility_modifier)
+        (declaration_name
+          (identifier))
+        (struct_declaration
+          (struct_field
+            (identifier)
+            (named_type
+              (identifier)))))
+      (named_declaration
+        (declaration_name
+          (identifier))
+        (function_declaration
+          (parameter_list)
+          (block)))
+      (inherent_declaration
+        (type_constructor_pattern
+          (identifier))
+        (visibility_modifier)
+        (inherent_method
+          (identifier)
+          (function_declaration
+            (parameter_list
+              (receiver_parameter
+                (self_expression)))
+            (arrow)
+            (named_type
+              (identifier))
+            (block
+              (return_statement
+                (postfix_expression
+                  (self_expression)
+                  (identifier))))))))
+    (conditional_declaration
+      (boolean_literal)
+      (declaration_block
+        (named_declaration
+          (visibility_modifier)
+          (declaration_name
+            (identifier))
+          (union_declaration
+            (union_field
+              (identifier)
+              (named_type
+                (identifier)))))
+        (instance_declaration
+          (type_constructor_pattern
+            (identifier))
+          (identifier)
+          (instance_method
+            (declaration_name
+              (identifier))
+            (function_declaration
+              (parameter_list
+                (parameter
+                  (binding_list
+                    (identifier))
+                  (named_type
+                    (identifier))))
+              (arrow)
+              (named_type
+                (identifier))
+              (block
+                (return_statement
+                  (string_literal)))))))
+      (declaration_block
+        (named_declaration
+          (visibility_modifier)
+          (declaration_name
+            (identifier))
+          (enum_declaration
+            (enum_variant
+              (identifier))))))))
+
+==================
+visibility groups and nested module conditionals
+==================
+
+#public {
+  #if true {
+    chosen :: () {}
+    #private { hidden_branch :: () {} }
+    #if false { nested :: 1; } else { nested :: 2; }
+  } else {
+    #public(unit) { alternate :: () {} }
+  }
+  after_branch :: () {}
+}
+outside :: () {}
+
+---
+
+(source_file
+  (visibility_group
+    (visibility_modifier)
+    (declaration_block
+      (conditional_declaration
+        (boolean_literal)
+        (declaration_block
+          (named_declaration
+            (declaration_name
+              (identifier))
+            (function_declaration
+              (parameter_list)
+              (block)))
+          (visibility_group
+            (visibility_modifier)
+            (declaration_block
+              (named_declaration
+                (declaration_name
+                  (identifier))
+                (function_declaration
+                  (parameter_list)
+                  (block)))))
+          (conditional_declaration
+            (boolean_literal)
+            (declaration_block
+              (named_declaration
+                (declaration_name
+                  (identifier))
+                (constant_declaration_body
+                  (integer_literal))))
+            (declaration_block
+              (named_declaration
+                (declaration_name
+                  (identifier))
+                (constant_declaration_body
+                  (integer_literal))))))
+        (declaration_block
+          (visibility_group
+            (visibility_modifier)
+            (declaration_block
+              (named_declaration
+                (declaration_name
+                  (identifier))
+                (function_declaration
+                  (parameter_list)
+                  (block)))))))
+      (named_declaration
+        (declaration_name
+          (identifier))
+        (function_declaration
+          (parameter_list)
+          (block)))))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (function_declaration
+      (parameter_list)
+      (block))))
+
+==================
+directives inside declaration groups and branches
+==================
+
+#public {
+  #import "std/math";
+  #load "parts.glo";
+  #export "public.glo";
+  #insert generated_source;
+  #comptime initialize();
+  #enable(lossy_numerics);
+  #if true {
+    #disable(lossy_numerics);
+    #import,only (sqrt) "std/math";
+    Math :: #import "std/math";
+  } else {
+    #load,embed "fallback.glo";
+  }
+}
+
+---
+
+(source_file
+  (visibility_group
+    (visibility_modifier)
+    (declaration_block
+      (import_declaration
+        (string_literal))
+      (load_declaration
+        (string_literal))
+      (export_declaration
+        (string_literal))
+      (insert_declaration
+        (identifier))
+      (top_run_declaration
+        (postfix_expression
+          (identifier)
+          (argument_list)))
+      (feature_directive
+        (identifier))
+      (conditional_declaration
+        (boolean_literal)
+        (declaration_block
+          (feature_directive
+            (identifier))
+          (import_declaration
+            (import_selector
+              (identifier))
+            (string_literal))
+          (named_declaration
+            (declaration_name
+              (identifier))
+            (qualified_import_declaration
+              (string_literal))))
+        (declaration_block
+          (load_declaration
+            (load_modifier)
+            (string_literal)))))))
+
+==================
+module conditional requires a declaration block
+:error
+==================
+
+#if true chosen :: () {}
+
+---
+
+(source_file)

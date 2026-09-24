@@ -2,8 +2,8 @@
 current declaration terminators and braced exceptions
 ==================
 
-#enable(private_section,siblings)
-#disable(private_section);
+#enable(lossy_numerics)
+#disable(lossy_numerics);
 #import "Io";
 #load "other.glo";
 #insert generated;
@@ -37,7 +37,6 @@ run :: () {}
 
 (source_file
   (feature_directive
-    (identifier)
     (identifier))
   (feature_directive
     (identifier))
@@ -592,12 +591,14 @@ removed direct private section is rejected
 
 (source_file
   (ERROR
-    (UNEXPECTED 'r')
-    (identifier)
+    (visibility_modifier)
+    (declaration_name
+      (identifier))
     (identifier)))
 
 ==================
 removed c pointer is rejected
+:error
 ==================
 
 main :: () {
@@ -606,23 +607,7 @@ main :: () {
 
 ---
 
-(source_file
-  (named_declaration
-    (declaration_name
-      (identifier))
-    (function_declaration
-      (parameter_list)
-      (block
-        (variable_declaration
-          (binding_list
-            (identifier))
-          (ERROR
-            (UNEXPECTED 'p')
-            (identifier))
-          (pointer_type
-            (named_type
-              (identifier)))
-          (label_none_literal))))))
+(source_file)
 
 ==================
 removed triple dash is rejected
@@ -931,6 +916,7 @@ Bad :: typeclass () {
 
 ==================
 removed precedence directive is rejected
+:error
 ==================
 
 Custom :: typeclass (T: type) {
@@ -939,37 +925,4 @@ Custom :: typeclass (T: type) {
 
 ---
 
-(source_file
-  (named_declaration
-    (declaration_name
-      (identifier))
-    (typeclass_declaration
-      (typeclass_parameter
-        (identifier)
-        (named_type
-          (identifier)))
-      (typeclass_method_signature
-        (declaration_name
-          (quoted_operator))
-        (function_declaration
-          (parameter_list
-            (parameter
-              (binding_list
-                (identifier))
-              (named_type
-                (identifier)))
-            (parameter
-              (binding_list
-                (identifier))
-              (named_type
-                (identifier))))
-          (arrow)
-          (ERROR
-            (identifier)
-            (UNEXPECTED 'r'))
-          (generic_type
-            (identifier)
-            (named_type
-              (identifier))
-            (ERROR
-              (integer_literal))))))))
+(source_file)
