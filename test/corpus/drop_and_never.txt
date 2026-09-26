@@ -1,0 +1,558 @@
+==================
+never return types aliases and callable types
+==================
+
+Impossible :: #Never;
+halt :: () -> Impossible #magic "test_halt";
+stop :: () -> #Never { return halt(); }
+take :: (callback: () -> #Never) -> #Never { callback(); }
+Abort_Proc :: #fn_ptr(status: s32) -> #Never #c_call;
+
+Process ::: {
+  process_exit :: (#self) -> #Never { halt(); }
+}
+
+---
+
+(source_file
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (constant_declaration_body
+      (never_type)))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (function_declaration
+      (parameter_list)
+      (arrow)
+      (named_type
+        (identifier))
+      (magic_directive
+        (string_literal))))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (function_declaration
+      (parameter_list)
+      (arrow)
+      (never_type)
+      (block
+        (return_statement
+          (postfix_expression
+            (identifier)
+            (argument_list))))))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (function_declaration
+      (parameter_list
+        (parameter
+          (binding_list
+            (identifier))
+          (function_type
+            (arrow)
+            (never_type))))
+      (arrow)
+      (never_type)
+      (block
+        (expression_statement
+          (postfix_expression
+            (identifier)
+            (argument_list))))))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (function_pointer_type_declaration
+      (fn_ptr_parameter_list
+        (fn_ptr_parameter
+          (identifier)
+          (named_type
+            (identifier))))
+      (arrow)
+      (never_type)))
+  (inherent_declaration
+    (type_constructor_pattern
+      (identifier))
+    (inherent_method
+      (identifier)
+      (function_declaration
+        (parameter_list
+          (receiver_parameter
+            (self_expression)))
+        (arrow)
+        (never_type)
+        (block
+          (expression_statement
+            (postfix_expression
+              (identifier)
+              (argument_list))))))))
+
+==================
+never in generic and compound types
+==================
+
+Holder :: struct {
+  marker: Box(#Never);
+  empty: [0]#Never;
+  pointer: *const #Never;
+  optional: ?#Never;
+}
+
+finish :: () -> #Never!void { return .Ok; }
+fail :: (error: Error) -> Error!#Never { return .Err(error); }
+inspect :: (value: Box(#Never), completed: #Never!void) {}
+
+---
+
+(source_file
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (struct_declaration
+      (struct_field
+        (identifier)
+        (generic_type
+          (identifier)
+          (never_type)))
+      (struct_field
+        (identifier)
+        (array_type
+          (integer_literal)
+          (never_type)))
+      (struct_field
+        (identifier)
+        (pointer_type
+          (never_type)))
+      (struct_field
+        (identifier)
+        (optional_type
+          (never_type)))))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (function_declaration
+      (parameter_list)
+      (arrow)
+      (result_type
+        (never_type)
+        (named_type
+          (identifier)))
+      (block
+        (return_statement
+          (shorthand_member_expression
+            (identifier))))))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (function_declaration
+      (parameter_list
+        (parameter
+          (binding_list
+            (identifier))
+          (named_type
+            (identifier))))
+      (arrow)
+      (result_type
+        (named_type
+          (identifier))
+        (never_type))
+      (block
+        (return_statement
+          (postfix_expression
+            (shorthand_member_expression
+              (identifier))
+            (argument_list
+              (identifier)))))))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (function_declaration
+      (parameter_list
+        (parameter
+          (binding_list
+            (identifier))
+          (generic_type
+            (identifier)
+            (never_type)))
+        (parameter
+          (binding_list
+            (identifier))
+          (result_type
+            (never_type)
+            (named_type
+              (identifier)))))
+      (block))))
+
+==================
+never type values and top level instance targets
+==================
+
+never_type :: () -> type { return #Never; }
+inspect_type :: () {
+  kind := #Never;
+  inspect(#Never);
+}
+
+#Never ::: instance Show {
+  show :: (value: #Never) -> string { return "impossible"; }
+}
+
+Resource ::: instance Drop {
+  Error :: #Never;
+  drop :: (value: *#Self_Type) -> #Never!void { return .Ok; }
+}
+
+---
+
+(source_file
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (function_declaration
+      (parameter_list)
+      (arrow)
+      (named_type
+        (identifier))
+      (block
+        (return_statement
+          (never_type)))))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (function_declaration
+      (parameter_list)
+      (block
+        (variable_declaration
+          (binding_list
+            (identifier))
+          (never_type))
+        (expression_statement
+          (postfix_expression
+            (identifier)
+            (argument_list
+              (never_type)))))))
+  (instance_declaration
+    (type_constructor_pattern
+      (never_type))
+    (identifier)
+    (instance_method
+      (declaration_name
+        (identifier))
+      (function_declaration
+        (parameter_list
+          (parameter
+            (binding_list
+              (identifier))
+            (never_type)))
+        (arrow)
+        (named_type
+          (identifier))
+        (block
+          (return_statement
+            (string_literal))))))
+  (instance_declaration
+    (type_constructor_pattern
+      (identifier))
+    (identifier)
+    (instance_associated_type
+      (declaration_name
+        (identifier))
+      (never_type))
+    (instance_method
+      (declaration_name
+        (identifier))
+      (function_declaration
+        (parameter_list
+          (parameter
+            (binding_list
+              (identifier))
+            (pointer_type
+              (self_type))))
+        (arrow)
+        (result_type
+          (never_type)
+          (named_type
+            (identifier)))
+        (block
+          (return_statement
+            (shorthand_member_expression
+              (identifier))))))))
+
+==================
+drop error handlers in function bodies
+==================
+
+work :: () {
+  resource: Resource;
+  #on_drop_error(resource, error) {
+    report(error);
+    while pending() {
+      if ready() break;
+      retry(error);
+    }
+  }
+  second: Resource;
+  #on_drop_error(second, ignored) {}
+}
+
+take :: (value: Resource) {
+  #on_drop_error(value, error) { report(error); }
+}
+
+---
+
+(source_file
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (function_declaration
+      (parameter_list)
+      (block
+        (variable_declaration
+          (binding_list
+            (identifier))
+          (named_type
+            (identifier)))
+        (on_drop_error_statement
+          (identifier)
+          (identifier)
+          (block
+            (expression_statement
+              (postfix_expression
+                (identifier)
+                (argument_list
+                  (identifier))))
+            (while_statement
+              (postfix_expression
+                (identifier)
+                (argument_list))
+              (block
+                (if_statement
+                  (postfix_expression
+                    (identifier)
+                    (argument_list))
+                  (break_statement))
+                (expression_statement
+                  (postfix_expression
+                    (identifier)
+                    (argument_list
+                      (identifier))))))))
+        (variable_declaration
+          (binding_list
+            (identifier))
+          (named_type
+            (identifier)))
+        (on_drop_error_statement
+          (identifier)
+          (identifier)
+          (block)))))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (function_declaration
+      (parameter_list
+        (parameter
+          (binding_list
+            (identifier))
+          (named_type
+            (identifier))))
+      (block
+        (on_drop_error_statement
+          (identifier)
+          (identifier)
+          (block
+            (expression_statement
+              (postfix_expression
+                (identifier)
+                (argument_list
+                  (identifier))))))))))
+
+==================
+drop error handlers as unbraced statements
+==================
+
+work :: () {
+  if enabled #on_drop_error(resource, error) { report(error); }
+  else #on_drop_error(fallback, failure) {}
+  #if enabled #on_drop_error(resource, error) {}
+}
+
+---
+
+(source_file
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (function_declaration
+      (parameter_list)
+      (block
+        (if_statement
+          (identifier)
+          (on_drop_error_statement
+            (identifier)
+            (identifier)
+            (block
+              (expression_statement
+                (postfix_expression
+                  (identifier)
+                  (argument_list
+                    (identifier))))))
+          (on_drop_error_statement
+            (identifier)
+            (identifier)
+            (block)))
+        (static_if_statement
+          (identifier)
+          (on_drop_error_statement
+            (identifier)
+            (identifier)
+            (block)))))))
+
+==================
+drop error handlers in code quotes
+==================
+
+CLEANUP :: #code {
+  resource: Resource;
+  #on_drop_error(resource, error) { report(error); }
+};
+
+HANDLER :: #code #on_drop_error(resource, error) { report(error); };
+
+---
+
+(source_file
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (constant_declaration_body
+      (code_expression
+        (code_block
+          (variable_declaration
+            (binding_list
+              (identifier))
+            (named_type
+              (identifier)))
+          (on_drop_error_statement
+            (identifier)
+            (identifier)
+            (block
+              (expression_statement
+                (postfix_expression
+                  (identifier)
+                  (argument_list
+                    (identifier))))))))))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (constant_declaration_body
+      (code_expression
+        (on_drop_error_statement
+          (identifier)
+          (identifier)
+          (block
+            (expression_statement
+              (postfix_expression
+                (identifier)
+                (argument_list
+                  (identifier))))))))))
+
+==================
+removed noreturn modifier on a function
+:error
+==================
+
+stop :: () #noreturn {}
+
+---
+
+(source_file)
+
+==================
+removed noreturn modifier on a foreign function
+:error
+==================
+
+abort :: () #foreign "c" "abort" #noreturn;
+
+---
+
+(source_file)
+
+==================
+removed noreturn modifier on an inherent method
+:error
+==================
+
+Process ::: { exit :: (#self) #noreturn {} }
+
+---
+
+(source_file)
+
+==================
+drop error handler requires an error name
+:error
+==================
+
+work :: () { #on_drop_error(resource) {} }
+
+---
+
+(source_file)
+
+==================
+drop error handler rejects extra arguments
+:error
+==================
+
+work :: () { #on_drop_error(resource, error, extra) {} }
+
+---
+
+(source_file)
+
+==================
+drop error handler owner must be an identifier
+:error
+==================
+
+work :: () { #on_drop_error(42, error) {} }
+
+---
+
+(source_file)
+
+==================
+drop error handler error must be an identifier
+:error
+==================
+
+work :: () { #on_drop_error(resource, "error") {} }
+
+---
+
+(source_file)
+
+==================
+drop error handler cannot name a member owner
+:error
+==================
+
+work :: () { #on_drop_error(resource.child, error) {} }
+
+---
+
+(source_file)
+
+==================
+drop error handler requires a block
+:error
+==================
+
+work :: () { #on_drop_error(resource, error) report(error); }
+
+---
+
+(source_file)

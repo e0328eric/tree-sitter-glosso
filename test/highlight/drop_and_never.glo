@@ -1,0 +1,25 @@
+Never :: #Never;
+//       ^ type.builtin
+
+halt :: () -> #Never {
+//            ^ type.builtin
+    while true {}
+}
+
+error := 0;
+// <- variable
+
+cleanup :: (owner: Owner) {
+//          ^ variable.parameter
+    #on_drop_error(owner, error) {
+//  ^ attribute
+//                 ^ variable.parameter
+//                        ^ variable.parameter
+        consume(error, owner);
+//              ^ variable.parameter
+//                     ^ variable.parameter
+    }
+    consume(error, owner);
+//          ^ variable
+//                 ^ variable.parameter
+}

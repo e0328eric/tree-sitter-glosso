@@ -731,13 +731,13 @@ main :: () {
             (integer_literal)))))))
 
 ==================
-function directive order and noreturn
+function directive order and Never return type
 ==================
 
 OnlyInt :: (T: type) -> bool { return T == int; }
 
 '%%' :: (a: $T, b: T) -> T #operator(left, 10) #magic "int_add" where OnlyInt(T);
-stop :: () #no_context #noreturn { exit(0); }
+stop :: () -> #Never #no_context { exit(0); }
 plain_inline :: () #inline { }
 always_inline :: () #inline,always { }
 never_inline :: () #inline,never { }
@@ -797,6 +797,8 @@ never_inline :: () #inline,never { }
       (identifier))
     (function_declaration
       (parameter_list)
+      (arrow)
+      (never_type)
       (block
         (expression_statement
           (postfix_expression

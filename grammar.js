@@ -777,7 +777,6 @@ module.exports = grammar({
         "#no_context",
         "#dump",
         "#must",
-        "#noreturn",
         "#returns_twice",
         $.inline_directive,
       ),
@@ -792,7 +791,6 @@ module.exports = grammar({
         "#no_context",
         "#dump",
         "#must",
-        "#noreturn",
         "#returns_twice",
         $.inline_directive,
       ),
@@ -1085,6 +1083,7 @@ module.exports = grammar({
         $.inline_statement,
         $.try_defer_statement,
         $.defer_statement,
+        $.on_drop_error_statement,
         $.caller_defer_statement,
         $.using_statement,
         $.switch_statement,
@@ -1299,6 +1298,17 @@ module.exports = grammar({
 
     defer_statement: ($) => seq("defer", field("statement", $._statement)),
 
+    on_drop_error_statement: ($) =>
+      seq(
+        "#on_drop_error",
+        "(",
+        field("owner", $.identifier),
+        ",",
+        field("error", $.identifier),
+        ")",
+        field("body", $.block),
+      ),
+
     caller_defer_statement: ($) =>
       seq("`defer", field("statement", $._statement)),
 
@@ -1479,6 +1489,7 @@ module.exports = grammar({
         $.inline_statement,
         $.try_defer_statement,
         $.defer_statement,
+        $.on_drop_error_statement,
         $.caller_defer_statement,
         $.using_statement,
         $.switch_statement,
@@ -1706,6 +1717,7 @@ module.exports = grammar({
         $.generic_type_variable,
         $.context_type,
         $.self_type,
+        $.never_type,
         $.string_literal,
         $.named_type,
       ),
@@ -1749,6 +1761,7 @@ module.exports = grammar({
         $.generic_type_variable,
         $.context_type,
         $.self_type,
+        $.never_type,
         $.string_literal,
         $.named_type,
       ),
@@ -1900,6 +1913,8 @@ module.exports = grammar({
 
     self_type: (_) => "#Self_Type",
 
+    never_type: (_) => "#Never",
+
     self_expression: (_) => "#self",
 
     named_type: ($) => $.type_identifier,
@@ -1914,6 +1929,7 @@ module.exports = grammar({
 
     type_constructor_pattern: ($) =>
       choice(
+        $.never_type,
         $.result_type_constructor_pattern,
         $.optional_type_constructor_pattern,
         $.generic_type_variable,
@@ -2155,6 +2171,7 @@ module.exports = grammar({
         $.context_expression,
         $.self_expression,
         $.self_type,
+        $.never_type,
         $.source_location_expression,
         $.code_expression,
         $.lambda_expression,
@@ -2480,6 +2497,7 @@ module.exports = grammar({
         $.context_expression,
         $.self_expression,
         $.self_type,
+        $.never_type,
         $.source_location_expression,
         $.code_expression,
         $.lambda_expression,
@@ -2511,6 +2529,7 @@ module.exports = grammar({
       prec.right(
         -1,
         choice(
+          $.on_drop_error_statement,
           alias(
             $._code_final_return_statement,
             $.return_statement,

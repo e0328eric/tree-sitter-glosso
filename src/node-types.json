@@ -142,6 +142,10 @@
         "named": true
       },
       {
+        "type": "never_type",
+        "named": true
+      },
+      {
         "type": "non_hygienic_identifier",
         "named": true
       },
@@ -398,6 +402,10 @@
         "named": true
       },
       {
+        "type": "on_drop_error_statement",
+        "named": true
+      },
+      {
         "type": "push_allocator_statement",
         "named": true
       },
@@ -473,6 +481,10 @@
       },
       {
         "type": "named_type",
+        "named": true
+      },
+      {
+        "type": "never_type",
         "named": true
       },
       {
@@ -589,6 +601,10 @@
           },
           {
             "type": "named_type",
+            "named": true
+          },
+          {
+            "type": "never_type",
             "named": true
           },
           {
@@ -1175,6 +1191,10 @@
             "named": true
           },
           {
+            "type": "on_drop_error_statement",
+            "named": true
+          },
+          {
             "type": "return_statement",
             "named": true
           }
@@ -1360,6 +1380,10 @@
           },
           {
             "type": "meaningful_expression",
+            "named": true
+          },
+          {
+            "type": "never_type",
             "named": true
           },
           {
@@ -2044,6 +2068,10 @@
             "named": true
           },
           {
+            "type": "never_type",
+            "named": true
+          },
+          {
             "type": "optional_type",
             "named": true
           },
@@ -2171,6 +2199,10 @@
           },
           {
             "type": "memory_trusted_statement",
+            "named": true
+          },
+          {
+            "type": "on_drop_error_statement",
             "named": true
           },
           {
@@ -2437,6 +2469,10 @@
           },
           {
             "type": "named_type",
+            "named": true
+          },
+          {
+            "type": "never_type",
             "named": true
           },
           {
@@ -2777,6 +2813,10 @@
             "named": true
           },
           {
+            "type": "on_drop_error_statement",
+            "named": true
+          },
+          {
             "type": "push_allocator_statement",
             "named": true
           },
@@ -2906,6 +2946,10 @@
           },
           {
             "type": "memory_trusted_statement",
+            "named": true
+          },
+          {
+            "type": "on_drop_error_statement",
             "named": true
           },
           {
@@ -3668,6 +3712,10 @@
             "named": true
           },
           {
+            "type": "never_type",
+            "named": true
+          },
+          {
             "type": "optional_type",
             "named": true
           },
@@ -3819,6 +3867,10 @@
           },
           {
             "type": "named_type",
+            "named": true
+          },
+          {
+            "type": "never_type",
             "named": true
           },
           {
@@ -4907,6 +4959,42 @@
     }
   },
   {
+    "type": "on_drop_error_statement",
+    "named": true,
+    "fields": {
+      "body": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "block",
+            "named": true
+          }
+        ]
+      },
+      "error": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "identifier",
+            "named": true
+          }
+        ]
+      },
+      "owner": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "identifier",
+            "named": true
+          }
+        ]
+      }
+    }
+  },
+  {
     "type": "operator",
     "named": true,
     "fields": {}
@@ -5005,6 +5093,10 @@
           },
           {
             "type": "named_type",
+            "named": true
+          },
+          {
+            "type": "never_type",
             "named": true
           },
           {
@@ -5851,6 +5943,10 @@
             "named": true
           },
           {
+            "type": "never_type",
+            "named": true
+          },
+          {
             "type": "optional_type",
             "named": true
           },
@@ -5956,6 +6052,10 @@
           },
           {
             "type": "lambda_expression",
+            "named": true
+          },
+          {
+            "type": "never_type",
             "named": true
           },
           {
@@ -6111,6 +6211,10 @@
             "named": true
           },
           {
+            "type": "never_type",
+            "named": true
+          },
+          {
             "type": "non_hygienic_identifier",
             "named": true
           },
@@ -6259,6 +6363,10 @@
             "named": true
           },
           {
+            "type": "never_type",
+            "named": true
+          },
+          {
             "type": "non_hygienic_identifier",
             "named": true
           },
@@ -6388,6 +6496,10 @@
           },
           {
             "type": "lambda_expression",
+            "named": true
+          },
+          {
+            "type": "never_type",
             "named": true
           },
           {
@@ -6608,6 +6720,10 @@
           },
           {
             "type": "lambda_expression",
+            "named": true
+          },
+          {
+            "type": "never_type",
             "named": true
           },
           {
@@ -7100,6 +7216,10 @@
             "named": true
           },
           {
+            "type": "never_type",
+            "named": true
+          },
+          {
             "type": "optional_type",
             "named": true
           },
@@ -7446,6 +7566,10 @@
             "named": true
           },
           {
+            "type": "on_drop_error_statement",
+            "named": true
+          },
+          {
             "type": "push_allocator_statement",
             "named": true
           },
@@ -7575,6 +7699,10 @@
           },
           {
             "type": "memory_trusted_statement",
+            "named": true
+          },
+          {
+            "type": "on_drop_error_statement",
             "named": true
           },
           {
@@ -8386,6 +8514,10 @@
           "named": true
         },
         {
+          "type": "never_type",
+          "named": true
+        },
+        {
           "type": "optional_type_constructor_pattern",
           "named": true
         },
@@ -9020,6 +9152,10 @@
             "named": true
           },
           {
+            "type": "on_drop_error_statement",
+            "named": true
+          },
+          {
             "type": "push_allocator_statement",
             "named": true
           },
@@ -9206,7 +9342,7 @@
     "named": false
   },
   {
-    "type": "#noreturn",
+    "type": "#on_drop_error",
     "named": false
   },
   {
@@ -9689,6 +9825,10 @@
   {
     "type": "never",
     "named": false
+  },
+  {
+    "type": "never_type",
+    "named": true
   },
   {
     "type": "noalias",

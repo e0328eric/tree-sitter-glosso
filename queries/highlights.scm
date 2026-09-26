@@ -50,7 +50,7 @@
   "#no_context"
   "#dump"
   "#must"
-  "#noreturn"
+  "#on_drop_error"
   "#returns_twice"
   "#inline"
   "#bytes"
@@ -92,6 +92,7 @@
 (source_location_expression) @constant.builtin
 (context_type) @type.builtin
 (self_type) @type.builtin
+(never_type) @type.builtin
 (self_expression) @variable.builtin
 
 ; Give every identifier a baseline capture first. Context-specific captures below
@@ -196,6 +197,7 @@
 (named_argument name: (identifier) @variable.parameter)
 (typeclass_parameter name: (identifier) @variable.parameter)
 (lambda_parameter name: (identifier) @variable.parameter)
+(on_drop_error_statement error: (identifier) @variable.parameter)
 (parameter
   name: (binding_list [
     (identifier)
