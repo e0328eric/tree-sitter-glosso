@@ -1,5 +1,5 @@
 ==================
-aggregate magic returns twice and intentional leaks
+aggregate magic and returns twice
 ==================
 
 Context_Storage :: struct #magic "jump_context_storage_struct" {}
@@ -9,8 +9,8 @@ context_save :: (storage: *Context_Storage) -> int
 global_rooms: [..]s64;
 
 main :: () {
-  rooms: [..]s64 #memory leak;
-  object := Create() #memory leak;
+  rooms: [..]s64;
+  object := Create();
 }
 
 ---
@@ -63,20 +63,13 @@ main :: () {
             (identifier))
           (array_type
             (named_type
-              (identifier)))
-          (memory_directive
-            (memory_effect
-              (memory_simple_effect))))
+              (identifier))))
         (variable_declaration
           (binding_list
             (identifier))
           (postfix_expression
-            (postfix_expression
-              (identifier)
-              (argument_list))
-            (memory_directive
-              (memory_effect
-                (memory_simple_effect)))))))))
+            (identifier)
+            (argument_list)))))))
 
 ==================
 structured inline assembly

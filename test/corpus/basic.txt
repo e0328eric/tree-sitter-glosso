@@ -186,8 +186,8 @@ FILE :: struct {}
 BinOp :: #fn_ptr(a: int, b: int) -> int;
 G1 := 42;
 G2 : string = "hello";
-c_len :: (s: *const s8) -> u64 #foreign "libc" "strlen";
-puts :: (text: *const s8) -> s32 #foreign libc;
+c_len :: (s: *s8) -> u64 #foreign "libc" "strlen";
+puts :: (text: *s8) -> s32 #foreign libc;
 ctx :: () -> #Context { return context; }
 
 ---

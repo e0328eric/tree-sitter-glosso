@@ -95,7 +95,7 @@ never in generic and compound types
 Holder :: struct {
   marker: Box(#Never);
   empty: [0]#Never;
-  pointer: *const #Never;
+  pointer: *#Never;
   optional: ?#Never;
 }
 

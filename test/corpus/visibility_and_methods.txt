@@ -239,10 +239,10 @@ inherent receiver forms and self expressions
 
 Record ::: {
   same :: (#self) -> #Self_Type { return #self; }
-  mutate :: (*#self, value: s64) { #self.value = value; }
-  inspect :: (*const #self) -> #Self_Type { return #self.*; }
-  copy :: (noalias *#self, source: *const Record) { #self.value = source.value; }
-  compare :: (noalias *const #self, other: *const #Self_Type) -> bool {
+  mutate :: (*mut #self, value: s64) { #self.value = value; }
+  inspect :: (*#self) -> #Self_Type { return #self.*; }
+  copy :: (noalias *mut #self, source: *Record) { #self.value = source.value; }
+  compare :: (noalias *#self, other: *#Self_Type) -> bool {
     return #self.value == other.value;
   }
   make :: () -> #Self_Type { return .{ .value = 0 }; }
@@ -368,9 +368,9 @@ inherent visibility headers and generic constraints
 
 Box($T) ::: #public where true {
   exposed :: (#self, U: type, value: U) -> U where true { return value; }
-  #private hidden :: (*#self) {}
+  #private hidden :: (*mut #self) {}
   #public(unit) {
-    internal :: (*const #self) {}
+    internal :: (*#self) {}
     #private { nested :: () {} }
   }
   defaults :: (#self, U := #Self_Type, value: U, rest: ...U, finish: U = .{}) {}
@@ -500,7 +500,7 @@ option result and array inherent owners
 ?$T ::: #private {
   make_none :: () -> #Self_Type { return .None; }
   unwrap_or :: (#self, default: T) -> T { return default; }
-  map_or :: (*#self, fnt: (T) -> $U, default: U) -> U { return default; }
+  map_or :: (*mut #self, fnt: (T) -> $U, default: U) -> U { return default; }
 }
 
 $E!$T ::: #public(unit) where true {
@@ -516,7 +516,7 @@ $E!$T ::: #public(unit) where true {
 }
 
 [..]$T ::: #public {
-  add :: (*#self, values: ...T) #magic "array_add";
+  add :: (*mut #self, values: ...T) #magic "array_add";
 }
 
 ---
@@ -670,12 +670,13 @@ $E!$T ::: #public(unit) where true {
           (string_literal))))))
 
 ==================
-receiver memory contracts
+removed receiver memory contracts are rejected
+:error
 ==================
 
 Buffer ::: #public {
-  inspect :: (*const #self) #memory reads(#self) {}
-  modify :: (*#self) #memory{reads(#self.data), writes(#self.data)} {}
+  inspect :: (*#self) #memory reads(#self) {}
+  modify :: (*mut #self) #memory{reads(#self.data), writes(#self.data)} {}
   view :: (#self) -> []u8
     #memory{returns_borrow(#self.data), returns_unique_borrow(#self),
       returns_borrow(returned.0, #self)} {
@@ -685,70 +686,7 @@ Buffer ::: #public {
 
 ---
 
-(source_file
-  (inherent_declaration
-    (type_constructor_pattern
-      (identifier))
-    (visibility_modifier)
-    (inherent_method
-      (identifier)
-      (function_declaration
-        (parameter_list
-          (receiver_parameter
-            (self_expression)))
-        (memory_directive
-          (memory_effect
-            (memory_parameter_effect
-              (memory_parameter_effect_kind)
-              (self_expression))))
-        (block)))
-    (inherent_method
-      (identifier)
-      (function_declaration
-        (parameter_list
-          (receiver_parameter
-            (self_expression)))
-        (memory_directive
-          (memory_effect
-            (memory_parameter_effect
-              (memory_parameter_effect_kind)
-              (self_expression)
-              (identifier)))
-          (memory_effect
-            (memory_parameter_effect
-              (memory_parameter_effect_kind)
-              (self_expression)
-              (identifier))))
-        (block)))
-    (inherent_method
-      (identifier)
-      (function_declaration
-        (parameter_list
-          (receiver_parameter
-            (self_expression)))
-        (arrow)
-        (array_type
-          (named_type
-            (identifier)))
-        (memory_directive
-          (memory_effect
-            (memory_borrow_place_effect
-              (self_expression)
-              (identifier)))
-          (memory_effect
-            (memory_borrow_place_effect
-              (self_expression)))
-          (memory_effect
-            (memory_borrow_place_effect
-              (memory_qualified_name
-                (identifier)
-                (integer_literal))
-              (self_expression))))
-        (block
-          (return_statement
-            (postfix_expression
-              (self_expression)
-              (identifier))))))))
+(source_file)
 
 ==================
 self type in instance methods and associated types

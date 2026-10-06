@@ -1,0 +1,54 @@
+C_TEXT :: c"hello\0";
+//        ^ string
+
+BYTES :: b"\x00\xff";
+//       ^ string
+
+Offset :: enum s64 {
+    before :: -1;
+//            ^ operator
+//             ^ number
+}
+
+MULTILINE :: "first line
+second line";
+// <- string
+
+pointers :: (
+    value: s64,
+    destination: *mut volatile s64,
+//                ^ keyword
+//                    ^ keyword
+    view: []mut u8,
+//          ^ keyword
+) {
+    pointer := value.&;
+//             ^ variable.parameter
+//                  ^ operator
+    dereferenced := pointer.*;
+//                         ^ operator
+    double_pointer := &&pointer;
+//                    ^ operator
+}
+
+literal_patterns :: (value: cstring) -> s64 {
+    if value == {
+        case c"text"; return 1;
+//           ^ string
+        case b"bytes"; return 2;
+//           ^ string
+    }
+    return 0;
+}
+
+unbraced_chain :: (active: bool, value: s64, index: ssize) {
+    while active
+        values.get_mut().items[index].&.*.push(value).count;
+//                       ^ property
+//                             ^ variable.parameter
+//                                   ^ operator
+//                                     ^ operator
+//                                        ^ function.method.call
+//                                             ^ variable.parameter
+//                                                    ^ property
+}

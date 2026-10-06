@@ -47,7 +47,8 @@ assemble :: (value: s64) -> s64 {
           (identifier))))))
 
 ==================
-memory effect directives
+removed memory effect directives are rejected
+:error
 ==================
 
 view :: (buffer: []u8) -> []u8
@@ -65,85 +66,7 @@ release :: (buffer: []u8)
 
 ---
 
-(source_file
-  (named_declaration
-    (declaration_name
-      (identifier))
-    (function_declaration
-      (parameter_list
-        (parameter
-          (binding_list
-            (identifier))
-          (array_type
-            (named_type
-              (identifier)))))
-      (arrow)
-      (array_type
-        (named_type
-          (identifier)))
-      (foreign_directive
-        (string_literal)
-        (string_literal))
-      (memory_directive
-        (memory_effect
-          (memory_borrow_place_effect
-            (identifier)))
-        (memory_effect
-          (memory_parameter_effect
-            (memory_parameter_effect_kind)
-            (identifier))))
-      (memory_directive
-        (memory_effect
-          (memory_parameter_effect
-            (memory_parameter_effect_kind)
-            (identifier))))))
-  (named_declaration
-    (declaration_name
-      (identifier))
-    (function_declaration
-      (parameter_list)
-      (arrow)
-      (pointer_type
-        (named_type
-          (identifier)))
-      (memory_directive
-        (memory_effect
-          (memory_simple_effect)))
-      (memory_directive
-        (memory_effect
-          (memory_simple_effect)))
-      (memory_directive
-        (memory_effect
-          (memory_simple_effect)))
-      (block)))
-  (named_declaration
-    (declaration_name
-      (identifier))
-    (function_declaration
-      (parameter_list
-        (parameter
-          (binding_list
-            (identifier))
-          (array_type
-            (named_type
-              (identifier)))))
-      (memory_directive
-        (memory_effect
-          (memory_parameter_effect
-            (memory_parameter_effect_kind)
-            (identifier)))
-        (memory_effect
-          (memory_parameter_effect
-            (memory_parameter_effect_kind)
-            (identifier)))
-        (memory_effect
-          (memory_destination_effect
-            (identifier)))
-        (memory_effect
-          (memory_parameter_effect
-            (memory_parameter_effect_kind)
-            (identifier))))
-      (block))))
+(source_file)
 
 ==================
 based and scientific numeric literals
@@ -222,9 +145,9 @@ Sub :: typeclass (L: type, R: type) {
   '-' :: (left: L, right: R) -> Output { return left; }
 }
 
-([*]const volatile $T, s64) ::: instance Sub {
-  Output :: [*]const volatile T;
-  '-' :: (left: [*]const volatile T, right: s64) -> Output { return left; }
+([*]volatile $T, s64) ::: instance Sub {
+  Output :: [*]volatile T;
+  '-' :: (left: [*]volatile T, right: s64) -> Output { return left; }
 }
 
 ---
@@ -468,7 +391,8 @@ VALUE :: #comptime 1 + 2;
       (argument_list))))
 
 ==================
-memory overlays and use-site effects
+removed memory overlays and use-site effects are rejected
+:error
 ==================
 
 Texture :: struct { id: u32; }
@@ -488,84 +412,4 @@ main :: () {
 
 ---
 
-(source_file
-  (named_declaration
-    (declaration_name
-      (identifier))
-    (struct_declaration
-      (struct_field
-        (identifier)
-        (named_type
-          (identifier)))))
-  (named_declaration
-    (declaration_name
-      (identifier))
-    (function_declaration
-      (parameter_list
-        (parameter
-          (binding_list
-            (identifier))
-          (named_type
-            (identifier))))
-      (arrow)
-      (named_type
-        (identifier))
-      (foreign_directive
-        (string_literal)
-        (string_literal))))
-  (named_declaration
-    (declaration_name
-      (identifier))
-    (function_declaration
-      (parameter_list
-        (parameter
-          (binding_list
-            (identifier))
-          (named_type
-            (identifier))))
-      (foreign_directive
-        (string_literal)
-        (string_literal))))
-  (memory_overlay
-    (memory_qualified_name
-      (identifier)
-      (identifier))
-    (memory_effect
-      (memory_simple_effect))
-    (memory_effect
-      (memory_release_effect
-        (memory_qualified_name
-          (identifier)
-          (identifier))))
-    (memory_effect
-      (memory_parameter_effect
-        (memory_parameter_effect_kind)
-        (memory_argument_reference
-          (identifier)
-          (integer_literal)))))
-  (named_declaration
-    (declaration_name
-      (identifier))
-    (function_declaration
-      (parameter_list)
-      (block
-        (variable_declaration
-          (binding_list
-            (identifier))
-          (postfix_expression
-            (postfix_expression
-              (identifier)
-              (argument_list
-                (string_literal)))
-            (memory_directive
-              (memory_effect
-                (memory_release_effect
-                  (memory_qualified_name
-                    (identifier)
-                    (identifier))))
-              (memory_effect
-                (memory_parameter_effect
-                  (memory_parameter_effect_kind)
-                  (memory_argument_reference
-                    (identifier)
-                    (integer_literal)))))))))))
+(source_file)

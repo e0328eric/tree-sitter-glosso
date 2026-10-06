@@ -25,8 +25,6 @@ TYPED_BLOCK :: #comptime -> int { return 2; };
 #comptime -> int { return 3; };
 #comptime { run(); }
 
-#memory allocator { reads(buffer) }
-#memory allocator { writes(buffer) };
 
 Record :: struct { value: int; }
 Choice :: enum { First; Second; }
@@ -127,20 +125,6 @@ run :: () {}
         (postfix_expression
           (identifier)
           (argument_list)))))
-  (memory_overlay
-    (memory_qualified_name
-      (identifier))
-    (memory_effect
-      (memory_parameter_effect
-        (memory_parameter_effect_kind)
-        (identifier))))
-  (memory_overlay
-    (memory_qualified_name
-      (identifier))
-    (memory_effect
-      (memory_parameter_effect
-        (memory_parameter_effect_kind)
-        (identifier))))
   (named_declaration
     (declaration_name
       (identifier))
@@ -782,28 +766,15 @@ worker :: (value: int) -> int;
       (identifier))))
 
 ==================
-global memory tails are rejected
+removed global memory tails are rejected
+:error
 ==================
 
 buffer: *u8 #memory leak(buffer);
 
 ---
 
-(source_file
-  (named_declaration
-    (declaration_name
-      (identifier))
-    (global_variable_declaration_tail
-      (pointer_type
-        (named_type
-          (identifier)))
-      (MISSING ";")))
-  (ERROR
-    (identifier)
-    (type_constructor_pattern
-      (tuple_type_constructor_pattern
-        (type_constructor_pattern
-          (identifier))))))
+(source_file)
 
 ==================
 missing local declaration terminator

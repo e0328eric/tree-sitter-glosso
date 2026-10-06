@@ -387,16 +387,16 @@ noalias pointer parameters
 ==================
 
 CopyCallback :: #fn_ptr(
-  noalias destination: [*]u8,
-  noalias source: [*]const u8,
+  noalias destination: [*]mut u8,
+  noalias source: [*]u8,
 ) -> void;
 
 copy :: (
-  noalias destination: [*]u8,
-  noalias source: [*]const u8,
+  noalias destination: [*]mut u8,
+  noalias source: [*]u8,
 ) -> void {
-  callback: (noalias *void, noalias source: *const void) -> void;
-  closure := |noalias output: *void, noalias input: *const void| {};
+  callback: (noalias *mut void, noalias source: *void) -> void;
+  closure := |noalias output: *mut void, noalias input: *void| {};
 }
 
 ---
