@@ -74,6 +74,10 @@
         "named": true
       },
       {
+        "type": "borrowed_slice_type",
+        "named": true
+      },
+      {
         "type": "break_expression",
         "named": true
       },
@@ -174,6 +178,10 @@
         "named": true
       },
       {
+        "type": "pattern_quote_expression",
+        "named": true
+      },
+      {
         "type": "pattern_test_expression",
         "named": true
       },
@@ -187,6 +195,10 @@
       },
       {
         "type": "range_expression",
+        "named": true
+      },
+      {
+        "type": "reference_type",
         "named": true
       },
       {
@@ -248,6 +260,10 @@
     "named": true,
     "subtypes": [
       {
+        "type": "binary_expression",
+        "named": true
+      },
+      {
         "type": "boolean_literal",
         "named": true
       },
@@ -273,6 +289,10 @@
       },
       {
         "type": "float_literal",
+        "named": true
+      },
+      {
+        "type": "insert_expression",
         "named": true
       },
       {
@@ -333,6 +353,10 @@
       },
       {
         "type": "tuple_literal",
+        "named": true
+      },
+      {
+        "type": "unary_expression",
         "named": true
       }
     ]
@@ -468,6 +492,10 @@
         "named": true
       },
       {
+        "type": "borrowed_slice_type",
+        "named": true
+      },
+      {
         "type": "context_type",
         "named": true
       },
@@ -485,6 +513,10 @@
       },
       {
         "type": "layout_type",
+        "named": true
+      },
+      {
+        "type": "lifetime",
         "named": true
       },
       {
@@ -513,6 +545,10 @@
       },
       {
         "type": "pointer_type",
+        "named": true
+      },
+      {
+        "type": "reference_type",
         "named": true
       },
       {
@@ -588,6 +624,10 @@
             "named": true
           },
           {
+            "type": "borrowed_slice_type",
+            "named": true
+          },
+          {
             "type": "context_type",
             "named": true
           },
@@ -605,6 +645,10 @@
           },
           {
             "type": "layout_type",
+            "named": true
+          },
+          {
+            "type": "lifetime",
             "named": true
           },
           {
@@ -633,6 +677,10 @@
           },
           {
             "type": "pointer_type",
+            "named": true
+          },
+          {
+            "type": "reference_type",
             "named": true
           },
           {
@@ -1062,6 +1110,134 @@
     "fields": {}
   },
   {
+    "type": "borrowed_slice_type",
+    "named": true,
+    "fields": {
+      "element": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "array_type",
+            "named": true
+          },
+          {
+            "type": "borrowed_slice_type",
+            "named": true
+          },
+          {
+            "type": "context_type",
+            "named": true
+          },
+          {
+            "type": "function_type",
+            "named": true
+          },
+          {
+            "type": "generic_type",
+            "named": true
+          },
+          {
+            "type": "generic_type_variable",
+            "named": true
+          },
+          {
+            "type": "layout_type",
+            "named": true
+          },
+          {
+            "type": "lifetime",
+            "named": true
+          },
+          {
+            "type": "many_pointer_type",
+            "named": true
+          },
+          {
+            "type": "matrix_type",
+            "named": true
+          },
+          {
+            "type": "named_type",
+            "named": true
+          },
+          {
+            "type": "never_type",
+            "named": true
+          },
+          {
+            "type": "optional_type",
+            "named": true
+          },
+          {
+            "type": "parenthesized_type",
+            "named": true
+          },
+          {
+            "type": "pointer_type",
+            "named": true
+          },
+          {
+            "type": "reference_type",
+            "named": true
+          },
+          {
+            "type": "self_type",
+            "named": true
+          },
+          {
+            "type": "simd_type",
+            "named": true
+          },
+          {
+            "type": "string_literal",
+            "named": true
+          },
+          {
+            "type": "tuple_type",
+            "named": true
+          }
+        ]
+      }
+    },
+    "children": {
+      "multiple": false,
+      "required": false,
+      "types": [
+        {
+          "type": "lifetime",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
+    "type": "borrowed_slice_type_constructor_pattern",
+    "named": true,
+    "fields": {
+      "element": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "type_constructor_pattern",
+            "named": true
+          }
+        ]
+      }
+    },
+    "children": {
+      "multiple": false,
+      "required": false,
+      "types": [
+        {
+          "type": "lifetime",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
     "type": "break_expression",
     "named": true,
     "fields": {}
@@ -1213,6 +1389,10 @@
           {
             "type": "return_statement",
             "named": true
+          },
+          {
+            "type": "variable_declaration",
+            "named": true
           }
         ]
       }
@@ -1335,6 +1515,10 @@
             "named": true
           },
           {
+            "type": "borrowed_slice_type",
+            "named": true
+          },
+          {
             "type": "break_expression",
             "named": true
           },
@@ -1435,6 +1619,10 @@
             "named": true
           },
           {
+            "type": "pattern_quote_expression",
+            "named": true
+          },
+          {
             "type": "pattern_test_expression",
             "named": true
           },
@@ -1448,6 +1636,10 @@
           },
           {
             "type": "range_expression",
+            "named": true
+          },
+          {
+            "type": "reference_type",
             "named": true
           },
           {
@@ -1745,6 +1937,10 @@
       "required": false,
       "types": [
         {
+          "type": "derive_directive",
+          "named": true
+        },
+        {
           "type": "enum_variant",
           "named": true
         },
@@ -1774,6 +1970,10 @@
       "multiple": true,
       "required": false,
       "types": [
+        {
+          "type": "derive_directive",
+          "named": true
+        },
         {
           "type": "enum_variant",
           "named": true
@@ -2054,6 +2254,10 @@
             "named": true
           },
           {
+            "type": "borrowed_slice_type",
+            "named": true
+          },
+          {
             "type": "context_type",
             "named": true
           },
@@ -2071,6 +2275,10 @@
           },
           {
             "type": "layout_type",
+            "named": true
+          },
+          {
+            "type": "lifetime",
             "named": true
           },
           {
@@ -2102,6 +2310,10 @@
             "named": true
           },
           {
+            "type": "reference_type",
+            "named": true
+          },
+          {
             "type": "self_type",
             "named": true
           },
@@ -2130,6 +2342,11 @@
         ]
       }
     }
+  },
+  {
+    "type": "for_pointer_binder",
+    "named": true,
+    "fields": {}
   },
   {
     "type": "for_statement",
@@ -2324,6 +2541,10 @@
             "named": true
           },
           {
+            "type": "borrowed_slice_type",
+            "named": true
+          },
+          {
             "type": "break_expression",
             "named": true
           },
@@ -2424,6 +2645,10 @@
             "named": true
           },
           {
+            "type": "pattern_quote_expression",
+            "named": true
+          },
+          {
             "type": "pattern_test_expression",
             "named": true
           },
@@ -2437,6 +2662,10 @@
           },
           {
             "type": "range_expression",
+            "named": true
+          },
+          {
+            "type": "reference_type",
             "named": true
           },
           {
@@ -2581,6 +2810,10 @@
           "named": true
         },
         {
+          "type": "lifetimes_directive",
+          "named": true
+        },
+        {
           "type": "magic_directive",
           "named": true
         },
@@ -2622,6 +2855,10 @@
             "named": true
           },
           {
+            "type": "borrowed_slice_type",
+            "named": true
+          },
+          {
             "type": "context_type",
             "named": true
           },
@@ -2643,6 +2880,10 @@
           },
           {
             "type": "layout_type",
+            "named": true
+          },
+          {
+            "type": "lifetime",
             "named": true
           },
           {
@@ -2674,6 +2915,10 @@
             "named": true
           },
           {
+            "type": "reference_type",
+            "named": true
+          },
+          {
             "type": "self_type",
             "named": true
           },
@@ -2693,11 +2938,15 @@
       }
     },
     "children": {
-      "multiple": false,
+      "multiple": true,
       "required": false,
       "types": [
         {
           "type": "arrow",
+          "named": true
+        },
+        {
+          "type": "lifetimes_directive",
           "named": true
         }
       ]
@@ -3846,6 +4095,10 @@
             "named": true
           },
           {
+            "type": "borrowed_slice_type",
+            "named": true
+          },
+          {
             "type": "context_type",
             "named": true
           },
@@ -3863,6 +4116,10 @@
           },
           {
             "type": "layout_type",
+            "named": true
+          },
+          {
+            "type": "lifetime",
             "named": true
           },
           {
@@ -3891,6 +4148,10 @@
           },
           {
             "type": "pointer_type",
+            "named": true
+          },
+          {
+            "type": "reference_type",
             "named": true
           },
           {
@@ -3975,6 +4236,36 @@
     "fields": {}
   },
   {
+    "type": "lifetime",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": false,
+      "required": true,
+      "types": [
+        {
+          "type": "label",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
+    "type": "lifetimes_directive",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": true,
+      "required": true,
+      "types": [
+        {
+          "type": "identifier",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
     "type": "load_declaration",
     "named": true,
     "fields": {
@@ -4034,6 +4325,10 @@
             "named": true
           },
           {
+            "type": "borrowed_slice_type",
+            "named": true
+          },
+          {
             "type": "context_type",
             "named": true
           },
@@ -4051,6 +4346,10 @@
           },
           {
             "type": "layout_type",
+            "named": true
+          },
+          {
+            "type": "lifetime",
             "named": true
           },
           {
@@ -4079,6 +4378,10 @@
           },
           {
             "type": "pointer_type",
+            "named": true
+          },
+          {
+            "type": "reference_type",
             "named": true
           },
           {
@@ -4602,6 +4905,10 @@
             "named": true
           },
           {
+            "type": "borrowed_slice_type",
+            "named": true
+          },
+          {
             "type": "context_type",
             "named": true
           },
@@ -4619,6 +4926,10 @@
           },
           {
             "type": "layout_type",
+            "named": true
+          },
+          {
+            "type": "lifetime",
             "named": true
           },
           {
@@ -4647,6 +4958,10 @@
           },
           {
             "type": "pointer_type",
+            "named": true
+          },
+          {
+            "type": "reference_type",
             "named": true
           },
           {
@@ -4704,6 +5019,10 @@
         "required": true,
         "types": [
           {
+            "type": "binary_expression",
+            "named": true
+          },
+          {
             "type": "boolean_literal",
             "named": true
           },
@@ -4729,6 +5048,10 @@
           },
           {
             "type": "float_literal",
+            "named": true
+          },
+          {
+            "type": "insert_expression",
             "named": true
           },
           {
@@ -4785,6 +5108,10 @@
           },
           {
             "type": "tuple_literal",
+            "named": true
+          },
+          {
+            "type": "unary_expression",
             "named": true
           }
         ]
@@ -5004,6 +5331,10 @@
         "required": false,
         "types": [
           {
+            "type": "binary_expression",
+            "named": true
+          },
+          {
             "type": "boolean_literal",
             "named": true
           },
@@ -5029,6 +5360,10 @@
           },
           {
             "type": "float_literal",
+            "named": true
+          },
+          {
+            "type": "insert_expression",
             "named": true
           },
           {
@@ -5081,6 +5416,10 @@
           },
           {
             "type": "tuple_literal",
+            "named": true
+          },
+          {
+            "type": "unary_expression",
             "named": true
           }
         ]
@@ -5220,6 +5559,10 @@
             "named": true
           },
           {
+            "type": "insert_expression",
+            "named": true
+          },
+          {
             "type": "integer_literal",
             "named": true
           },
@@ -5312,6 +5655,10 @@
             "named": true
           },
           {
+            "type": "insert_expression",
+            "named": true
+          },
+          {
             "type": "integer_literal",
             "named": true
           },
@@ -5394,6 +5741,10 @@
             "named": true
           },
           {
+            "type": "insert_expression",
+            "named": true
+          },
+          {
             "type": "integer_literal",
             "named": true
           },
@@ -5443,6 +5794,22 @@
           },
           {
             "type": "tuple_literal",
+            "named": true
+          }
+        ]
+      }
+    }
+  },
+  {
+    "type": "pattern_quote_expression",
+    "named": true,
+    "fields": {
+      "pattern": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "_pattern",
             "named": true
           }
         ]
@@ -5509,6 +5876,10 @@
             "named": true
           },
           {
+            "type": "borrowed_slice_type",
+            "named": true
+          },
+          {
             "type": "context_type",
             "named": true
           },
@@ -5526,6 +5897,10 @@
           },
           {
             "type": "layout_type",
+            "named": true
+          },
+          {
+            "type": "lifetime",
             "named": true
           },
           {
@@ -5554,6 +5929,10 @@
           },
           {
             "type": "pointer_type",
+            "named": true
+          },
+          {
+            "type": "reference_type",
             "named": true
           },
           {
@@ -5610,6 +5989,10 @@
           },
           {
             "type": "boolean_literal",
+            "named": true
+          },
+          {
+            "type": "borrowed_slice_type",
             "named": true
           },
           {
@@ -5690,6 +6073,10 @@
           },
           {
             "type": "quoted_operator",
+            "named": true
+          },
+          {
+            "type": "reference_type",
             "named": true
           },
           {
@@ -5775,6 +6162,10 @@
             "named": true
           },
           {
+            "type": "borrowed_slice_type",
+            "named": true
+          },
+          {
             "type": "byte_string_literal",
             "named": true
           },
@@ -5852,6 +6243,10 @@
           },
           {
             "type": "quoted_operator",
+            "named": true
+          },
+          {
+            "type": "reference_type",
             "named": true
           },
           {
@@ -5943,6 +6338,10 @@
             "named": true
           },
           {
+            "type": "borrowed_slice_type",
+            "named": true
+          },
+          {
             "type": "byte_string_literal",
             "named": true
           },
@@ -6020,6 +6419,10 @@
           },
           {
             "type": "quoted_operator",
+            "named": true
+          },
+          {
+            "type": "reference_type",
             "named": true
           },
           {
@@ -6095,6 +6498,10 @@
             "named": true
           },
           {
+            "type": "borrowed_slice_type",
+            "named": true
+          },
+          {
             "type": "byte_string_literal",
             "named": true
           },
@@ -6172,6 +6579,10 @@
           },
           {
             "type": "quoted_operator",
+            "named": true
+          },
+          {
+            "type": "reference_type",
             "named": true
           },
           {
@@ -6327,6 +6738,11 @@
         ]
       }
     }
+  },
+  {
+    "type": "prefix_operator",
+    "named": true,
+    "fields": {}
   },
   {
     "type": "push_allocator_statement",
@@ -6540,86 +6956,10 @@
     "fields": {
       "end": {
         "multiple": false,
-        "required": true,
+        "required": false,
         "types": [
           {
-            "type": "boolean_literal",
-            "named": true
-          },
-          {
-            "type": "byte_string_literal",
-            "named": true
-          },
-          {
-            "type": "c_string_literal",
-            "named": true
-          },
-          {
-            "type": "char_literal",
-            "named": true
-          },
-          {
-            "type": "code_splice_identifier",
-            "named": true
-          },
-          {
-            "type": "constant_pattern",
-            "named": true
-          },
-          {
-            "type": "float_literal",
-            "named": true
-          },
-          {
-            "type": "integer_literal",
-            "named": true
-          },
-          {
-            "type": "non_hygienic_identifier",
-            "named": true
-          },
-          {
-            "type": "null_literal",
-            "named": true
-          },
-          {
-            "type": "parenthesized_pattern",
-            "named": true
-          },
-          {
-            "type": "pattern_binding",
-            "named": true
-          },
-          {
-            "type": "pattern_postfix_expression",
-            "named": true
-          },
-          {
-            "type": "pattern_rest",
-            "named": true
-          },
-          {
-            "type": "pointer_pattern",
-            "named": true
-          },
-          {
-            "type": "shorthand_member_pattern",
-            "named": true
-          },
-          {
-            "type": "slice_pattern",
-            "named": true
-          },
-          {
-            "type": "string_literal",
-            "named": true
-          },
-          {
-            "type": "struct_pattern",
-            "named": true
-          },
-          {
-            "type": "tuple_literal",
+            "type": "_expression",
             "named": true
           }
         ]
@@ -6636,86 +6976,10 @@
       },
       "start": {
         "multiple": false,
-        "required": true,
+        "required": false,
         "types": [
           {
-            "type": "boolean_literal",
-            "named": true
-          },
-          {
-            "type": "byte_string_literal",
-            "named": true
-          },
-          {
-            "type": "c_string_literal",
-            "named": true
-          },
-          {
-            "type": "char_literal",
-            "named": true
-          },
-          {
-            "type": "code_splice_identifier",
-            "named": true
-          },
-          {
-            "type": "constant_pattern",
-            "named": true
-          },
-          {
-            "type": "float_literal",
-            "named": true
-          },
-          {
-            "type": "integer_literal",
-            "named": true
-          },
-          {
-            "type": "non_hygienic_identifier",
-            "named": true
-          },
-          {
-            "type": "null_literal",
-            "named": true
-          },
-          {
-            "type": "parenthesized_pattern",
-            "named": true
-          },
-          {
-            "type": "pattern_binding",
-            "named": true
-          },
-          {
-            "type": "pattern_postfix_expression",
-            "named": true
-          },
-          {
-            "type": "pattern_rest",
-            "named": true
-          },
-          {
-            "type": "pointer_pattern",
-            "named": true
-          },
-          {
-            "type": "shorthand_member_pattern",
-            "named": true
-          },
-          {
-            "type": "slice_pattern",
-            "named": true
-          },
-          {
-            "type": "string_literal",
-            "named": true
-          },
-          {
-            "type": "struct_pattern",
-            "named": true
-          },
-          {
-            "type": "tuple_literal",
+            "type": "_expression",
             "named": true
           }
         ]
@@ -6727,9 +6991,13 @@
     "named": true,
     "fields": {},
     "children": {
-      "multiple": false,
+      "multiple": true,
       "required": true,
       "types": [
+        {
+          "type": "lifetime",
+          "named": true
+        },
         {
           "type": "self_expression",
           "named": true
@@ -6738,15 +7006,19 @@
     }
   },
   {
-    "type": "result_type",
+    "type": "reference_type",
     "named": true,
     "fields": {
-      "error": {
+      "element": {
         "multiple": false,
-        "required": true,
+        "required": false,
         "types": [
           {
             "type": "array_type",
+            "named": true
+          },
+          {
+            "type": "borrowed_slice_type",
             "named": true
           },
           {
@@ -6767,6 +7039,10 @@
           },
           {
             "type": "layout_type",
+            "named": true
+          },
+          {
+            "type": "lifetime",
             "named": true
           },
           {
@@ -6795,6 +7071,238 @@
           },
           {
             "type": "pointer_type",
+            "named": true
+          },
+          {
+            "type": "reference_type",
+            "named": true
+          },
+          {
+            "type": "result_type",
+            "named": true
+          },
+          {
+            "type": "self_type",
+            "named": true
+          },
+          {
+            "type": "simd_type",
+            "named": true
+          },
+          {
+            "type": "string_literal",
+            "named": true
+          },
+          {
+            "type": "tuple_type",
+            "named": true
+          }
+        ]
+      },
+      "pointee": {
+        "multiple": false,
+        "required": false,
+        "types": [
+          {
+            "type": "array_type",
+            "named": true
+          },
+          {
+            "type": "borrowed_slice_type",
+            "named": true
+          },
+          {
+            "type": "context_type",
+            "named": true
+          },
+          {
+            "type": "function_type",
+            "named": true
+          },
+          {
+            "type": "generic_type",
+            "named": true
+          },
+          {
+            "type": "generic_type_variable",
+            "named": true
+          },
+          {
+            "type": "layout_type",
+            "named": true
+          },
+          {
+            "type": "lifetime",
+            "named": true
+          },
+          {
+            "type": "many_pointer_type",
+            "named": true
+          },
+          {
+            "type": "matrix_type",
+            "named": true
+          },
+          {
+            "type": "named_type",
+            "named": true
+          },
+          {
+            "type": "never_type",
+            "named": true
+          },
+          {
+            "type": "optional_type",
+            "named": true
+          },
+          {
+            "type": "parenthesized_type",
+            "named": true
+          },
+          {
+            "type": "pointer_type",
+            "named": true
+          },
+          {
+            "type": "reference_type",
+            "named": true
+          },
+          {
+            "type": "self_type",
+            "named": true
+          },
+          {
+            "type": "simd_type",
+            "named": true
+          },
+          {
+            "type": "string_literal",
+            "named": true
+          },
+          {
+            "type": "tuple_type",
+            "named": true
+          }
+        ]
+      }
+    },
+    "children": {
+      "multiple": false,
+      "required": false,
+      "types": [
+        {
+          "type": "lifetime",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
+    "type": "reference_type_constructor_pattern",
+    "named": true,
+    "fields": {
+      "element": {
+        "multiple": false,
+        "required": false,
+        "types": [
+          {
+            "type": "type_constructor_pattern",
+            "named": true
+          }
+        ]
+      },
+      "pointee": {
+        "multiple": false,
+        "required": false,
+        "types": [
+          {
+            "type": "type_constructor_pattern",
+            "named": true
+          }
+        ]
+      }
+    },
+    "children": {
+      "multiple": false,
+      "required": false,
+      "types": [
+        {
+          "type": "lifetime",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
+    "type": "result_type",
+    "named": true,
+    "fields": {
+      "error": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "array_type",
+            "named": true
+          },
+          {
+            "type": "borrowed_slice_type",
+            "named": true
+          },
+          {
+            "type": "context_type",
+            "named": true
+          },
+          {
+            "type": "function_type",
+            "named": true
+          },
+          {
+            "type": "generic_type",
+            "named": true
+          },
+          {
+            "type": "generic_type_variable",
+            "named": true
+          },
+          {
+            "type": "layout_type",
+            "named": true
+          },
+          {
+            "type": "lifetime",
+            "named": true
+          },
+          {
+            "type": "many_pointer_type",
+            "named": true
+          },
+          {
+            "type": "matrix_type",
+            "named": true
+          },
+          {
+            "type": "named_type",
+            "named": true
+          },
+          {
+            "type": "never_type",
+            "named": true
+          },
+          {
+            "type": "optional_type",
+            "named": true
+          },
+          {
+            "type": "parenthesized_type",
+            "named": true
+          },
+          {
+            "type": "pointer_type",
+            "named": true
+          },
+          {
+            "type": "reference_type",
             "named": true
           },
           {
@@ -7507,6 +8015,10 @@
           "named": true
         },
         {
+          "type": "lifetimes_directive",
+          "named": true
+        },
+        {
           "type": "magic_directive",
           "named": true
         },
@@ -8044,6 +8556,10 @@
           "named": true
         },
         {
+          "type": "borrowed_slice_type_constructor_pattern",
+          "named": true
+        },
+        {
           "type": "code_splice_identifier",
           "named": true
         },
@@ -8068,6 +8584,10 @@
           "named": true
         },
         {
+          "type": "lifetime",
+          "named": true
+        },
+        {
           "type": "never_type",
           "named": true
         },
@@ -8077,6 +8597,10 @@
         },
         {
           "type": "pointer_type_constructor_pattern",
+          "named": true
+        },
+        {
+          "type": "reference_type_constructor_pattern",
           "named": true
         },
         {
@@ -8329,6 +8853,16 @@
           }
         ]
       }
+    },
+    "children": {
+      "multiple": false,
+      "required": false,
+      "types": [
+        {
+          "type": "lifetime",
+          "named": true
+        }
+      ]
     }
   },
   {
@@ -8341,6 +8875,10 @@
       "types": [
         {
           "type": "derive_directive",
+          "named": true
+        },
+        {
+          "type": "lifetimes_directive",
           "named": true
         },
         {
@@ -8846,6 +9384,10 @@
     "named": false
   },
   {
+    "type": "#lifetimes",
+    "named": false
+  },
+  {
     "type": "#load",
     "named": false
   },
@@ -8935,6 +9477,10 @@
   },
   {
     "type": "$",
+    "named": false
+  },
+  {
+    "type": "&",
     "named": false
   },
   {
@@ -9239,10 +9785,6 @@
     "named": false
   },
   {
-    "type": "for_pointer_binder",
-    "named": true
-  },
-  {
     "type": "from_directive",
     "named": true
   },
@@ -9343,16 +9885,20 @@
     "named": true
   },
   {
-    "type": "prefix_operator",
-    "named": true
-  },
-  {
     "type": "quoted_operator",
     "named": true
   },
   {
     "type": "range_operator",
     "named": true
+  },
+  {
+    "type": "raw",
+    "named": false
+  },
+  {
+    "type": "raw_mut",
+    "named": false
   },
   {
     "type": "return",

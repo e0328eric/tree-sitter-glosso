@@ -1,0 +1,143 @@
+View :: struct #lifetimes(a) {
+// <- type.definition
+//             ^ attribute
+//                        ^ label
+    values: [&'a]mut u8;
+//            ^ label
+//               ^ keyword
+//                   ^ type.builtin
+}
+
+Byte_View :: [&]u8;
+//              ^ type.builtin
+
+identity :: (
+    mut value: &'a mut u8,
+//  ^ keyword
+//      ^ variable.parameter
+//              ^ label
+//                 ^ keyword
+//                     ^ type.builtin
+    mut: u8,
+//  ^ variable.parameter
+    a: u8,
+//  ^ variable.parameter
+) -> &'a mut u8 #lifetimes(a) {
+//    ^ label
+//       ^ keyword
+//           ^ type.builtin
+//              ^ attribute
+//                         ^ label
+    mut local := value;
+//  ^ keyword
+//      ^ variable
+//               ^ variable.parameter
+    return local;
+//         ^ variable
+}
+
+View ::: {
+    read :: (&'a #self) #lifetimes(a) {
+//            ^ label
+//               ^ variable.builtin
+        #self;
+//      ^ variable.builtin
+    }
+    change :: (mut &mut #self) {
+//             ^ keyword
+//                  ^ keyword
+//                      ^ variable.builtin
+    }
+}
+
+addresses :: (value: u8) {
+    shared := &value;
+    raw := &raw value;
+//          ^ keyword
+//              ^ variable.parameter
+    writable := &raw_mut value;
+//               ^ keyword
+//                       ^ variable.parameter
+    borrowed := &mut value;
+//               ^ keyword
+    named := &'a mut value;
+//            ^ label
+//               ^ keyword
+    raw_mutable := &raw mut value;
+//                  ^ keyword
+//                      ^ keyword
+    suffix := value.&raw_mut;
+//                  ^ operator
+//                    ^ keyword
+    raw_suffix := value.&raw mut;
+//                       ^ keyword
+//                           ^ keyword
+    raw;
+//  ^ variable
+    mut := 1;
+//  ^ variable
+    mut;
+//  ^ variable
+    raw_mut := 1;
+    raw_field := &raw.field;
+//                ^ variable
+//                    ^ property
+    mut_field := &mut.field;
+//                ^ variable
+//                    ^ property
+    raw_mut_field := &raw_mut.field;
+//                    ^ variable
+//                            ^ property
+}
+
+bindings :: (item: u8, index: u8) {
+    mut item, index: u8;
+//  ^ keyword
+//      ^ variable
+//            ^ variable
+    item;
+//  ^ variable
+    index;
+//  ^ variable
+    for *mut item, mut index: values {
+//      ^ operator
+//       ^ keyword
+//           ^ variable
+//                 ^ keyword
+//                      ^ variable
+        item;
+//      ^ variable
+        index;
+//      ^ variable
+    }
+    for mut: values {
+//      ^ variable
+        mut;
+//      ^ variable
+    }
+    callback := |mut value: u8, mut| value;
+//               ^ keyword
+//                   ^ variable.parameter
+//                              ^ variable.parameter
+//                                   ^ variable.parameter
+}
+
+quoted_pattern :: (value: u8) {
+    quoted := #pattern .Some(value);
+//                           ^ variable
+    value;
+//  ^ variable.parameter
+}
+
+quoted_code :: (value: u8) {
+    single :: #code mut value := 0;
+//                      ^ variable
+    value;
+//  ^ variable.parameter
+    block_quote :: #code {
+        mut value := 0;
+//          ^ variable
+    };
+    value;
+//  ^ variable.parameter
+}

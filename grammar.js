@@ -25,6 +25,23 @@ module.exports = grammar({
   extras: ($) => [/\s/, $.comment],
 
   conflicts: ($) => [
+    [$.lifetime, $._non_range_expression],
+    [$.type_constructor_pattern, $._non_range_expression],
+    [$.parameter, $._non_range_expression, $._postfix_expression_base],
+    [$.for_statement, $._non_range_expression, $._postfix_expression_base],
+    [$.for_statement, $._non_range_expression],
+    [$._non_range_expression, $._pointer_type_qualifier],
+    [$._non_range_expression, $._pointer_type_qualifier, $._postfix_expression_base],
+    [$._variable_declaration_body, $._non_range_expression, $._postfix_expression_base],
+    [$.binding_list, $._non_range_expression],
+    [$._non_range_expression, $.qualified_operator, $._postfix_expression_base],
+    [$._non_range_expression, $._pattern_unary],
+    [$._non_range_expression, $._pattern_unary, $._postfix_expression_base],
+    [$._non_range_expression, $.pattern_binding],
+    [$._non_range_expression, $.pattern_binding, $._postfix_expression_base],
+    [$._non_range_expression, $._prefix_operator],
+    [$._non_range_expression, $._postfix_expression_base, $._prefix_operator],
+    [$._non_range_expression, $._postfix_expression_base],
     [$._expression, $._postfix_expression_base],
     [$.qualified_operator, $._postfix_expression_base],
     [$._expression, $.qualified_operator, $._postfix_expression_base],
@@ -69,6 +86,34 @@ module.exports = grammar({
     [$.for_statement, $._expression, $._postfix_expression_base, $._prefix_operator],
     [$.for_statement, $._expression, $._prefix_operator],
     [$._for_closed_range, $.range_expression],
+    [$.type_hole, $.array_type_constructor_pattern],
+    [$.array_type, $.type_hole, $.array_type_constructor_pattern],
+    [$.lifetime, $._expression],
+    [$.receiver_parameter, $.parameter],
+    [$._variable_declaration_body, $._expression, $._postfix_expression_base],
+    [$.parameter, $._expression, $._postfix_expression_base],
+    [$.binary_expression, $.constant_pattern],
+    [$._pattern_unary, $._postfix_expression_base],
+    [$._expression, $._pattern_unary, $._postfix_expression_base],
+    [$._expression, $.pattern_binding, $._postfix_expression_base],
+    [$._expression, $._pattern_range],
+    [$.binding_list, $.for_statement, $._expression],
+    [$.binding_list, $.for_statement],
+    [$._address_qualifier],
+    [$._bracket_reference_type, $._prefix_operator],
+    [$._prefix_operator, $.unary_expression],
+    [$._prefix_operator, $.unary_expression, $._bracket_reference_type],
+    [$._reference_element_name, $.array_type_constructor_pattern],
+    [$._reference_element_name, $.array_type],
+    [$._reference_element_name, $.array_type, $.array_type_constructor_pattern],
+    [$._reference_element_base, $.type_constructor_pattern],
+    [$._reference_element_base, $._reference_element_constructor_pattern],
+    [$._reference_element_name, $.type_constructor_pattern],
+    [$.qualified_operator, $.pattern_binding, $._postfix_expression_base],
+    [$._pointer_type_qualifier, $.for_statement],
+    [$._pointer_type_qualifier, $._postfix_expression_base],
+    [$._pointer_type_qualifier, $._expression],
+    [$._pointer_type_qualifier, $._expression, $._postfix_expression_base],
   ],
 
   supertypes: ($) => [
@@ -80,12 +125,12 @@ module.exports = grammar({
   ],
 
   inline: ($) => [
+    $._identifier,
     $._declaration_body,
     $._function_declaration_tail,
     $._parameter,
     $._function_modifier,
     $._non_run_expression,
-    $._non_range_expression,
     $._primary_expression,
     $._pattern_primary,
     $.type_identifier,
@@ -212,30 +257,39 @@ module.exports = grammar({
 
     _thread_local_global_declaration: ($) =>
       seq(
+        optional("mut"),
         field("name", $.declaration_name),
         $.global_variable_declaration_tail,
       ),
 
     named_declaration: ($) =>
-      seq(
-        optional(field("visibility", $.visibility_modifier)),
-        field("name", $.declaration_name),
-        choice(
-          seq("::", $._declaration_body),
-          seq(choice(":=", "::="), $._named_definition_body),
-          seq(
-            ":",
-            optional(field("type", $._type)),
-            choice(":", "::"),
-            $._named_definition_body,
-          ),
+      choice(
+        seq(
+          optional(field("visibility", $.visibility_modifier)),
+          "mut",
+          field("name", $.declaration_name),
           $.global_variable_declaration_tail,
-          $.typed_constant_declaration_tail,
+        ),
+        seq(
+          optional(field("visibility", $.visibility_modifier)),
+          field("name", $.declaration_name),
+          choice(
+            seq("::", $._declaration_body),
+            seq(choice(":=", "::="), $._named_definition_body),
+            seq(
+              ":",
+              optional(field("type", $._type)),
+              choice(":", "::"),
+              $._named_definition_body,
+            ),
+            $.global_variable_declaration_tail,
+            $.typed_constant_declaration_tail,
+          ),
         ),
       ),
 
     declaration_name: ($) =>
-      choice($.identifier, $.quoted_operator, $.code_splice_identifier),
+      choice($._identifier, $.quoted_operator, $.code_splice_identifier),
 
     _declaration_body: ($) =>
       choice(
@@ -432,13 +486,14 @@ module.exports = grammar({
           "#fn_ptr",
           field("parameters", $.fn_ptr_parameter_list),
           optional(seq($.arrow, field("return_type", $._fn_ptr_return_type))),
-          repeat(choice("#c_call", "#no_context")),
+          repeat(choice("#c_call", "#no_context", $.lifetimes_directive)),
           ";",
         ),
       ),
 
     constant_declaration_body: ($) =>
       choice(
+        prec(10, seq(field("value", $.code_expression), optional(";"))),
         prec(
           11,
           seq(
@@ -526,6 +581,7 @@ module.exports = grammar({
         $.modify_directive,
         $.derive_directive,
         $.magic_directive,
+        $.lifetimes_directive,
       ),
 
     empty_field: ($) =>
@@ -553,6 +609,7 @@ module.exports = grammar({
       seq(
         "enum",
         optional(field("backing_type", $._type)),
+        repeat($.derive_directive),
         "{",
         repeat(choice($.enum_variant, $.enum_visibility_group)),
         "}",
@@ -562,6 +619,7 @@ module.exports = grammar({
       seq(
         "enum_flags",
         field("backing_type", $._type),
+        repeat($.derive_directive),
         "{",
         repeat(choice($.enum_variant, $.enum_visibility_group)),
         "}",
@@ -586,7 +644,7 @@ module.exports = grammar({
     union_declaration: ($) =>
       seq(
         "union",
-        repeat(choice("#raw", $.derive_directive, $.magic_directive)),
+        repeat(choice("#raw", $.derive_directive, $.magic_directive, $.lifetimes_directive)),
         "{",
         repeat(choice($.union_field, $.union_visibility_group)),
         "}",
@@ -697,7 +755,15 @@ module.exports = grammar({
       ),
 
     receiver_parameter: ($) =>
-      seq(optional("noalias"), optional(seq("*", optional("mut"))), $.self_expression),
+      seq(
+        optional("noalias"),
+        optional("mut"),
+        optional(choice(
+          seq("*", optional("mut")),
+          seq("&", optional($.lifetime), optional("mut")),
+        )),
+        $.self_expression,
+      ),
 
     fn_ptr_parameter_list: ($) =>
       seq("(", commaSep(choice($.fn_ptr_parameter, $.c_varargs_parameter)), ")"),
@@ -735,6 +801,7 @@ module.exports = grammar({
       seq(
         repeat(choice("using", "noalias")),
         optional("#lazy"),
+        optional("mut"),
         choice(
           seq(
             field("name", $._binding_name),
@@ -752,7 +819,7 @@ module.exports = grammar({
     binding_list: ($) => seq($._binding_name, repeat(seq(",", $._binding_name))),
 
     _binding_name: ($) =>
-      choice($.identifier, $.non_hygienic_identifier, $.code_splice_identifier),
+      choice($._identifier, $.non_hygienic_identifier, $.code_splice_identifier),
 
     variadic_type: ($) =>
       seq(
@@ -776,6 +843,7 @@ module.exports = grammar({
 
     _function_modifier: ($) =>
       choice(
+        $.lifetimes_directive,
         $.operator_directive,
         $.modify_directive,
         $.expand_directive,
@@ -791,6 +859,7 @@ module.exports = grammar({
 
     _function_non_bodyless_modifier: ($) =>
       choice(
+        $.lifetimes_directive,
         $.operator_directive,
         $.modify_directive,
         $.expand_directive,
@@ -814,6 +883,9 @@ module.exports = grammar({
     inline_modifier: (_) => choice("always", "never"),
 
     where_clause: ($) => seq("where", field("condition", $._expression)),
+
+    lifetimes_directive: ($) =>
+      seq("#lifetimes", "(", sep1($.identifier, ","), ")"),
 
     modify_directive: ($) =>
       seq(
@@ -1080,20 +1152,23 @@ module.exports = grammar({
     for_statement: ($) =>
       seq(
         "for",
-        optional(field("direction", $._unqualified_operator)),
+        optional(field("direction", alias("<", $.operator))),
         optional(seq(":", field("expansion", $.identifier))),
         optional(
           choice(
             seq(
               optional(field("mode", alias($._pointer_prefix, $.for_pointer_binder))),
-              field("name", $.identifier),
+              optional("mut"),
+              field("name", $._identifier),
               ",",
-              field("index", $.identifier),
+              optional("mut"),
+              field("index", $._identifier),
               ":",
             ),
             seq(
               optional(field("mode", alias($._pointer_prefix, $.for_pointer_binder))),
-              field("name", $.identifier),
+              optional("mut"),
+              field("name", $._identifier),
               ":",
             ),
           ),
@@ -1166,7 +1241,7 @@ module.exports = grammar({
           repeat(choice($.case_clause, $.default_clause, $.inline_statement)),
           "}",
         ),
-        seq(
+        prec.dynamic(1, seq(
           "if",
           optional(field("modifier", $.partial_directive)),
           "#pattern",
@@ -1184,7 +1259,7 @@ module.exports = grammar({
               "}",
             ),
           ),
-        ),
+        )),
       ),
 
     partial_directive: (_) => "#partial",
@@ -1266,7 +1341,7 @@ module.exports = grammar({
         repeat(choice(
           seq(".", field("field", choice($.identifier, $.code_splice_identifier, $.integer_literal))),
           ".*",
-          ".&",
+          seq(".&", optional($._address_qualifier)),
           field("arguments", $.argument_list),
           field("index", $.index_suffix),
           field("index", $.qualified_index_suffix),
@@ -1482,6 +1557,12 @@ module.exports = grammar({
 
     _variable_declaration_body: ($) =>
       choice(
+        $._immutable_variable_declaration_body,
+        seq("mut", $._mutable_variable_declaration_body),
+      ),
+
+    _immutable_variable_declaration_body: ($) =>
+      choice(
         seq(
           field("name", $.binding_list),
           "::=",
@@ -1521,6 +1602,26 @@ module.exports = grammar({
         ),
       ),
 
+    _mutable_variable_declaration_body: ($) =>
+      choice(
+        seq(
+          field("name", $.binding_list),
+          choice("::=", ":="),
+          field("value", $._expression),
+        ),
+        seq(
+          field("name", $.binding_list),
+          ":",
+          choice(
+            seq(
+              field("type", $._type),
+              optional(seq(choice(":=", "="), field("value", $._expression))),
+            ),
+            seq(choice(":=", "="), field("value", $._expression)),
+          ),
+        ),
+      ),
+
     assignment_statement: ($) =>
       prec.right(
         PREC.assignment + 1,
@@ -1534,6 +1635,7 @@ module.exports = grammar({
 
     expression_statement: ($) =>
       choice(
+        prec(10, seq(alias($._block_run_expression, $.run_expression), optional(";"))),
         prec.dynamic(
           2,
           prec.right(
@@ -1560,6 +1662,9 @@ module.exports = grammar({
         $.array_type,
         $.layout_type,
         $.pointer_type,
+        $.reference_type,
+        $.borrowed_slice_type,
+        $.lifetime,
         $.function_type,
         $.tuple_type,
         $.parenthesized_type,
@@ -1570,6 +1675,50 @@ module.exports = grammar({
         $.string_literal,
         $.named_type,
       ),
+
+    _reference_element_base: ($) =>
+      choice(
+        $.optional_type,
+        $.matrix_type,
+        $.simd_type,
+        $.generic_type,
+        $.many_pointer_type,
+        $.array_type,
+        $.layout_type,
+        $.pointer_type,
+        $.reference_type,
+        $.borrowed_slice_type,
+        $.lifetime,
+        $.function_type,
+        $.tuple_type,
+        $.parenthesized_type,
+        $.generic_type_variable,
+        $.context_type,
+        $.self_type,
+        $.never_type,
+        $.string_literal,
+        alias($._reference_element_name, $.named_type),
+      ),
+
+    // Keep a bracketed name ambiguous until its following token decides
+    // between an element borrow (&[T]) and an array reference (&[N]T).
+    _reference_element_name: ($) =>
+      seq(
+        choice($.identifier, $.code_splice_identifier),
+        repeat(seq(".", choice($.identifier, $.code_splice_identifier))),
+      ),
+
+    _reference_element_type: ($) => choice(
+      $._reference_element_base,
+      alias($._reference_element_result_type, $.result_type),
+    ),
+
+    _reference_element_result_type: ($) =>
+      prec.right(PREC.resultType, seq(
+        field("error", $._reference_element_base),
+        "!",
+        field("type", $._type),
+      )),
 
     optional_type: ($) =>
       prec.right(
@@ -1604,6 +1753,9 @@ module.exports = grammar({
         $.array_type,
         $.layout_type,
         $.pointer_type,
+        $.reference_type,
+        $.borrowed_slice_type,
+        $.lifetime,
         $.function_type,
         $.tuple_type,
         $.parenthesized_type,
@@ -1717,6 +1869,37 @@ module.exports = grammar({
         field("pointee", $._modified_type),
       ),
 
+    reference_type: ($) =>
+      prec(PREC.unary, seq(
+        "&",
+        optional($.lifetime),
+        optional("mut"),
+        choice(
+          field("pointee", $._modified_type),
+          seq("[", field("element", $._reference_element_type), "]"),
+        ),
+      )),
+
+    borrowed_slice_type: ($) =>
+      prec(PREC.unary, seq(
+        "[", "&", optional($.lifetime), "]",
+        optional("mut"),
+        field("element", $._modified_type),
+      )),
+
+    lifetime: ($) => $.label,
+
+    _bracket_reference_type: ($) =>
+      prec.dynamic(2, prec(PREC.unary, seq(
+        $._reference_prefix,
+        optional($.lifetime),
+        optional("mut"),
+        choice(
+          field("pointee", choice($.array_type, $.many_pointer_type, $.borrowed_slice_type)),
+          seq("[", field("element", $._reference_element_type), "]"),
+        ),
+      ))),
+
     function_type: ($) =>
       seq(
         "(",
@@ -1787,11 +1970,34 @@ module.exports = grammar({
         $.array_type_constructor_pattern,
         $.layout_type_constructor_pattern,
         $.pointer_type_constructor_pattern,
+        $.reference_type_constructor_pattern,
+        $.borrowed_slice_type_constructor_pattern,
+        $.lifetime,
         $.function_type_constructor_pattern,
         $.tuple_type_constructor_pattern,
         $.generic_type_constructor_pattern,
         $.string_literal,
         $.type_identifier,
+      ),
+
+    _reference_element_constructor_pattern: ($) =>
+      choice(
+        $.never_type,
+        $.result_type_constructor_pattern,
+        $.optional_type_constructor_pattern,
+        $.generic_type_variable,
+        $.type_hole,
+        $.array_type_constructor_pattern,
+        $.layout_type_constructor_pattern,
+        $.pointer_type_constructor_pattern,
+        $.reference_type_constructor_pattern,
+        $.borrowed_slice_type_constructor_pattern,
+        $.lifetime,
+        $.function_type_constructor_pattern,
+        $.tuple_type_constructor_pattern,
+        $.generic_type_constructor_pattern,
+        $.string_literal,
+        $._reference_element_name,
       ),
 
     optional_type_constructor_pattern: ($) =>
@@ -1850,6 +2056,21 @@ module.exports = grammar({
         field("pointee", $.type_constructor_pattern),
       ),
 
+    reference_type_constructor_pattern: ($) =>
+      prec(PREC.unary, seq(
+        "&", optional($.lifetime), optional("mut"),
+        choice(
+          field("pointee", $.type_constructor_pattern),
+          seq("[", field("element", alias($._reference_element_constructor_pattern, $.type_constructor_pattern)), "]"),
+        ),
+      )),
+
+    borrowed_slice_type_constructor_pattern: ($) =>
+      prec(PREC.unary, seq(
+        "[", "&", optional($.lifetime), "]", optional("mut"),
+        field("element", $.type_constructor_pattern),
+      )),
+
     layout_type_constructor_pattern: ($) =>
       seq(
         field("layout", choice("#aos", "#soa")),
@@ -1903,6 +2124,7 @@ module.exports = grammar({
         $.insert_expression,
         $.try_expression,
         $.pattern_test_expression,
+        $.pattern_quote_expression,
         $.pattern_binding_expression,
         $.return_expression,
         $.break_expression,
@@ -1999,11 +2221,24 @@ module.exports = grammar({
           seq(field("operator", $._prefix_operator), field("argument", $._expression)),
           seq(
             field("operator", alias($._pointer_prefix, $.prefix_operator)),
-            repeat1(choice("mut", "volatile")),
+            repeat1($._pointer_type_qualifier),
             field("argument", $._expression),
           ),
+          prec.dynamic(1, seq(
+            field("operator", alias($._reference_prefix, $.prefix_operator)),
+            choice(
+              seq($.lifetime, optional("mut")),
+              $._address_qualifier,
+            ),
+            field("argument", $._expression),
+          )),
         ),
       ),
+
+    _address_qualifier: (_) =>
+      choice("mut", "raw_mut", seq("raw", optional("mut"))),
+
+    _pointer_type_qualifier: (_) => choice("mut", "volatile"),
 
     qualified_operator: ($) =>
       seq(
@@ -2047,10 +2282,12 @@ module.exports = grammar({
         $.array_literal,
         $.array_type,
         $.many_pointer_type,
+        $.borrowed_slice_type,
+        alias($._bracket_reference_type, $.reference_type),
         $.simd_literal,
         $.struct_literal,
         $.non_hygienic_identifier,
-        $.identifier,
+        $._identifier,
       ),
 
     run_expression: ($) =>
@@ -2116,6 +2353,9 @@ module.exports = grammar({
         ),
       ),
 
+    pattern_quote_expression: ($) =>
+      prec.right(seq("#pattern", field("pattern", $._pattern))),
+
     pattern_binding_expression: ($) =>
       prec.right(
         PREC.unary,
@@ -2142,35 +2382,28 @@ module.exports = grammar({
       ),
 
     or_pattern: ($) =>
-      prec.left(
+      prec.dynamic(2, prec.left(
         1,
         seq(
           field("left", $._pattern),
           // In pattern context, stop a constant operand before an alternative.
           // Parenthesized values still lex | as an ordinary expression operator.
-          token(prec(1, "|")),
+          $._pattern_alternative_operator,
           field("right", $._pattern_range),
         ),
-      ),
+      )),
 
     _pattern_range: ($) =>
       choice(
-        $.range_pattern,
+        // Prefer one quoted range over a quoted prefix and an outer range.
+        prec.dynamic(3, alias($.range_expression, $.range_pattern)),
         $._pattern_unary,
-      ),
-
-    range_pattern: ($) =>
-      prec.left(
-        2,
-        seq(
-          field("start", $._pattern_unary),
-          field("operator", $.range_operator),
-          field("end", $._pattern_unary),
-        ),
       ),
 
     _pattern_unary: ($) =>
       choice(
+        $.unary_expression,
+        prec.dynamic(1, $.binary_expression),
         $.constant_pattern,
         $.pattern_postfix_expression,
         $._pattern_primary,
@@ -2193,11 +2426,12 @@ module.exports = grammar({
             field("function", choice($.pattern_postfix_expression, $._pattern_primary)),
             field("arguments", $.pattern_argument_list),
           ),
-          seq(
+          // Match expression member scores so qualified alternatives stay patterns.
+          prec.dynamic(2, seq(
             field("object", choice($.pattern_postfix_expression, $._pattern_primary)),
             ".",
             field("field", $.identifier),
-          ),
+          )),
           seq(
             field("type", choice($.pattern_postfix_expression, $._pattern_primary)),
             field("literal", $.struct_pattern),
@@ -2220,6 +2454,7 @@ module.exports = grammar({
         $.pattern_rest,
         $.pointer_pattern,
         $.pattern_binding,
+        $.insert_expression,
         $.non_hygienic_identifier,
         $.code_splice_identifier,
         $.shorthand_member_pattern,
@@ -2234,11 +2469,11 @@ module.exports = grammar({
     pattern_rest: ($) => $._ellipsis,
 
     pointer_pattern: ($) =>
-      prec(4, seq("*", field("name", $.identifier))),
+      prec.dynamic(2, prec(4, seq($._single_pointer_prefix, field("name", $._identifier)))),
 
     pattern_binding: ($) =>
       seq(
-        field("name", $.identifier),
+        field("name", $._identifier),
         optional(
           seq(
             field("operator", $.binding_operator),
@@ -2282,12 +2517,12 @@ module.exports = grammar({
           ),
           seq(field("object", $._postfix_expression_base), ".", "cast", "(", field("type", $._type), ")"),
           seq(field("object", $._postfix_expression_base), ".", "acast"),
-          seq(field("object", $._postfix_expression_base), choice(".*", ".&")),
-          seq(
+          seq(field("object", $._postfix_expression_base), choice(".*", seq(".&", optional($._address_qualifier)))),
+          prec.dynamic(2, seq(
             field("object", $._postfix_expression_base),
             ".",
             field("field", choice($.identifier, $.code_splice_identifier, $.integer_literal)),
-          ),
+          )),
           seq(field("type", $._postfix_expression_base), field("literal", $.struct_literal)),
           seq(
             field("argument", $._postfix_expression_base),
@@ -2370,17 +2605,34 @@ module.exports = grammar({
         $.array_literal,
         $.array_type,
         $.many_pointer_type,
+        $.borrowed_slice_type,
+        alias($._bracket_reference_type, $.reference_type),
         $.simd_literal,
         $.struct_literal,
         $.quoted_operator,
         $.non_hygienic_identifier,
         $.code_splice_identifier,
         $.generic_type_variable,
-        $.identifier,
+        $._identifier,
         $.parenthesized_expression,
       ),
 
-    parenthesized_expression: ($) => seq("(", $._expression, ")"),
+    parenthesized_expression: ($) => seq(
+      "(",
+      choice($._expression, alias($._parenthesized_bitwise_expression, $.binary_expression)),
+      ")",
+    ),
+
+    // Parentheses restore bitwise | inside a range bound in pattern context.
+    _parenthesized_bitwise_expression: ($) =>
+      prec.dynamic(3, prec.left(PREC.binary, seq(
+        field("left", choice(
+          $._expression,
+          alias($._parenthesized_bitwise_expression, $.binary_expression),
+        )),
+        field("operator", alias($._pattern_alternative_operator, $.operator)),
+        field("right", $._expression),
+      ))),
 
     code_expression: ($) =>
       seq(
@@ -2396,6 +2648,7 @@ module.exports = grammar({
         -1,
         choice(
           $.on_drop_error_statement,
+          alias($._code_final_variable_declaration, $.variable_declaration),
           alias(
             $._code_final_return_statement,
             $.return_statement,
@@ -2512,7 +2765,8 @@ module.exports = grammar({
     lambda_parameter: ($) =>
       seq(
         optional("noalias"),
-        field("name", $.identifier),
+        optional("mut"),
+        field("name", $._identifier),
         optional(seq(":", field("type", $._type))),
       ),
 
@@ -2567,17 +2821,32 @@ module.exports = grammar({
       choice($._unqualified_operator, $.quoted_operator, $.qualified_operator),
 
     _unqualified_operator: ($) =>
-      choice($.operator, alias($._equality_operator, $.operator)),
+      choice(
+        $.operator,
+        alias($._equality_operator, $.operator),
+        alias($._negative_operator, $.operator),
+        alias($._single_pointer_prefix, $.operator),
+      ),
 
     _prefix_operator: ($) =>
       choice(
         $.prefix_operator,
+        alias($._negative_operator, $.prefix_operator),
         alias($._pointer_prefix, $.prefix_operator),
+        prec(PREC.unary, alias($._reference_prefix, $.prefix_operator)),
         $.quoted_operator,
         $.qualified_operator,
       ),
 
     _separator: (_) => choice(";", ","),
+
+    // These modifiers remain valid names when no qualifying operand follows.
+    _identifier: ($) => choice(
+      $.identifier,
+      alias("mut", $.identifier),
+      alias("raw", $.identifier),
+      alias("raw_mut", $.identifier),
+    ),
 
     identifier: (_) => /[\p{L}_][\p{L}\p{N}_]*/,
 
@@ -2607,6 +2876,8 @@ module.exports = grammar({
         ),
       ),
 
+    _negative_operator: (_) => token(prec(1, choice("-", "-%"))),
+
     operator: (_) =>
       token(
         prec(
@@ -2624,9 +2895,17 @@ module.exports = grammar({
     _equality_operator: (_) => token(prec(1, "==")),
 
     prefix_operator: (_) =>
-      token(prec(1, choice("!!", "!", "?", "-", "+", "~", /&+/))),
+      token(prec(1, choice("!!", "!", "?", "+", "~"))),
 
-    _pointer_prefix: (_) => token(prec(1, /\*+/)),
+    // Captures, dereferences, and multiplication must share the singleton token.
+    _single_pointer_prefix: (_) => token(prec(1, "*")),
+
+    _pointer_prefix: ($) =>
+      choice($._single_pointer_prefix, token(prec(1, /\*\*+/))),
+
+    _reference_prefix: (_) => token(prec(1, /&+/)),
+
+    _pattern_alternative_operator: (_) => token(prec(1, "|")),
 
     suffix_operator: (_) => token(prec(2, "++")),
 

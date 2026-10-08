@@ -417,14 +417,12 @@ G: int = 7
 ---
 
 (source_file
-  (named_declaration
+  (ERROR
     (declaration_name
       (identifier))
-    (global_variable_declaration_tail
-      (named_type
-        (identifier))
-      (integer_literal)
-      (MISSING ";"))))
+    (named_type
+      (identifier))
+    (integer_literal)))
 
 ==================
 missing inferred global terminator

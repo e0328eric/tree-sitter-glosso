@@ -1,0 +1,2421 @@
+==================
+mutable global and local runtime bindings
+==================
+
+mut global: s64 = 1;
+mut inferred_global := 2;
+#public mut exported: s64;
+#private mut private_global := 3;
+#thread_local mut thread_count: s64 = 0;
+#public #thread_local mut public_thread_count := 0;
+entry :: () {
+  mut typed: s64 = 1;
+  mut inferred := 2;
+  mut first, second: s64;
+  mut left, right := .(3, 4);
+  mutable_comptime ::= 0;
+  mut explicit_comptime ::= 0;
+  immutable :: 5;
+}
+
+---
+
+(source_file
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (global_variable_declaration_tail
+      (named_type
+        (identifier))
+      (integer_literal)))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (global_variable_declaration_tail
+      (integer_literal)))
+  (named_declaration
+    (visibility_modifier)
+    (declaration_name
+      (identifier))
+    (global_variable_declaration_tail
+      (named_type
+        (identifier))))
+  (named_declaration
+    (visibility_modifier)
+    (declaration_name
+      (identifier))
+    (global_variable_declaration_tail
+      (integer_literal)))
+  (thread_local_declaration
+    (named_declaration
+      (declaration_name
+        (identifier))
+      (global_variable_declaration_tail
+        (named_type
+          (identifier))
+        (integer_literal))))
+  (thread_local_declaration
+    (visibility_modifier)
+    (named_declaration
+      (declaration_name
+        (identifier))
+      (global_variable_declaration_tail
+        (integer_literal))))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (function_declaration
+      (parameter_list)
+      (block
+        (variable_declaration
+          (binding_list
+            (identifier))
+          (named_type
+            (identifier))
+          (integer_literal))
+        (variable_declaration
+          (binding_list
+            (identifier))
+          (integer_literal))
+        (variable_declaration
+          (binding_list
+            (identifier)
+            (identifier))
+          (named_type
+            (identifier)))
+        (variable_declaration
+          (binding_list
+            (identifier)
+            (identifier))
+          (tuple_literal
+            (integer_literal)
+            (integer_literal)))
+        (variable_declaration
+          (binding_list
+            (identifier))
+          (integer_literal))
+        (variable_declaration
+          (binding_list
+            (identifier))
+          (integer_literal))
+        (variable_declaration
+          (binding_list
+            (identifier))
+          (integer_literal))))))
+
+==================
+mutable function and lambda parameter bindings
+==================
+
+change :: (mut value: s64, mut first, second: s64, mut inferred := 1) {
+  value = first + second + inferred;
+}
+modifiers :: (#empty: $T, using noalias #lazy mut value: &mut s64, mut rest: ...T) {}
+entry :: () {
+  callback := |mut value: s64, noalias mut borrowed: &s64, mut untyped| value;
+}
+
+---
+
+(source_file
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (function_declaration
+      (parameter_list
+        (parameter
+          (binding_list
+            (identifier))
+          (named_type
+            (identifier)))
+        (parameter
+          (binding_list
+            (identifier)
+            (identifier))
+          (named_type
+            (identifier)))
+        (parameter
+          (identifier)
+          (integer_literal)))
+      (block
+        (assignment_statement
+          (identifier)
+          (binary_expression
+            (binary_expression
+              (identifier)
+              (operator)
+              (identifier))
+            (operator)
+            (identifier))))))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (function_declaration
+      (parameter_list
+        (empty_parameter
+          (generic_type_variable
+            (identifier)))
+        (parameter
+          (binding_list
+            (identifier))
+          (reference_type
+            (named_type
+              (identifier))))
+        (parameter
+          (binding_list
+            (identifier))
+          (variadic_type
+            (identifier))))
+      (block)))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (function_declaration
+      (parameter_list)
+      (block
+        (variable_declaration
+          (binding_list
+            (identifier))
+          (lambda_expression
+            (lambda_parameter_list
+              (lambda_parameter
+                (identifier)
+                (named_type
+                  (identifier)))
+              (lambda_parameter
+                (identifier)
+                (reference_type
+                  (named_type
+                    (identifier))))
+              (lambda_parameter
+                (identifier)))
+            (identifier)))))))
+
+==================
+independent mutable loop value and index bindings
+==================
+
+entry :: () {
+  for item, index: values {}
+  for mut item, index: values { item = 1; }
+  for item, mut index: values { index = 1; }
+  for mut item, mut index: values { item = index; }
+  for *mut item, mut index: values { item.* = index; }
+  for <:expand mut item: values {}
+  for mut item: 0..3 {}
+}
+
+---
+
+(source_file
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (function_declaration
+      (parameter_list)
+      (block
+        (for_statement
+          (identifier)
+          (identifier)
+          (identifier)
+          (block))
+        (for_statement
+          (identifier)
+          (identifier)
+          (identifier)
+          (block
+            (assignment_statement
+              (identifier)
+              (integer_literal))))
+        (for_statement
+          (identifier)
+          (identifier)
+          (identifier)
+          (block
+            (assignment_statement
+              (identifier)
+              (integer_literal))))
+        (for_statement
+          (identifier)
+          (identifier)
+          (identifier)
+          (block
+            (assignment_statement
+              (identifier)
+              (identifier))))
+        (for_statement
+          (for_pointer_binder)
+          (identifier)
+          (identifier)
+          (identifier)
+          (block
+            (assignment_statement
+              (postfix_expression
+                (identifier))
+              (identifier))))
+        (for_statement
+          (operator)
+          (identifier)
+          (identifier)
+          (identifier)
+          (block))
+        (for_statement
+          (identifier)
+          (range_expression
+            (integer_literal)
+            (range_operator)
+            (integer_literal))
+          (block))))))
+
+==================
+contextual mut remains a legal binding and expression name
+==================
+
+mut := 1;
+accept :: (mut: s64) -> s64 { return mut; }
+entry :: () {
+  mut := 2;
+  mut mut: s64 = 3;
+  callback := |mut: s64| mut;
+  untyped_callback := |mut| mut;
+  for mut: values {}
+  for item, mut: values {}
+  for mut {}
+  borrowed := &mut;
+  address := &raw (mut);
+}
+
+---
+
+(source_file
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (global_variable_declaration_tail
+      (integer_literal)))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (function_declaration
+      (parameter_list
+        (parameter
+          (binding_list
+            (identifier))
+          (named_type
+            (identifier))))
+      (arrow)
+      (named_type
+        (identifier))
+      (block
+        (return_statement
+          (identifier)))))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (function_declaration
+      (parameter_list)
+      (block
+        (variable_declaration
+          (binding_list
+            (identifier))
+          (integer_literal))
+        (variable_declaration
+          (binding_list
+            (identifier))
+          (named_type
+            (identifier))
+          (integer_literal))
+        (variable_declaration
+          (binding_list
+            (identifier))
+          (lambda_expression
+            (lambda_parameter_list
+              (lambda_parameter
+                (identifier)
+                (named_type
+                  (identifier))))
+            (identifier)))
+        (variable_declaration
+          (binding_list
+            (identifier))
+          (lambda_expression
+            (lambda_parameter_list
+              (lambda_parameter
+                (identifier)))
+            (identifier)))
+        (for_statement
+          (identifier)
+          (identifier)
+          (block))
+        (for_statement
+          (identifier)
+          (identifier)
+          (identifier)
+          (block))
+        (for_statement
+          (identifier)
+          (block))
+        (variable_declaration
+          (binding_list
+            (identifier))
+          (unary_expression
+            (prefix_operator)
+            (identifier)))
+        (variable_declaration
+          (binding_list
+            (identifier))
+          (unary_expression
+            (prefix_operator)
+            (parenthesized_expression
+              (identifier))))))))
+
+==================
+shared exclusive packed and nested reference types
+==================
+
+reference_shapes :: (
+  shared: &s64,
+  exclusive: &mut s64,
+  nested: &&s64,
+  packed_exclusive: &&mut s64,
+  packed_three: &&&mut s64,
+  spaced: & &mut s64,
+  optional: ?&s64,
+  fallible: Error!&mut s64,
+  tuple: (&s64, &mut s64),
+  callback: (value: &s64) -> &s64
+) -> &s64 { return shared; }
+
+---
+
+(source_file
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (function_declaration
+      (parameter_list
+        (parameter
+          (binding_list
+            (identifier))
+          (reference_type
+            (named_type
+              (identifier))))
+        (parameter
+          (binding_list
+            (identifier))
+          (reference_type
+            (named_type
+              (identifier))))
+        (parameter
+          (binding_list
+            (identifier))
+          (reference_type
+            (reference_type
+              (named_type
+                (identifier)))))
+        (parameter
+          (binding_list
+            (identifier))
+          (reference_type
+            (reference_type
+              (named_type
+                (identifier)))))
+        (parameter
+          (binding_list
+            (identifier))
+          (reference_type
+            (reference_type
+              (reference_type
+                (named_type
+                  (identifier))))))
+        (parameter
+          (binding_list
+            (identifier))
+          (reference_type
+            (reference_type
+              (named_type
+                (identifier)))))
+        (parameter
+          (binding_list
+            (identifier))
+          (optional_type
+            (reference_type
+              (named_type
+                (identifier)))))
+        (parameter
+          (binding_list
+            (identifier))
+          (result_type
+            (named_type
+              (identifier))
+            (reference_type
+              (named_type
+                (identifier)))))
+        (parameter
+          (binding_list
+            (identifier))
+          (tuple_type
+            (type_element
+              (reference_type
+                (named_type
+                  (identifier))))
+            (type_element
+              (reference_type
+                (named_type
+                  (identifier))))))
+        (parameter
+          (binding_list
+            (identifier))
+          (function_type
+            (type_element
+              (identifier)
+              (reference_type
+                (named_type
+                  (identifier))))
+            (arrow)
+            (reference_type
+              (named_type
+                (identifier))))))
+      (arrow)
+      (reference_type
+        (named_type
+          (identifier)))
+      (block
+        (return_statement
+          (identifier))))))
+
+==================
+borrowed slice spellings and references to array descriptors
+==================
+
+slice_shapes :: (
+  shared: [&]s64,
+  exclusive: [&]mut s64,
+  legacy: &[s64],
+  legacy_exclusive: &mut [s64],
+  fixed: &[3]s64,
+  named_fixed: &[COUNT]s64,
+  inferred_fixed: &[_]s64,
+  raw_descriptor: &[]s64,
+  mutable_descriptor: &mut []mut s64,
+  owning: &[..]s64,
+  many: &[*]mut s64,
+  nested: &[&]mut s64,
+  optional: ?[&]s64
+) {}
+
+---
+
+(source_file
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (function_declaration
+      (parameter_list
+        (parameter
+          (binding_list
+            (identifier))
+          (borrowed_slice_type
+            (named_type
+              (identifier))))
+        (parameter
+          (binding_list
+            (identifier))
+          (borrowed_slice_type
+            (named_type
+              (identifier))))
+        (parameter
+          (binding_list
+            (identifier))
+          (reference_type
+            (named_type
+              (identifier))))
+        (parameter
+          (binding_list
+            (identifier))
+          (reference_type
+            (named_type
+              (identifier))))
+        (parameter
+          (binding_list
+            (identifier))
+          (reference_type
+            (array_type
+              (integer_literal)
+              (named_type
+                (identifier)))))
+        (parameter
+          (binding_list
+            (identifier))
+          (reference_type
+            (array_type
+              (identifier)
+              (named_type
+                (identifier)))))
+        (parameter
+          (binding_list
+            (identifier))
+          (reference_type
+            (array_type
+              (type_hole)
+              (named_type
+                (identifier)))))
+        (parameter
+          (binding_list
+            (identifier))
+          (reference_type
+            (array_type
+              (named_type
+                (identifier)))))
+        (parameter
+          (binding_list
+            (identifier))
+          (reference_type
+            (array_type
+              (named_type
+                (identifier)))))
+        (parameter
+          (binding_list
+            (identifier))
+          (reference_type
+            (array_type
+              (named_type
+                (identifier)))))
+        (parameter
+          (binding_list
+            (identifier))
+          (reference_type
+            (many_pointer_type
+              (named_type
+                (identifier)))))
+        (parameter
+          (binding_list
+            (identifier))
+          (reference_type
+            (borrowed_slice_type
+              (named_type
+                (identifier)))))
+        (parameter
+          (binding_list
+            (identifier))
+          (optional_type
+            (borrowed_slice_type
+              (named_type
+                (identifier))))))
+      (block))))
+
+==================
+explicit lifetimes in functions callable types and aggregates
+==================
+
+identity :: (value: &'a s64) -> &'a s64 #lifetimes(a) { return value; }
+update :: (value: &'a mut s64, values: [&'a]mut s64) #lifetimes(a) {}
+legacy :: (values: &'a mut [s64]) #lifetimes(a) {}
+Borrow :: #fn_ptr(value: &'a s64) -> &'a s64 #lifetimes(a) #no_context;
+Holder :: struct #lifetimes(a, b) {
+  value: &'a s64;
+  values: [&'b]mut s64;
+}
+Either :: union #lifetimes(a) {
+  Shared: &'a s64;
+  Exclusive: &'a mut s64;
+}
+generic_lifetimes :: (holder: Holder('a, 'static), either: Either('a)) #lifetimes(a) {}
+static_lifetime :: (value: &'static s64, values: [&'static]s64) {}
+inferred_lifetime :: (value: &'_ s64, values: [&'_]s64) {}
+
+---
+
+(source_file
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (function_declaration
+      (parameter_list
+        (parameter
+          (binding_list
+            (identifier))
+          (reference_type
+            (lifetime
+              (label))
+            (named_type
+              (identifier)))))
+      (arrow)
+      (reference_type
+        (lifetime
+          (label))
+        (named_type
+          (identifier)))
+      (lifetimes_directive
+        (identifier))
+      (block
+        (return_statement
+          (identifier)))))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (function_declaration
+      (parameter_list
+        (parameter
+          (binding_list
+            (identifier))
+          (reference_type
+            (lifetime
+              (label))
+            (named_type
+              (identifier))))
+        (parameter
+          (binding_list
+            (identifier))
+          (borrowed_slice_type
+            (lifetime
+              (label))
+            (named_type
+              (identifier)))))
+      (lifetimes_directive
+        (identifier))
+      (block)))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (function_declaration
+      (parameter_list
+        (parameter
+          (binding_list
+            (identifier))
+          (reference_type
+            (lifetime
+              (label))
+            (named_type
+              (identifier)))))
+      (lifetimes_directive
+        (identifier))
+      (block)))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (function_pointer_type_declaration
+      (fn_ptr_parameter_list
+        (fn_ptr_parameter
+          (identifier)
+          (reference_type
+            (lifetime
+              (label))
+            (named_type
+              (identifier)))))
+      (arrow)
+      (reference_type
+        (lifetime
+          (label))
+        (named_type
+          (identifier)))
+      (lifetimes_directive
+        (identifier))))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (struct_declaration
+      (struct_modifier
+        (lifetimes_directive
+          (identifier)
+          (identifier)))
+      (struct_field
+        (identifier)
+        (reference_type
+          (lifetime
+            (label))
+          (named_type
+            (identifier))))
+      (struct_field
+        (identifier)
+        (borrowed_slice_type
+          (lifetime
+            (label))
+          (named_type
+            (identifier))))))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (union_declaration
+      (lifetimes_directive
+        (identifier))
+      (union_field
+        (identifier)
+        (reference_type
+          (lifetime
+            (label))
+          (named_type
+            (identifier))))
+      (union_field
+        (identifier)
+        (reference_type
+          (lifetime
+            (label))
+          (named_type
+            (identifier))))))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (function_declaration
+      (parameter_list
+        (parameter
+          (binding_list
+            (identifier))
+          (generic_type
+            (identifier)
+            (lifetime
+              (label))
+            (lifetime
+              (label))))
+        (parameter
+          (binding_list
+            (identifier))
+          (generic_type
+            (identifier)
+            (lifetime
+              (label)))))
+      (lifetimes_directive
+        (identifier))
+      (block)))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (function_declaration
+      (parameter_list
+        (parameter
+          (binding_list
+            (identifier))
+          (reference_type
+            (lifetime
+              (label))
+            (named_type
+              (identifier))))
+        (parameter
+          (binding_list
+            (identifier))
+          (borrowed_slice_type
+            (lifetime
+              (label))
+            (named_type
+              (identifier)))))
+      (block)))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (function_declaration
+      (parameter_list
+        (parameter
+          (binding_list
+            (identifier))
+          (reference_type
+            (lifetime
+              (label))
+            (named_type
+              (identifier))))
+        (parameter
+          (binding_list
+            (identifier))
+          (borrowed_slice_type
+            (lifetime
+              (label))
+            (named_type
+              (identifier)))))
+      (block))))
+
+==================
+references and lifetimes in type constructor heads
+==================
+
+&$T ::: instance Borrowable {
+  Output :: T;
+}
+[&]$T ::: instance Borrowed_Slice {
+  Output :: T;
+}
+[&]mut $T ::: instance Writable_Slice {
+  Output :: T;
+}
+&'static s64 ::: instance Static_Borrow {}
+[&]$T ::: {
+  first :: (#self) -> T { return #self[0]; }
+}
+
+---
+
+(source_file
+  (instance_declaration
+    (type_constructor_pattern
+      (reference_type_constructor_pattern
+        (type_constructor_pattern
+          (generic_type_variable
+            (identifier)))))
+    (identifier)
+    (instance_associated_type
+      (declaration_name
+        (identifier))
+      (named_type
+        (identifier))))
+  (instance_declaration
+    (type_constructor_pattern
+      (borrowed_slice_type_constructor_pattern
+        (type_constructor_pattern
+          (generic_type_variable
+            (identifier)))))
+    (identifier)
+    (instance_associated_type
+      (declaration_name
+        (identifier))
+      (named_type
+        (identifier))))
+  (instance_declaration
+    (type_constructor_pattern
+      (borrowed_slice_type_constructor_pattern
+        (type_constructor_pattern
+          (generic_type_variable
+            (identifier)))))
+    (identifier)
+    (instance_associated_type
+      (declaration_name
+        (identifier))
+      (named_type
+        (identifier))))
+  (instance_declaration
+    (type_constructor_pattern
+      (reference_type_constructor_pattern
+        (lifetime
+          (label))
+        (type_constructor_pattern
+          (identifier))))
+    (identifier))
+  (inherent_declaration
+    (type_constructor_pattern
+      (borrowed_slice_type_constructor_pattern
+        (type_constructor_pattern
+          (generic_type_variable
+            (identifier)))))
+    (inherent_method
+      (identifier)
+      (function_declaration
+        (parameter_list
+          (receiver_parameter
+            (self_expression)))
+        (arrow)
+        (named_type
+          (identifier))
+        (block
+          (return_statement
+            (postfix_expression
+              (self_expression)
+              (index_suffix
+                (integer_literal)))))))))
+
+==================
+shared exclusive and raw prefix and postfix borrowing
+==================
+
+entry :: () {
+  mut value: s64 = 1;
+  shared := &value;
+  exclusive := &mut value;
+  raw := &raw value;
+  writable_raw := &raw_mut value;
+  compatibility_raw := &raw mut value;
+  named_raw := &raw;
+  named_raw_mut := &raw_mut;
+  suffix_shared := value.&;
+  suffix_exclusive := value.&mut;
+  suffix_raw := value.&raw;
+  suffix_writable_raw := value.&raw_mut;
+  compatibility_suffix_raw := value.&raw mut;
+  nested := &&value;
+  qualified := &mut value.field;
+  chained := value.&mut.*;
+}
+
+---
+
+(source_file
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (function_declaration
+      (parameter_list)
+      (block
+        (variable_declaration
+          (binding_list
+            (identifier))
+          (named_type
+            (identifier))
+          (integer_literal))
+        (variable_declaration
+          (binding_list
+            (identifier))
+          (unary_expression
+            (prefix_operator)
+            (identifier)))
+        (variable_declaration
+          (binding_list
+            (identifier))
+          (unary_expression
+            (prefix_operator)
+            (identifier)))
+        (variable_declaration
+          (binding_list
+            (identifier))
+          (unary_expression
+            (prefix_operator)
+            (identifier)))
+        (variable_declaration
+          (binding_list
+            (identifier))
+          (unary_expression
+            (prefix_operator)
+            (identifier)))
+        (variable_declaration
+          (binding_list
+            (identifier))
+          (unary_expression
+            (prefix_operator)
+            (identifier)))
+        (variable_declaration
+          (binding_list
+            (identifier))
+          (unary_expression
+            (prefix_operator)
+            (identifier)))
+        (variable_declaration
+          (binding_list
+            (identifier))
+          (unary_expression
+            (prefix_operator)
+            (identifier)))
+        (variable_declaration
+          (binding_list
+            (identifier))
+          (postfix_expression
+            (identifier)))
+        (variable_declaration
+          (binding_list
+            (identifier))
+          (postfix_expression
+            (identifier)))
+        (variable_declaration
+          (binding_list
+            (identifier))
+          (postfix_expression
+            (identifier)))
+        (variable_declaration
+          (binding_list
+            (identifier))
+          (postfix_expression
+            (identifier)))
+        (variable_declaration
+          (binding_list
+            (identifier))
+          (postfix_expression
+            (identifier)))
+        (variable_declaration
+          (binding_list
+            (identifier))
+          (unary_expression
+            (prefix_operator)
+            (identifier)))
+        (variable_declaration
+          (binding_list
+            (identifier))
+          (unary_expression
+            (prefix_operator)
+            (postfix_expression
+              (identifier)
+              (identifier))))
+        (variable_declaration
+          (binding_list
+            (identifier))
+          (postfix_expression
+            (postfix_expression
+              (identifier))))))))
+
+==================
+receiver binding mutability and reference lifetimes
+==================
+
+Thing ::: {
+  owned :: (mut #self) {}
+  shared :: (&#self) {}
+  exclusive :: (&mut #self) {}
+  rebound :: (mut &mut #self) {}
+  pointer :: (mut *mut #self) {}
+  noalias_reference :: (noalias mut &mut #self) {}
+  named_lifetime :: (&'a #self) #lifetimes(a) {}
+  named_exclusive :: (mut &'a mut #self) #lifetimes(a) {}
+}
+
+---
+
+(source_file
+  (inherent_declaration
+    (type_constructor_pattern
+      (identifier))
+    (inherent_method
+      (identifier)
+      (function_declaration
+        (parameter_list
+          (receiver_parameter
+            (self_expression)))
+        (block)))
+    (inherent_method
+      (identifier)
+      (function_declaration
+        (parameter_list
+          (receiver_parameter
+            (self_expression)))
+        (block)))
+    (inherent_method
+      (identifier)
+      (function_declaration
+        (parameter_list
+          (receiver_parameter
+            (self_expression)))
+        (block)))
+    (inherent_method
+      (identifier)
+      (function_declaration
+        (parameter_list
+          (receiver_parameter
+            (self_expression)))
+        (block)))
+    (inherent_method
+      (identifier)
+      (function_declaration
+        (parameter_list
+          (receiver_parameter
+            (self_expression)))
+        (block)))
+    (inherent_method
+      (identifier)
+      (function_declaration
+        (parameter_list
+          (receiver_parameter
+            (self_expression)))
+        (block)))
+    (inherent_method
+      (identifier)
+      (function_declaration
+        (parameter_list
+          (receiver_parameter
+            (lifetime
+              (label))
+            (self_expression)))
+        (lifetimes_directive
+          (identifier))
+        (block)))
+    (inherent_method
+      (identifier)
+      (function_declaration
+        (parameter_list
+          (receiver_parameter
+            (lifetime
+              (label))
+            (self_expression)))
+        (lifetimes_directive
+          (identifier))
+        (block)))))
+
+==================
+mutable local constant binding is invalid
+:error
+==================
+
+entry :: () { mut value :: 1; }
+
+---
+
+(source_file)
+
+==================
+mutable typed local constant binding is invalid
+:error
+==================
+
+entry :: () { mut value: s64: 1; }
+
+---
+
+(source_file)
+
+==================
+mutable global constant binding is invalid
+:error
+==================
+
+mut value :: 1;
+
+---
+
+(source_file)
+
+==================
+mutable named function definition is invalid
+:error
+==================
+
+mut function :: () {}
+
+---
+
+(source_file)
+
+==================
+mutable compile time parameter is invalid
+:error
+==================
+
+function :: (#comptime mut value: s64) {}
+
+---
+
+(source_file)
+
+==================
+mutable lazy compile time parameter is invalid
+:error
+==================
+
+function :: (#lazy #comptime mut value: s64) {}
+
+---
+
+(source_file)
+
+==================
+reference lifetime must precede mut
+:error
+==================
+
+function :: (value: &mut 'a s64) #lifetimes(a) {}
+
+---
+
+(source_file)
+
+==================
+reference cannot repeat its mut qualifier
+:error
+==================
+
+function :: (value: &mut mut s64) {}
+
+---
+
+(source_file)
+
+==================
+reference cannot use the removed const qualifier
+:error
+==================
+
+function :: (value: &const s64) {}
+
+---
+
+(source_file)
+
+==================
+reference cannot use volatile
+:error
+==================
+
+function :: (value: &volatile s64) {}
+
+---
+
+(source_file)
+
+==================
+borrowed slice writes mut after its closing bracket
+:error
+==================
+
+function :: (values: [&mut]s64) {}
+
+---
+
+(source_file)
+
+==================
+borrowed slice lifetime belongs inside its brackets
+:error
+==================
+
+function :: (values: [&]'a s64) #lifetimes(a) {}
+
+---
+
+(source_file)
+
+==================
+borrowed slice cannot repeat its mut qualifier
+:error
+==================
+
+function :: (values: [&]mut mut s64) {}
+
+---
+
+(source_file)
+
+==================
+borrowed slice requires one ampersand
+:error
+==================
+
+function :: (values: [&&]s64) {}
+
+---
+
+(source_file)
+
+==================
+borrowed slice cannot use volatile
+:error
+==================
+
+function :: (values: [&]volatile s64) {}
+
+---
+
+(source_file)
+
+==================
+receiver lifetime must precede reference mut
+:error
+==================
+
+Thing ::: { method :: (&mut 'a #self) #lifetimes(a) {} }
+
+---
+
+(source_file)
+
+==================
+function lifetime directive requires a name
+:error
+==================
+
+function :: () #lifetimes() {}
+
+---
+
+(source_file)
+
+==================
+aggregate lifetime directive requires plain names
+:error
+==================
+
+Holder :: struct #lifetimes('a) { value: &'a s64; }
+
+---
+
+(source_file)
+
+==================
+enum and enum flags derive modifiers including inline enum fields
+==================
+
+Color :: enum #derive(Clone, Copy) {
+  Red;
+  Green;
+}
+Byte_Color :: enum u8 #derive(Clone, Copy) {
+  Red :: 1;
+  Green :: 2;
+}
+Permissions :: enum_flags u8 #derive(Clone, Copy) {
+  Read :: 1;
+  Write :: 2;
+}
+Record :: struct {
+  color: enum #derive(Clone, Copy) { Red; Green; };
+  flags: enum_flags u8 #derive(Clone, Copy) { Read :: 1; Write :: 2; };
+}
+
+---
+
+(source_file
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (enum_declaration
+      (derive_directive
+        (identifier)
+        (identifier))
+      (enum_variant
+        (identifier))
+      (enum_variant
+        (identifier))))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (enum_declaration
+      (named_type
+        (identifier))
+      (derive_directive
+        (identifier)
+        (identifier))
+      (enum_variant
+        (identifier)
+        (integer_literal))
+      (enum_variant
+        (identifier)
+        (integer_literal))))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (enum_flags_declaration
+      (named_type
+        (identifier))
+      (derive_directive
+        (identifier)
+        (identifier))
+      (enum_variant
+        (identifier)
+        (integer_literal))
+      (enum_variant
+        (identifier)
+        (integer_literal))))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (struct_declaration
+      (struct_field
+        (identifier)
+        (enum_declaration
+          (derive_directive
+            (identifier)
+            (identifier))
+          (enum_variant
+            (identifier))
+          (enum_variant
+            (identifier))))
+      (struct_field
+        (identifier)
+        (enum_flags_declaration
+          (named_type
+            (identifier))
+          (derive_directive
+            (identifier)
+            (identifier))
+          (enum_variant
+            (identifier)
+            (integer_literal))
+          (enum_variant
+            (identifier)
+            (integer_literal)))))))
+
+==================
+wrapping negation before values and casts and wrapping subtraction
+==================
+
+wrapping :: (value: s64, left: s64, right: s64) -> s64 {
+  negative := -% value;
+  negative_cast := -% cast(s64)value;
+  cast_negative := cast(s64)-%value;
+  difference := left -% right;
+  return negative + negative_cast + cast_negative + difference;
+}
+
+---
+
+(source_file
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (function_declaration
+      (parameter_list
+        (parameter
+          (binding_list
+            (identifier))
+          (named_type
+            (identifier)))
+        (parameter
+          (binding_list
+            (identifier))
+          (named_type
+            (identifier)))
+        (parameter
+          (binding_list
+            (identifier))
+          (named_type
+            (identifier))))
+      (arrow)
+      (named_type
+        (identifier))
+      (block
+        (variable_declaration
+          (binding_list
+            (identifier))
+          (unary_expression
+            (prefix_operator)
+            (identifier)))
+        (variable_declaration
+          (binding_list
+            (identifier))
+          (unary_expression
+            (prefix_operator)
+            (cast_expression
+              (named_type
+                (identifier))
+              (identifier))))
+        (variable_declaration
+          (binding_list
+            (identifier))
+          (cast_expression
+            (named_type
+              (identifier))
+            (unary_expression
+              (prefix_operator)
+              (identifier))))
+        (variable_declaration
+          (binding_list
+            (identifier))
+          (binary_expression
+            (identifier)
+            (operator)
+            (identifier)))
+        (return_statement
+          (binary_expression
+            (binary_expression
+              (binary_expression
+                (identifier)
+                (operator)
+                (identifier))
+              (operator)
+              (identifier))
+            (operator)
+            (identifier)))))))
+
+==================
+reference type values aliases calls and nested lifetime annotations
+==================
+
+Elements :: &[u16];
+Fixed :: &[3]u16;
+Named_Fixed :: &[COUNT]u16;
+Descriptor :: &[]u16;
+Nested_Slices :: [&]mut [&]u16;
+Explicit_Elements :: &'static [u16];
+Packed_Elements :: &&'static [u16];
+Packed_Fixed :: &&'static [3]u16;
+Packed_Descriptor :: &&'static []u16;
+Nested_References :: &[&mut T];
+Holder :: struct #lifetimes(a, b) {
+  values: [&'a]mut [&'b]T;
+}
+accept_nested :: (values: [&'a]mut [&'b]T, holder: Holder('a, 'b)) #lifetimes(a, b) {}
+entry :: () {
+  take_type(&[u16]);
+  take_type(&[3]u16);
+  take_type(&[COUNT]u16);
+  take_type(&[]u16);
+  take_type([&]mut [&]u16);
+  take_type(&'static [u16]);
+  take_type(&&'static [u16]);
+  take_type(&[&mut T]);
+  take_type(Holder('static, '_));
+}
+
+---
+
+(source_file
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (constant_declaration_body
+      (reference_type
+        (named_type
+          (identifier)))))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (constant_declaration_body
+      (reference_type
+        (array_type
+          (integer_literal)
+          (named_type
+            (identifier))))))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (constant_declaration_body
+      (reference_type
+        (array_type
+          (identifier)
+          (named_type
+            (identifier))))))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (constant_declaration_body
+      (reference_type
+        (array_type
+          (named_type
+            (identifier))))))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (constant_declaration_body
+      (borrowed_slice_type
+        (borrowed_slice_type
+          (named_type
+            (identifier))))))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (constant_declaration_body
+      (reference_type
+        (lifetime
+          (label))
+        (named_type
+          (identifier)))))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (constant_declaration_body
+      (reference_type
+        (lifetime
+          (label))
+        (named_type
+          (identifier)))))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (constant_declaration_body
+      (reference_type
+        (lifetime
+          (label))
+        (array_type
+          (integer_literal)
+          (named_type
+            (identifier))))))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (constant_declaration_body
+      (reference_type
+        (lifetime
+          (label))
+        (array_type
+          (named_type
+            (identifier))))))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (constant_declaration_body
+      (reference_type
+        (reference_type
+          (named_type
+            (identifier))))))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (struct_declaration
+      (struct_modifier
+        (lifetimes_directive
+          (identifier)
+          (identifier)))
+      (struct_field
+        (identifier)
+        (borrowed_slice_type
+          (lifetime
+            (label))
+          (borrowed_slice_type
+            (lifetime
+              (label))
+            (named_type
+              (identifier)))))))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (function_declaration
+      (parameter_list
+        (parameter
+          (binding_list
+            (identifier))
+          (borrowed_slice_type
+            (lifetime
+              (label))
+            (borrowed_slice_type
+              (lifetime
+                (label))
+              (named_type
+                (identifier)))))
+        (parameter
+          (binding_list
+            (identifier))
+          (generic_type
+            (identifier)
+            (lifetime
+              (label))
+            (lifetime
+              (label)))))
+      (lifetimes_directive
+        (identifier)
+        (identifier))
+      (block)))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (function_declaration
+      (parameter_list)
+      (block
+        (expression_statement
+          (postfix_expression
+            (identifier)
+            (argument_list
+              (reference_type
+                (named_type
+                  (identifier))))))
+        (expression_statement
+          (postfix_expression
+            (identifier)
+            (argument_list
+              (reference_type
+                (array_type
+                  (integer_literal)
+                  (named_type
+                    (identifier)))))))
+        (expression_statement
+          (postfix_expression
+            (identifier)
+            (argument_list
+              (reference_type
+                (array_type
+                  (identifier)
+                  (named_type
+                    (identifier)))))))
+        (expression_statement
+          (postfix_expression
+            (identifier)
+            (argument_list
+              (reference_type
+                (array_type
+                  (named_type
+                    (identifier)))))))
+        (expression_statement
+          (postfix_expression
+            (identifier)
+            (argument_list
+              (borrowed_slice_type
+                (borrowed_slice_type
+                  (named_type
+                    (identifier)))))))
+        (expression_statement
+          (postfix_expression
+            (identifier)
+            (argument_list
+              (reference_type
+                (lifetime
+                  (label))
+                (named_type
+                  (identifier))))))
+        (expression_statement
+          (postfix_expression
+            (identifier)
+            (argument_list
+              (reference_type
+                (lifetime
+                  (label))
+                (named_type
+                  (identifier))))))
+        (expression_statement
+          (postfix_expression
+            (identifier)
+            (argument_list
+              (reference_type
+                (reference_type
+                  (named_type
+                    (identifier)))))))
+        (expression_statement
+          (postfix_expression
+            (identifier)
+            (argument_list
+              (postfix_expression
+                (identifier)
+                (argument_list
+                  (label)
+                  (label))))))))))
+
+==================
+quoted patterns preserve ranges aggregate fields and pattern insertion
+==================
+
+CLOSED :: #pattern 0..=10;
+LOW :: #pattern ..10;
+HIGH :: #pattern 100..;
+AGGREGATE :: #pattern Pair.{ .v = .[true, ...] };
+SPLICED :: #pattern #insert LOW;
+
+---
+
+(source_file
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (constant_declaration_body
+      (pattern_quote_expression
+        (range_pattern
+          (integer_literal)
+          (range_operator)
+          (integer_literal)))))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (constant_declaration_body
+      (pattern_quote_expression
+        (range_pattern
+          (range_operator)
+          (integer_literal)))))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (constant_declaration_body
+      (pattern_quote_expression
+        (range_pattern
+          (integer_literal)
+          (range_operator)))))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (constant_declaration_body
+      (pattern_quote_expression
+        (pattern_postfix_expression
+          (pattern_binding
+            (identifier))
+          (struct_pattern
+            (struct_pattern_field
+              (identifier)
+              (slice_pattern
+                (boolean_literal)
+                (pattern_rest))))))))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (constant_declaration_body
+      (pattern_quote_expression
+        (insert_expression
+          (identifier))))))
+
+==================
+mutable declarations in code quotes and unbraced control bodies
+==================
+
+BLOCK_CODE :: #code {
+  mut first, second: s64;
+  mut initialized := 1;
+  mut final_value: s64 = 2
+};
+SINGLE_CODE :: #code mut value := 3;
+TYPED_SINGLE_CODE :: #code mut value: s64 = 4;
+entry :: () {
+  quoted :: #code { mut local := 5; mut final_local := 6 };
+  if condition mut branch := 7;
+  else mut alternative := 8;
+  while condition mut tick := 9;
+  for value: values mut copy := value;
+  for mut value: 0..3 mut ranged_copy := value;
+  #comptime { mut compile_value := 10; }
+  mut after_comptime := 11;
+}
+
+---
+
+(source_file
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (constant_declaration_body
+      (code_expression
+        (code_block
+          (variable_declaration
+            (binding_list
+              (identifier)
+              (identifier))
+            (named_type
+              (identifier)))
+          (variable_declaration
+            (binding_list
+              (identifier))
+            (integer_literal))
+          (variable_declaration
+            (binding_list
+              (identifier))
+            (named_type
+              (identifier))
+            (integer_literal))))))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (constant_declaration_body
+      (code_expression
+        (variable_declaration
+          (binding_list
+            (identifier))
+          (integer_literal)))))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (constant_declaration_body
+      (code_expression
+        (variable_declaration
+          (binding_list
+            (identifier))
+          (named_type
+            (identifier))
+          (integer_literal)))))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (function_declaration
+      (parameter_list)
+      (block
+        (variable_declaration
+          (binding_list
+            (identifier))
+          (code_expression
+            (code_block
+              (variable_declaration
+                (binding_list
+                  (identifier))
+                (integer_literal))
+              (variable_declaration
+                (binding_list
+                  (identifier))
+                (integer_literal)))))
+        (if_statement
+          (identifier)
+          (variable_declaration
+            (binding_list
+              (identifier))
+            (integer_literal))
+          (variable_declaration
+            (binding_list
+              (identifier))
+            (integer_literal)))
+        (while_statement
+          (identifier)
+          (variable_declaration
+            (binding_list
+              (identifier))
+            (integer_literal)))
+        (for_statement
+          (identifier)
+          (identifier)
+          (variable_declaration
+            (binding_list
+              (identifier))
+            (identifier)))
+        (for_statement
+          (identifier)
+          (range_expression
+            (integer_literal)
+            (range_operator)
+            (integer_literal))
+          (variable_declaration
+            (binding_list
+              (identifier))
+            (identifier)))
+        (expression_statement
+          (run_expression
+            (block
+              (variable_declaration
+                (binding_list
+                  (identifier))
+                (integer_literal)))))
+        (variable_declaration
+          (binding_list
+            (identifier))
+          (integer_literal))))))
+
+==================
+quoted pattern ranges accept negative named and arithmetic bounds
+==================
+
+A :: #pattern -1..=10;
+Negative :: #pattern -1;
+Negative_Float :: #pattern -1.5;
+B :: #pattern LOW + 1..HIGH - 1;
+C :: #pattern LOW..HIGH;
+Bitwise_Start :: #pattern (LOW | HIGH) .. OTHER;
+Bitwise_Arithmetic_Start :: #pattern (LOW + 1 | HIGH - 1 | LAST) .. OTHER;
+Bitwise_End :: #pattern LOW .. (HIGH | OTHER);
+Range_Alternatives :: #pattern 0 .. 10 | 12 .. 20;
+entry :: (x: s64) -> s64 {
+  if #pattern -7 == {
+    case ..=-1; return -1;
+    case 0..; return 0;
+  }
+  if #pattern 250..=300 = x return 1;
+  return 2;
+}
+
+---
+
+(source_file
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (constant_declaration_body
+      (pattern_quote_expression
+        (range_pattern
+          (unary_expression
+            (prefix_operator)
+            (integer_literal))
+          (range_operator)
+          (integer_literal)))))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (constant_declaration_body
+      (pattern_quote_expression
+        (unary_expression
+          (prefix_operator)
+          (integer_literal)))))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (constant_declaration_body
+      (pattern_quote_expression
+        (unary_expression
+          (prefix_operator)
+          (float_literal)))))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (constant_declaration_body
+      (pattern_quote_expression
+        (range_pattern
+          (binary_expression
+            (identifier)
+            (operator)
+            (integer_literal))
+          (range_operator)
+          (binary_expression
+            (identifier)
+            (operator)
+            (integer_literal))))))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (constant_declaration_body
+      (pattern_quote_expression
+        (range_pattern
+          (identifier)
+          (range_operator)
+          (identifier)))))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (constant_declaration_body
+      (pattern_quote_expression
+        (range_pattern
+          (parenthesized_expression
+            (binary_expression
+              (identifier)
+              (operator)
+              (identifier)))
+          (range_operator)
+          (identifier)))))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (constant_declaration_body
+      (pattern_quote_expression
+        (range_pattern
+          (parenthesized_expression
+            (binary_expression
+              (binary_expression
+                (binary_expression
+                  (identifier)
+                  (operator)
+                  (integer_literal))
+                (operator)
+                (binary_expression
+                  (identifier)
+                  (operator)
+                  (integer_literal)))
+              (operator)
+              (identifier)))
+          (range_operator)
+          (identifier)))))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (constant_declaration_body
+      (pattern_quote_expression
+        (range_pattern
+          (identifier)
+          (range_operator)
+          (parenthesized_expression
+            (binary_expression
+              (identifier)
+              (operator)
+              (identifier)))))))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (constant_declaration_body
+      (pattern_quote_expression
+        (or_pattern
+          (range_pattern
+            (integer_literal)
+            (range_operator)
+            (integer_literal))
+          (range_pattern
+            (integer_literal)
+            (range_operator)
+            (integer_literal))))))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (function_declaration
+      (parameter_list
+        (parameter
+          (binding_list
+            (identifier))
+          (named_type
+            (identifier))))
+      (arrow)
+      (named_type
+        (identifier))
+      (block
+        (switch_statement
+          (unary_expression
+            (prefix_operator)
+            (integer_literal))
+          (operator)
+          (pattern_case_clause
+            (range_pattern
+              (range_operator)
+              (unary_expression
+                (prefix_operator)
+                (integer_literal)))
+            (return_statement
+              (unary_expression
+                (prefix_operator)
+                (integer_literal))))
+          (pattern_case_clause
+            (range_pattern
+              (integer_literal)
+              (range_operator))
+            (return_statement
+              (integer_literal))))
+        (if_statement
+          (pattern_test_expression
+            (pattern_arm
+              (range_pattern
+                (integer_literal)
+                (range_operator)
+                (integer_literal))
+              (identifier)))
+          (return_statement
+            (integer_literal)))
+        (return_statement
+          (integer_literal))))))
+
+==================
+block code constants accept optional semicolons in visibility groups
+==================
+
+#public {
+  quote :: #code { mut value := 1 }
+  terminated_quote :: #code { mut value := 2 };
+}
+
+---
+
+(source_file
+  (visibility_group
+    (visibility_modifier)
+    (declaration_block
+      (named_declaration
+        (declaration_name
+          (identifier))
+        (constant_declaration_body
+          (code_expression
+            (code_block
+              (variable_declaration
+                (binding_list
+                  (identifier))
+                (integer_literal))))))
+      (named_declaration
+        (declaration_name
+          (identifier))
+        (constant_declaration_body
+          (code_expression
+            (code_block
+              (variable_declaration
+                (binding_list
+                  (identifier))
+                (integer_literal)))))))))
+
+==================
+minus led binary operator spellings and subtraction assignment
+==================
+
+entry :: (left: s64, right: s64) {
+  plus := left -+ right;
+  doubled := left -- right;
+  piped := left -| right;
+  wrapping := left -% right;
+  mut result := left;
+  result -= right;
+}
+
+---
+
+(source_file
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (function_declaration
+      (parameter_list
+        (parameter
+          (binding_list
+            (identifier))
+          (named_type
+            (identifier)))
+        (parameter
+          (binding_list
+            (identifier))
+          (named_type
+            (identifier))))
+      (block
+        (variable_declaration
+          (binding_list
+            (identifier))
+          (binary_expression
+            (identifier)
+            (operator)
+            (identifier)))
+        (variable_declaration
+          (binding_list
+            (identifier))
+          (binary_expression
+            (identifier)
+            (operator)
+            (identifier)))
+        (variable_declaration
+          (binding_list
+            (identifier))
+          (binary_expression
+            (identifier)
+            (operator)
+            (identifier)))
+        (variable_declaration
+          (binding_list
+            (identifier))
+          (binary_expression
+            (identifier)
+            (operator)
+            (identifier)))
+        (variable_declaration
+          (binding_list
+            (identifier))
+          (identifier))
+        (assignment_statement
+          (identifier)
+          (assignment_operator)
+          (identifier))))))
+
+==================
+implicit expression patterns preserve unary binary and pointer capture forms
+==================
+
+NEGATE :: #pattern !false;
+COMPLEMENT :: #pattern ~0;
+POSITIVE :: #pattern +1;
+OPTIONAL_TYPE :: #pattern ?*void;
+ADDRESS :: #pattern &VALUE;
+DEREFERENCE :: #pattern **VALUE;
+MUTABLE_ADDRESS :: #pattern &mut VALUE;
+RAW_ADDRESS :: #pattern &raw VALUE;
+ADDITION :: #pattern LOW + 1;
+MULTIPLICATION :: #pattern LOW * 2;
+POINTER_CAPTURE :: #pattern *name;
+WRAPPED_POINTER_CAPTURE :: #pattern .Some(*raw);
+WRAPPED_DEREFERENCE :: #pattern .Some(**VALUE);
+Qualified_Alternatives :: #pattern A.B.C.D.E.F.G(*x) | A.B.C.D.E.F.G(*y);
+Constant_Bitwise :: #pattern == (LOW | HIGH);
+
+---
+
+(source_file
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (constant_declaration_body
+      (pattern_quote_expression
+        (unary_expression
+          (prefix_operator)
+          (boolean_literal)))))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (constant_declaration_body
+      (pattern_quote_expression
+        (unary_expression
+          (prefix_operator)
+          (integer_literal)))))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (constant_declaration_body
+      (pattern_quote_expression
+        (unary_expression
+          (prefix_operator)
+          (integer_literal)))))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (constant_declaration_body
+      (pattern_quote_expression
+        (unary_expression
+          (prefix_operator)
+          (unary_expression
+            (prefix_operator)
+            (identifier))))))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (constant_declaration_body
+      (pattern_quote_expression
+        (unary_expression
+          (prefix_operator)
+          (identifier)))))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (constant_declaration_body
+      (pattern_quote_expression
+        (unary_expression
+          (prefix_operator)
+          (identifier)))))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (constant_declaration_body
+      (pattern_quote_expression
+        (unary_expression
+          (prefix_operator)
+          (identifier)))))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (constant_declaration_body
+      (pattern_quote_expression
+        (unary_expression
+          (prefix_operator)
+          (identifier)))))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (constant_declaration_body
+      (pattern_quote_expression
+        (binary_expression
+          (identifier)
+          (operator)
+          (integer_literal)))))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (constant_declaration_body
+      (pattern_quote_expression
+        (binary_expression
+          (identifier)
+          (operator)
+          (integer_literal)))))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (constant_declaration_body
+      (pattern_quote_expression
+        (pointer_pattern
+          (identifier)))))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (constant_declaration_body
+      (pattern_quote_expression
+        (pattern_postfix_expression
+          (shorthand_member_pattern
+            (identifier))
+          (pattern_argument_list
+            (pointer_pattern
+              (identifier)))))))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (constant_declaration_body
+      (pattern_quote_expression
+        (pattern_postfix_expression
+          (shorthand_member_pattern
+            (identifier))
+          (pattern_argument_list
+            (unary_expression
+              (prefix_operator)
+              (identifier)))))))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (constant_declaration_body
+      (pattern_quote_expression
+        (or_pattern
+          (pattern_postfix_expression
+            (pattern_postfix_expression
+              (pattern_postfix_expression
+                (pattern_postfix_expression
+                  (pattern_postfix_expression
+                    (pattern_postfix_expression
+                      (pattern_postfix_expression
+                        (pattern_binding
+                          (identifier))
+                        (identifier))
+                      (identifier))
+                    (identifier))
+                  (identifier))
+                (identifier))
+              (identifier))
+            (pattern_argument_list
+              (pointer_pattern
+                (identifier))))
+          (pattern_postfix_expression
+            (pattern_postfix_expression
+              (pattern_postfix_expression
+                (pattern_postfix_expression
+                  (pattern_postfix_expression
+                    (pattern_postfix_expression
+                      (pattern_postfix_expression
+                        (pattern_binding
+                          (identifier))
+                        (identifier))
+                      (identifier))
+                    (identifier))
+                  (identifier))
+                (identifier))
+              (identifier))
+            (pattern_argument_list
+              (pointer_pattern
+                (identifier))))))))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (constant_declaration_body
+      (pattern_quote_expression
+        (constant_pattern
+          (constant_pattern_operator)
+          (parenthesized_expression
+            (binary_expression
+              (identifier)
+              (operator)
+              (identifier))))))))

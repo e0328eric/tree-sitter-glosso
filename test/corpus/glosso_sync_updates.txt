@@ -120,9 +120,10 @@ clear :: (values: [..]s64) {
             (if_assignment_start)
             (integer_literal)))
         (for_statement
-          (operator)
-          (postfix_expression
-            (identifier)
-            (identifier))
+          (unary_expression
+            (prefix_operator)
+            (postfix_expression
+              (identifier)
+              (identifier)))
           (block
             (break_statement)))))))

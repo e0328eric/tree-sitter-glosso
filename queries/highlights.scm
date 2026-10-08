@@ -14,6 +14,8 @@
   "using"
   "noalias"
   "mut"
+  "raw"
+  "raw_mut"
   "volatile"
   "defer"
   "where"
@@ -72,6 +74,7 @@
   "#enable"
   "#disable"
   "#derive"
+  "#lifetimes"
   "#assert"
   "#public"
   "#private"
@@ -105,9 +108,12 @@
 (code_splice_identifier) @variable
 (non_hygienic_identifier) @variable
 (label) @label
+(lifetime) @label
+(lifetimes_directive (identifier) @label)
 (quoted_operator) @operator
 (operator) @operator
 (prefix_operator) @operator
+(for_pointer_binder) @operator
 (suffix_operator) @operator
 (range_operator) @operator
 (binding_operator) @operator
