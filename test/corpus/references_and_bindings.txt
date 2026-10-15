@@ -497,9 +497,9 @@ slice_shapes :: (
   named_fixed: &[COUNT]s64,
   inferred_fixed: &[_]s64,
   raw_descriptor: &[]s64,
-  mutable_descriptor: &mut []mut s64,
+  mutable_descriptor: &mut []s64,
   owning: &[..]s64,
-  many: &[*]mut s64,
+  many: &[*]s64,
   nested: &[&]mut s64,
   optional: ?[&]s64
 ) {}
@@ -1044,7 +1044,7 @@ Thing ::: {
   shared :: (&#self) {}
   exclusive :: (&mut #self) {}
   rebound :: (mut &mut #self) {}
-  pointer :: (mut *mut #self) {}
+  pointer :: (mut *#self) {}
   noalias_reference :: (noalias mut &mut #self) {}
   named_lifetime :: (&'a #self) #lifetimes(a) {}
   named_exclusive :: (mut &'a mut #self) #lifetimes(a) {}

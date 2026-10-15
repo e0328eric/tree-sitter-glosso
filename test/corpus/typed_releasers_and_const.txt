@@ -1,0 +1,535 @@
+==================
+typed memory releasers in positional labelled and gives effects
+==================
+
+#memory {
+  released_by((?*void).free),
+  released_by(by: (?*void).free),
+  released_by(returned.Some, (?*void).free),
+  released_by(returned.Some, (?*void).free, allocator),
+  released_by((?*void).free, allocator),
+  released_by(place: returned.Some, by: (?*void).free, instance: allocator),
+  gives(out, released_by: (?*void).free),
+  maybe_gives(out, released_by: (Containers.Box([]const u8)).release),
+}
+acquire :: (out: *?*void, allocator: *void) -> ?*void #foreign "c";
+
+---
+
+(source_file
+  (named_declaration
+    (memory_prefix
+      (memory_effect
+        (identifier)
+        (memory_typed_releaser
+          (optional_type
+            (pointer_type
+              (named_type
+                (identifier))))
+          (identifier)))
+      (memory_effect
+        (identifier)
+        (memory_release_argument
+          (identifier)
+          (memory_typed_releaser
+            (optional_type
+              (pointer_type
+                (named_type
+                  (identifier))))
+            (identifier))))
+      (memory_effect
+        (identifier)
+        (memory_qualified_name
+          (identifier)
+          (identifier))
+        (memory_typed_releaser
+          (optional_type
+            (pointer_type
+              (named_type
+                (identifier))))
+          (identifier)))
+      (memory_effect
+        (identifier)
+        (memory_qualified_name
+          (identifier)
+          (identifier))
+        (memory_typed_releaser
+          (optional_type
+            (pointer_type
+              (named_type
+                (identifier))))
+          (identifier))
+        (memory_place
+          (identifier)))
+      (memory_effect
+        (identifier)
+        (memory_typed_releaser
+          (optional_type
+            (pointer_type
+              (named_type
+                (identifier))))
+          (identifier))
+        (memory_place
+          (identifier)))
+      (memory_effect
+        (identifier)
+        (memory_release_argument
+          (identifier)
+          (memory_place
+            (identifier)
+            (identifier)))
+        (memory_release_argument
+          (identifier)
+          (memory_typed_releaser
+            (optional_type
+              (pointer_type
+                (named_type
+                  (identifier))))
+            (identifier)))
+        (memory_release_argument
+          (identifier)
+          (memory_place
+            (identifier))))
+      (memory_effect
+        (identifier)
+        (memory_place
+          (identifier))
+        (identifier)
+        (memory_typed_releaser
+          (optional_type
+            (pointer_type
+              (named_type
+                (identifier))))
+          (identifier)))
+      (memory_effect
+        (identifier)
+        (memory_place
+          (identifier))
+        (identifier)
+        (memory_typed_releaser
+          (generic_type
+            (identifier)
+            (identifier)
+            (array_type
+              (named_type
+                (identifier))))
+          (identifier))))
+    (declaration_name
+      (identifier))
+    (function_declaration
+      (parameter_list
+        (parameter
+          (binding_list
+            (identifier))
+          (pointer_type
+            (optional_type
+              (pointer_type
+                (named_type
+                  (identifier))))))
+        (parameter
+          (binding_list
+            (identifier))
+          (pointer_type
+            (named_type
+              (identifier)))))
+      (arrow)
+      (optional_type
+        (pointer_type
+          (named_type
+            (identifier))))
+      (foreign_directive
+        (string_literal)))))
+
+==================
+typed releasers in trailing contracts overlays function pointers and calls
+==================
+
+Callback :: #fn_ptr(out: *?*void) #memory gives(out, released_by: (?*void).free);
+acquire :: () -> Error!?*void #memory { released_by(by: (Error!?*void).free) } #foreign "c";
+#memory Foreign.acquire { released_by(by: (Foreign.Owner(u8)).release) }
+main :: () {
+  handle := acquire() #memory { released_by(returned.Ok.Some, (?*void).free) };
+  #memory acquire { released_by((?*void).free) }
+}
+
+---
+
+(source_file
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (function_pointer_type_declaration
+      (fn_ptr_parameter_list
+        (fn_ptr_parameter
+          (identifier)
+          (pointer_type
+            (optional_type
+              (pointer_type
+                (named_type
+                  (identifier)))))))
+      (memory_directive
+        (memory_effect
+          (identifier)
+          (memory_place
+            (identifier))
+          (identifier)
+          (memory_typed_releaser
+            (optional_type
+              (pointer_type
+                (named_type
+                  (identifier))))
+            (identifier))))))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (function_declaration
+      (parameter_list)
+      (arrow)
+      (result_type
+        (named_type
+          (identifier))
+        (optional_type
+          (pointer_type
+            (named_type
+              (identifier)))))
+      (memory_directive
+        (memory_effect
+          (identifier)
+          (memory_release_argument
+            (identifier)
+            (memory_typed_releaser
+              (result_type
+                (named_type
+                  (identifier))
+                (optional_type
+                  (pointer_type
+                    (named_type
+                      (identifier)))))
+              (identifier)))))
+      (foreign_directive
+        (string_literal))))
+  (memory_overlay
+    (memory_qualified_name
+      (identifier)
+      (identifier))
+    (memory_effect
+      (identifier)
+      (memory_release_argument
+        (identifier)
+        (memory_typed_releaser
+          (generic_type
+            (identifier)
+            (identifier)
+            (named_type
+              (identifier)))
+          (identifier)))))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (function_declaration
+      (parameter_list)
+      (block
+        (variable_declaration
+          (binding_list
+            (identifier))
+          (postfix_expression
+            (postfix_expression
+              (identifier)
+              (argument_list))
+            (memory_directive
+              (memory_effect
+                (identifier)
+                (memory_qualified_name
+                  (identifier)
+                  (identifier)
+                  (identifier))
+                (memory_typed_releaser
+                  (optional_type
+                    (pointer_type
+                      (named_type
+                        (identifier))))
+                  (identifier))))))
+        (memory_overlay
+          (memory_qualified_name
+            (identifier))
+          (memory_effect
+            (identifier)
+            (memory_typed_releaser
+              (optional_type
+                (pointer_type
+                  (named_type
+                    (identifier))))
+              (identifier))))))))
+
+==================
+const qualifiers compose in types expressions and inherent heads
+==================
+
+Pointers :: struct {
+  writable: *T;
+  readonly: *const T;
+  nested: **const T;
+  outer: *const *T;
+  both: *const *const T;
+  many: [*]const volatile T;
+  slice: []volatile const T;
+}
+*const $T ::: { read :: (#self) {} }
+[]const $T ::: instance Readable {}
+[*]const $T ::: instance Readable {}
+T ::: {
+  write :: (*#self) {}
+  read :: (*const #self) {}
+}
+const :: 1;
+main :: () {
+  const := 2;
+  size_of(*const T);
+  size_of(**const T);
+  size_of([]const T);
+  size_of([*]volatile const T);
+  consume(const);
+}
+
+---
+
+(source_file
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (struct_declaration
+      (struct_field
+        (identifier)
+        (pointer_type
+          (named_type
+            (identifier))))
+      (struct_field
+        (identifier)
+        (pointer_type
+          (named_type
+            (identifier))))
+      (struct_field
+        (identifier)
+        (pointer_type
+          (pointer_type
+            (named_type
+              (identifier)))))
+      (struct_field
+        (identifier)
+        (pointer_type
+          (pointer_type
+            (named_type
+              (identifier)))))
+      (struct_field
+        (identifier)
+        (pointer_type
+          (pointer_type
+            (named_type
+              (identifier)))))
+      (struct_field
+        (identifier)
+        (many_pointer_type
+          (named_type
+            (identifier))))
+      (struct_field
+        (identifier)
+        (array_type
+          (named_type
+            (identifier))))))
+  (inherent_declaration
+    (type_constructor_pattern
+      (pointer_type_constructor_pattern
+        (type_constructor_pattern
+          (generic_type_variable
+            (identifier)))))
+    (inherent_method
+      (identifier)
+      (function_declaration
+        (parameter_list
+          (receiver_parameter
+            (self_expression)))
+        (block))))
+  (instance_declaration
+    (type_constructor_pattern
+      (array_type_constructor_pattern
+        (type_constructor_pattern
+          (generic_type_variable
+            (identifier)))))
+    (identifier))
+  (instance_declaration
+    (type_constructor_pattern
+      (array_type_constructor_pattern
+        (type_constructor_pattern
+          (generic_type_variable
+            (identifier)))))
+    (identifier))
+  (inherent_declaration
+    (type_constructor_pattern
+      (identifier))
+    (inherent_method
+      (identifier)
+      (function_declaration
+        (parameter_list
+          (receiver_parameter
+            (self_expression)))
+        (block)))
+    (inherent_method
+      (identifier)
+      (function_declaration
+        (parameter_list
+          (receiver_parameter
+            (self_expression)))
+        (block))))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (constant_declaration_body
+      (integer_literal)))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (function_declaration
+      (parameter_list)
+      (block
+        (variable_declaration
+          (binding_list
+            (identifier))
+          (integer_literal))
+        (expression_statement
+          (postfix_expression
+            (identifier)
+            (argument_list
+              (unary_expression
+                (prefix_operator)
+                (identifier)))))
+        (expression_statement
+          (postfix_expression
+            (identifier)
+            (argument_list
+              (unary_expression
+                (prefix_operator)
+                (identifier)))))
+        (expression_statement
+          (postfix_expression
+            (identifier)
+            (argument_list
+              (array_type
+                (named_type
+                  (identifier))))))
+        (expression_statement
+          (postfix_expression
+            (identifier)
+            (argument_list
+              (many_pointer_type
+                (named_type
+                  (identifier))))))
+        (expression_statement
+          (postfix_expression
+            (identifier)
+            (argument_list
+              (identifier))))))))
+
+==================
+removed mut pointer qualifier in a type expression
+:error
+==================
+
+main :: () { size_of(*mut T); }
+
+---
+
+(source_file)
+
+==================
+struct alignment modifiers on named nested and inline declarations
+==================
+
+Aligned :: struct #c_call #align(64) { value: ssize = 31; }
+Outer :: struct { inner: struct #align(32) { value: u8; }; }
+main :: () {
+  Local :: struct #align(16) #c_call { value: u64; }
+}
+
+---
+
+(source_file
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (struct_declaration
+      (struct_modifier)
+      (struct_modifier
+        (align_directive
+          (integer_literal)))
+      (struct_field
+        (identifier)
+        (named_type
+          (identifier))
+        (integer_literal))))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (struct_declaration
+      (struct_field
+        (identifier)
+        (struct_declaration
+          (struct_modifier
+            (align_directive
+              (integer_literal)))
+          (struct_field
+            (identifier)
+            (named_type
+              (identifier)))))))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (function_declaration
+      (parameter_list)
+      (block
+        (nested_declaration
+          (declaration_name
+            (identifier))
+          (struct_declaration
+            (struct_modifier
+              (align_directive
+                (integer_literal)))
+            (struct_modifier)
+            (struct_field
+              (identifier)
+              (named_type
+                (identifier)))))))))
+
+==================
+struct alignment requires an integer literal
+:error
+==================
+
+Aligned :: struct #align(16 + 16) {}
+
+---
+
+(source_file)
+
+==================
+typed memory releaser requires an owner
+:error
+==================
+
+#memory { released_by(().free) }
+acquire :: () #foreign "c";
+
+---
+
+(source_file)
+
+==================
+typed memory releaser requires a method
+:error
+==================
+
+#memory { released_by(by: (?*void).) }
+acquire :: () #foreign "c";
+
+---
+
+(source_file)

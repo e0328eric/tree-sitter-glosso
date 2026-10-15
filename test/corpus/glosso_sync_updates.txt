@@ -1,6 +1,5 @@
 ==================
-removed memory contract vocabulary is rejected
-:error
+memory contract vocabulary
 ==================
 
 release :: (value: *u8, allocator: *void) #memory{
@@ -33,11 +32,190 @@ global: *u8;
 
 ---
 
-(source_file)
+(source_file
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (function_declaration
+      (parameter_list
+        (parameter
+          (binding_list
+            (identifier))
+          (pointer_type
+            (named_type
+              (identifier))))
+        (parameter
+          (binding_list
+            (identifier))
+          (pointer_type
+            (named_type
+              (identifier)))))
+      (memory_directive
+        (memory_effect
+          (identifier)
+          (memory_place
+            (identifier)
+            (integer_literal))
+          (memory_place
+            (identifier)
+            (integer_literal)))
+        (memory_effect
+          (identifier)
+          (memory_place
+            (identifier)
+            (identifier))
+          (memory_place
+            (identifier)))
+        (memory_effect
+          (identifier)
+          (memory_place
+            (identifier)
+            (integer_literal)
+            (identifier))
+          (memory_place
+            (identifier)))
+        (memory_effect
+          (identifier)
+          (memory_place
+            (identifier)))
+        (memory_effect
+          (identifier)
+          (memory_place
+            (identifier)
+            (identifier)))
+        (memory_effect
+          (identifier)
+          (memory_place
+            (identifier))
+          (memory_place
+            (identifier)
+            (integer_literal)
+            (identifier)
+            (integer_literal)))
+        (memory_effect
+          (identifier)
+          (memory_place
+            (identifier)))
+        (memory_effect
+          (identifier)
+          (memory_place
+            (identifier)))
+        (memory_effect
+          (identifier)
+          (memory_place
+            (identifier)))
+        (memory_effect
+          (identifier)
+          (memory_place
+            (identifier))
+          (memory_place
+            (identifier)))
+        (memory_effect
+          (identifier)
+          (memory_place
+            (identifier))
+          (memory_place
+            (identifier)
+            (integer_literal)))
+        (memory_effect
+          (identifier)
+          (memory_place
+            (identifier)))
+        (memory_effect
+          (identifier)
+          (memory_place
+            (identifier)))
+        (memory_effect
+          (identifier)
+          (memory_place
+            (identifier)))
+        (memory_effect
+          (identifier)
+          (memory_place
+            (identifier))
+          (memory_place
+            (identifier)
+            (integer_literal))
+          (identifier)
+          (memory_place
+            (identifier)))
+        (memory_effect
+          (identifier)
+          (memory_place
+            (identifier)))
+        (memory_effect
+          (identifier)
+          (memory_place
+            (identifier))
+          (identifier)
+          (memory_place
+            (identifier)))
+        (memory_effect
+          (identifier)
+          (memory_place
+            (identifier)))
+        (memory_effect
+          (identifier)
+          (memory_place
+            (identifier))
+          (identifier)
+          (memory_qualified_name
+            (identifier)))
+        (memory_effect
+          (identifier)
+          (memory_place
+            (identifier)))
+        (memory_effect
+          (identifier)
+          (memory_release_argument
+            (identifier)
+            (memory_place
+              (identifier)
+              (identifier)))
+          (memory_release_argument
+            (identifier)
+            (memory_qualified_name
+              (identifier)))
+          (memory_release_argument
+            (identifier)
+            (memory_place
+              (identifier))))
+        (memory_effect
+          (identifier)
+          (memory_unknown_argument
+            (identifier)
+            (memory_place
+              (identifier)))
+          (memory_unknown_argument
+            (identifier)
+            (memory_qualified_name
+              (identifier)
+              (identifier)))
+          (memory_unknown_argument
+            (identifier)
+            (string_literal))))
+      (block)))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (function_declaration
+      (parameter_list)
+      (memory_directive)
+      (memory_directive)
+      (memory_directive
+        (memory_effect
+          (identifier)))
+      (block)))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (global_variable_declaration_tail
+      (pointer_type
+        (named_type
+          (identifier))))))
 
 ==================
-removed memory use sites function pointers overlays and trusted blocks are rejected
-:error
+memory use sites function pointers overlays and trusted blocks
 ==================
 
 Callback :: #fn_ptr(data: *void) -> ?*void #c_call
@@ -59,7 +237,93 @@ main :: () {
 
 ---
 
-(source_file)
+(source_file
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (function_pointer_type_declaration
+      (fn_ptr_parameter_list
+        (fn_ptr_parameter
+          (identifier)
+          (pointer_type
+            (named_type
+              (identifier)))))
+      (arrow)
+      (optional_type
+        (pointer_type
+          (named_type
+            (identifier))))
+      (memory_directive
+        (memory_effect
+          (identifier)
+          (memory_place
+            (identifier)))
+        (memory_effect
+          (identifier)
+          (memory_place
+            (identifier)))
+        (memory_effect
+          (identifier)
+          (memory_place
+            (identifier))))))
+  (memory_overlay
+    (memory_qualified_name
+      (identifier)
+      (identifier))
+    (memory_effect
+      (identifier))
+    (memory_effect
+      (identifier)
+      (memory_release_argument
+        (identifier)
+        (memory_place
+          (identifier)))
+      (memory_release_argument
+        (identifier)
+        (memory_qualified_name
+          (identifier)
+          (identifier))))
+    (memory_effect
+      (identifier)
+      (memory_place
+        (identifier)
+        (integer_literal))))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (function_declaration
+      (parameter_list)
+      (block
+        (variable_declaration
+          (binding_list
+            (identifier))
+          (postfix_expression
+            (postfix_expression
+              (postfix_expression
+                (identifier)
+                (identifier))
+              (argument_list))
+            (memory_directive
+              (memory_effect
+                (identifier)
+                (memory_qualified_name
+                  (identifier)
+                  (identifier)))
+              (memory_effect
+                (identifier)
+                (memory_place
+                  (identifier)
+                  (integer_literal))))))
+        (memory_trusted_statement
+          (string_literal)
+          (block
+            (expression_statement
+              (postfix_expression
+                (postfix_expression
+                  (identifier)
+                  (identifier))
+                (argument_list
+                  (identifier))))))))))
 
 ==================
 distinct derives and pointer loop binders

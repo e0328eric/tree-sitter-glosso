@@ -239,9 +239,9 @@ inherent receiver forms and self expressions
 
 Record ::: {
   same :: (#self) -> #Self_Type { return #self; }
-  mutate :: (*mut #self, value: s64) { #self.value = value; }
+  mutate :: (*#self, value: s64) { #self.value = value; }
   inspect :: (*#self) -> #Self_Type { return #self.*; }
-  copy :: (noalias *mut #self, source: *Record) { #self.value = source.value; }
+  copy :: (noalias *#self, source: *Record) { #self.value = source.value; }
   compare :: (noalias *#self, other: *#Self_Type) -> bool {
     return #self.value == other.value;
   }
@@ -368,7 +368,7 @@ inherent visibility headers and generic constraints
 
 Box($T) ::: #public where true {
   exposed :: (#self, U: type, value: U) -> U where true { return value; }
-  #private hidden :: (*mut #self) {}
+  #private hidden :: (*#self) {}
   #public(unit) {
     internal :: (*#self) {}
     #private { nested :: () {} }
@@ -500,7 +500,7 @@ option result and array inherent owners
 ?$T ::: #private {
   make_none :: () -> #Self_Type { return .None; }
   unwrap_or :: (#self, default: T) -> T { return default; }
-  map_or :: (*mut #self, fnt: (T) -> $U, default: U) -> U { return default; }
+  map_or :: (*#self, fnt: (T) -> $U, default: U) -> U { return default; }
 }
 
 $E!$T ::: #public(unit) where true {
@@ -516,7 +516,7 @@ $E!$T ::: #public(unit) where true {
 }
 
 [..]$T ::: #public {
-  add :: (*mut #self, values: ...T) #magic "array_add";
+  add :: (*#self, values: ...T) #magic "array_add";
 }
 
 ---
@@ -670,13 +670,12 @@ $E!$T ::: #public(unit) where true {
           (string_literal))))))
 
 ==================
-removed receiver memory contracts are rejected
-:error
+receiver memory contracts
 ==================
 
 Buffer ::: #public {
   inspect :: (*#self) #memory reads(#self) {}
-  modify :: (*mut #self) #memory{reads(#self.data), writes(#self.data)} {}
+  modify :: (*#self) #memory{reads(#self.data), writes(#self.data)} {}
   view :: (#self) -> []u8
     #memory{returns_borrow(#self.data), returns_unique_borrow(#self),
       returns_borrow(returned.0, #self)} {
@@ -686,7 +685,73 @@ Buffer ::: #public {
 
 ---
 
-(source_file)
+(source_file
+  (inherent_declaration
+    (type_constructor_pattern
+      (identifier))
+    (visibility_modifier)
+    (inherent_method
+      (identifier)
+      (function_declaration
+        (parameter_list
+          (receiver_parameter
+            (self_expression)))
+        (memory_directive
+          (memory_effect
+            (identifier)
+            (memory_place
+              (self_expression))))
+        (block)))
+    (inherent_method
+      (identifier)
+      (function_declaration
+        (parameter_list
+          (receiver_parameter
+            (self_expression)))
+        (memory_directive
+          (memory_effect
+            (identifier)
+            (memory_place
+              (self_expression)
+              (identifier)))
+          (memory_effect
+            (identifier)
+            (memory_place
+              (self_expression)
+              (identifier))))
+        (block)))
+    (inherent_method
+      (identifier)
+      (function_declaration
+        (parameter_list
+          (receiver_parameter
+            (self_expression)))
+        (arrow)
+        (array_type
+          (named_type
+            (identifier)))
+        (memory_directive
+          (memory_effect
+            (identifier)
+            (memory_place
+              (self_expression)
+              (identifier)))
+          (memory_effect
+            (identifier)
+            (memory_place
+              (self_expression)))
+          (memory_effect
+            (identifier)
+            (memory_place
+              (identifier)
+              (integer_literal))
+            (memory_place
+              (self_expression))))
+        (block
+          (return_statement
+            (postfix_expression
+              (self_expression)
+              (identifier))))))))
 
 ==================
 self type in instance methods and associated types

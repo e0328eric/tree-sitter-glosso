@@ -80,10 +80,10 @@ qualified borrowed slices
 ==================
 
 borrow :: (
-  mutable_view: []mut T,
-  immutable: []T,
-  volatile_view: []mut volatile T,
-  both_orders: []volatile mut T,
+  mutable_view: []T,
+  immutable: []const T,
+  volatile_view: []const volatile T,
+  both_orders: []volatile const T,
 ) -> []volatile T {
   return immutable;
 }

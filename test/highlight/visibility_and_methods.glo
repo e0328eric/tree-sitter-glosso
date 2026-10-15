@@ -24,9 +24,9 @@ Record ::: #public {
 //  ^ attribute
         read :: (
 //      ^ function
-            *mut #self
+            *const #self
 //           ^ keyword
-//               ^ variable.builtin
+//                 ^ variable.builtin
         ) -> s64 {
             return
 #self.value;

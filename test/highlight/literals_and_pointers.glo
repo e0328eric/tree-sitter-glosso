@@ -16,10 +16,10 @@ second line";
 
 pointers :: (
     value: s64,
-    destination: *mut volatile s64,
+    destination: *const volatile s64,
 //                ^ keyword
-//                    ^ keyword
-    view: []mut u8,
+//                      ^ keyword
+    view: []const u8,
 //          ^ keyword
 ) {
     pointer := value.&;

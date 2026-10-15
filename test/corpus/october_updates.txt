@@ -186,33 +186,33 @@ main :: (value: s64, pointer: ***s64) {
                   (identifier))))))))))
 
 ==================
-mutable and volatile pointer annotations and type values
+const and volatile pointer annotations and type values
 ==================
 
 Pointers :: struct {
   plain: *T;
-  writable: *mut T;
-  many: [*]mut T;
-  slice: []mut T;
+  readonly: *const T;
+  many: [*]const T;
+  slice: []const T;
   hardware: *volatile T;
-  writable_hardware: *mut volatile T;
-  nested: **mut T;
+  readonly_hardware: *const volatile T;
+  nested: **const T;
 }
 
-Mutable :: *mut T;
+Readonly :: *const T;
 Volatile :: *volatile T;
-Nested :: **mut T;
+Nested :: **const T;
 
 inspect :: () {
-  single_size := size_of(*mut T);
+  single_size := size_of(*const T);
   hardware_size := size_of(*volatile T);
-  nested_size := size_of(**mut T);
+  nested_size := size_of(**const T);
 }
 
 Record ::: {
-  read :: (*#self) -> s64 { return #self.value; }
-  write :: (*mut #self, value: s64) { #self.value = value; }
-  copy :: (noalias *mut #self, source: *Record) { #self.value = source.value; }
+  read :: (*const #self) -> s64 { return #self.value; }
+  write :: (*#self, value: s64) { #self.value = value; }
+  copy :: (noalias *#self, source: *Record) { #self.value = source.value; }
 }
 
 ---
@@ -374,17 +374,17 @@ bracket types in aliases calls and generic arguments
 Ints :: [..]s64;
 Quad :: [4]u8;
 Many :: [*]u8;
-Maybe_View :: ?[]mut s64;
-Fallible_Bytes :: Error![]mut u8;
+Maybe_View :: ?[]s64;
+Fallible_Bytes :: Error![]u8;
 
 inspect :: (#comptime N: ssize, value: $T) {
   view_size := size_of([]u8);
-  mutable_size := size_of([]mut T);
+  readonly_size := size_of([]const T);
   fixed_size := size_of([N]T);
   many_size := size_of([*]u8);
   dynamic_size := size_of([..]u8);
   deque := Deque([..]s64).new();
-  map := HashMap(s64, []mut u8).new();
+  map := HashMap(s64, []u8).new();
   consume(#code size_of([2]s64));
   quoted :: #code size_of([2]s64);
   if (#insert quoted) != 16 { exit(1); }
@@ -973,7 +973,7 @@ layout modified type constructors in instances
 
 #soa [..]$T ::: instance Drop {
   Error :: #Never;
-  drop :: (value: *mut #Self_Type) -> #Never!void { return .Ok; }
+  drop :: (value: *#Self_Type) -> #Never!void { return .Ok; }
 }
 
 ---
@@ -1017,12 +1017,12 @@ member call chains in unbraced loops and range endpoints
 ==================
 
 Record ::: {
-  while_chain :: (*mut #self) {
+  while_chain :: (*#self) {
     while capacity < target
       #self.*.values.get_mut().*.push(empty);
   }
 
-  for_chain :: (*mut #self) {
+  for_chain :: (*#self) {
     for index: 0..#self.*.controls.get_mut().*.count {
       use(index);
     }
@@ -1200,166 +1200,321 @@ open_ended :: () {
             (break_statement)))))))
 
 ==================
-removed const qualifier on a pointer
+removed mut qualifier on a pointer
 :error
 ==================
 
-inspect :: (value: *const T) {}
+inspect :: (value: *mut T) {}
 
 ---
 
 (source_file)
 
 ==================
-removed const qualifier on a slice
+removed mut qualifier on a slice
 :error
 ==================
 
-inspect :: (value: []const T) {}
+inspect :: (value: []mut T) {}
 
 ---
 
 (source_file)
 
 ==================
-removed const qualifier on a many pointer
+removed mut qualifier on a many pointer
 :error
 ==================
 
-inspect :: (value: [*]const T) {}
+inspect :: (value: [*]mut T) {}
 
 ---
 
 (source_file)
 
 ==================
-removed const qualifier on a receiver
+removed mut qualifier on a receiver
 :error
 ==================
 
-Record ::: { inspect :: (*const #self) {} }
+Record ::: { inspect :: (*mut #self) {} }
 
 ---
 
 (source_file)
 
 ==================
-removed memory prefix annotation
-:error
+memory prefix annotation
 ==================
 
-#memory{reads(value)} inspect :: (value: *mut u8) {}
+#memory{reads(value)} inspect :: (value: *u8) {}
 
 ---
 
-(source_file)
+(source_file
+  (named_declaration
+    (memory_prefix
+      (memory_effect
+        (identifier)
+        (memory_place
+          (identifier))))
+    (declaration_name
+      (identifier))
+    (function_declaration
+      (parameter_list
+        (parameter
+          (binding_list
+            (identifier))
+          (pointer_type
+            (named_type
+              (identifier)))))
+      (block))))
 
 ==================
-removed memory single effect annotation
-:error
+memory single effect annotation
 ==================
 
-inspect :: (value: *mut u8) #memory reads(value) {}
+inspect :: (value: *u8) #memory reads(value) {}
 
 ---
 
-(source_file)
+(source_file
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (function_declaration
+      (parameter_list
+        (parameter
+          (binding_list
+            (identifier))
+          (pointer_type
+            (named_type
+              (identifier)))))
+      (memory_directive
+        (memory_effect
+          (identifier)
+          (memory_place
+            (identifier))))
+      (block))))
 
 ==================
-removed memory parenthesized annotation
-:error
+memory parenthesized annotation
 ==================
 
-inspect :: (value: *mut u8) #memory(reads(value), noescape(value)) {}
+inspect :: (value: *u8) #memory(reads(value), noescape(value)) {}
 
 ---
 
-(source_file)
+(source_file
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (function_declaration
+      (parameter_list
+        (parameter
+          (binding_list
+            (identifier))
+          (pointer_type
+            (named_type
+              (identifier)))))
+      (memory_directive
+        (memory_effect
+          (identifier)
+          (memory_place
+            (identifier)))
+        (memory_effect
+          (identifier)
+          (memory_place
+            (identifier))))
+      (block))))
 
 ==================
-removed memory brace annotation
-:error
+memory brace annotation
 ==================
 
-inspect :: (value: *mut u8) #memory{reads(value), noescape(value)} {}
+inspect :: (value: *u8) #memory{reads(value), noescape(value)} {}
 
 ---
 
-(source_file)
+(source_file
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (function_declaration
+      (parameter_list
+        (parameter
+          (binding_list
+            (identifier))
+          (pointer_type
+            (named_type
+              (identifier)))))
+      (memory_directive
+        (memory_effect
+          (identifier)
+          (memory_place
+            (identifier)))
+        (memory_effect
+          (identifier)
+          (memory_place
+            (identifier))))
+      (block))))
 
 ==================
-removed memory top level overlay
-:error
+memory top level overlay
 ==================
 
 #memory inspect { reads(value) }
 
 ---
 
-(source_file)
+(source_file
+  (memory_overlay
+    (memory_qualified_name
+      (identifier))
+    (memory_effect
+      (identifier)
+      (memory_place
+        (identifier)))))
 
 ==================
-removed memory function pointer annotation
-:error
+memory function pointer annotation
 ==================
 
-Callback :: #fn_ptr(value: *mut u8) #memory{reads(value)};
+Callback :: #fn_ptr(value: *u8) #memory{reads(value)};
 
 ---
 
-(source_file)
+(source_file
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (function_pointer_type_declaration
+      (fn_ptr_parameter_list
+        (fn_ptr_parameter
+          (identifier)
+          (pointer_type
+            (named_type
+              (identifier)))))
+      (memory_directive
+        (memory_effect
+          (identifier)
+          (memory_place
+            (identifier)))))))
 
 ==================
-removed memory receiver annotation
-:error
+memory receiver annotation
 ==================
 
 Buffer ::: { inspect :: (*#self) #memory reads(#self) {} }
 
 ---
 
-(source_file)
+(source_file
+  (inherent_declaration
+    (type_constructor_pattern
+      (identifier))
+    (inherent_method
+      (identifier)
+      (function_declaration
+        (parameter_list
+          (receiver_parameter
+            (self_expression)))
+        (memory_directive
+          (memory_effect
+            (identifier)
+            (memory_place
+              (self_expression))))
+        (block)))))
 
 ==================
-removed memory trusted block
-:error
+memory trusted block
 ==================
 
 main :: () { #memory trusted("reviewed") {} }
 
 ---
 
-(source_file)
+(source_file
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (function_declaration
+      (parameter_list)
+      (block
+        (memory_trusted_statement
+          (string_literal)
+          (block))))))
 
 ==================
-removed memory local overlay
-:error
+memory local overlay
 ==================
 
 main :: () { #memory inspect { reads(value) } }
 
 ---
 
-(source_file)
+(source_file
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (function_declaration
+      (parameter_list)
+      (block
+        (memory_overlay
+          (memory_qualified_name
+            (identifier))
+          (memory_effect
+            (identifier)
+            (memory_place
+              (identifier))))))))
 
 ==================
-removed memory leak annotation
-:error
+memory leak annotation
 ==================
 
 main :: () { values: [..]s64 #memory leak; }
 
 ---
 
-(source_file)
+(source_file
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (function_declaration
+      (parameter_list)
+      (block
+        (variable_declaration
+          (binding_list
+            (identifier))
+          (array_type
+            (named_type
+              (identifier)))
+          (memory_directive
+            (memory_effect
+              (identifier))))))))
 
 ==================
-removed memory call site annotation
-:error
+memory call site annotation
 ==================
 
 main :: () { value := allocate() #memory{returns_fresh}; }
 
 ---
 
-(source_file)
+(source_file
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (function_declaration
+      (parameter_list)
+      (block
+        (variable_declaration
+          (binding_list
+            (identifier))
+          (postfix_expression
+            (postfix_expression
+              (identifier)
+              (argument_list))
+            (memory_directive
+              (memory_effect
+                (identifier)))))))))

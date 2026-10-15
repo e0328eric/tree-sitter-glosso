@@ -168,6 +168,7 @@ module.exports = grammar({
         $.inherent_declaration,
         $.visibility_group,
         $.conditional_declaration,
+        $.memory_overlay,
         $.named_declaration,
       ),
 
@@ -265,6 +266,10 @@ module.exports = grammar({
     named_declaration: ($) =>
       choice(
         seq(
+          $._memory_declaration_prefix,
+          $._memory_named_declaration_body,
+        ),
+        seq(
           optional(field("visibility", $.visibility_modifier)),
           "mut",
           field("name", $.declaration_name),
@@ -285,6 +290,19 @@ module.exports = grammar({
             $.global_variable_declaration_tail,
             $.typed_constant_declaration_tail,
           ),
+        ),
+      ),
+
+    _memory_named_declaration_body: ($) =>
+      seq(
+        field("name", $.declaration_name),
+        choice(
+          "::", ":=", "::=",
+          seq(":", optional(field("type", $._type)), choice(":", "::")),
+        ),
+        choice(
+          alias($._prefixed_function_declaration, $.function_declaration),
+          alias($._prefixed_fn_ptr_declaration, $.function_pointer_type_declaration),
         ),
       ),
 
@@ -341,10 +359,18 @@ module.exports = grammar({
       ),
 
     typeclass_method_signature: ($) =>
-      seq(
-        field("name", $.declaration_name),
-        "::",
-        alias($._typeclass_function_declaration, $.function_declaration),
+      choice(
+        seq(
+          field("name", $.declaration_name),
+          "::",
+          alias($._typeclass_function_declaration, $.function_declaration),
+        ),
+        seq(
+          $.memory_prefix,
+          field("name", $.declaration_name),
+          "::",
+          alias($._prefixed_typeclass_function_declaration, $.function_declaration),
+        ),
       ),
 
     typeclass_associated_type: ($) =>
@@ -415,7 +441,15 @@ module.exports = grammar({
       ),
 
     instance_method: ($) =>
-      seq(field("name", $.declaration_name), "::", $.function_declaration),
+      choice(
+        seq(field("name", $.declaration_name), "::", $.function_declaration),
+        seq(
+          $.memory_prefix,
+          field("name", $.declaration_name),
+          "::",
+          alias($._prefixed_function_declaration, $.function_declaration),
+        ),
+      ),
 
     instance_associated_type: ($) =>
       seq(
@@ -444,11 +478,19 @@ module.exports = grammar({
       ),
 
     inherent_method: ($) =>
-      seq(
-        optional(field("visibility", $.visibility_modifier)),
-        field("name", $.identifier),
-        "::",
-        alias($._inherent_function_declaration, $.function_declaration),
+      choice(
+        seq(
+          optional(field("visibility", $.visibility_modifier)),
+          field("name", $.identifier),
+          "::",
+          alias($._inherent_function_declaration, $.function_declaration),
+        ),
+        seq(
+          $._memory_declaration_prefix,
+          field("name", $.identifier),
+          "::",
+          alias($._prefixed_inherent_function_declaration, $.function_declaration),
+        ),
       ),
 
     qualified_import_declaration: ($) =>
@@ -486,9 +528,18 @@ module.exports = grammar({
           "#fn_ptr",
           field("parameters", $.fn_ptr_parameter_list),
           optional(seq($.arrow, field("return_type", $._fn_ptr_return_type))),
-          repeat(choice("#c_call", "#no_context", $.lifetimes_directive)),
+          repeat(choice("#c_call", "#no_context", $.lifetimes_directive, $.memory_directive)),
           ";",
         ),
+      ),
+
+    _prefixed_fn_ptr_declaration: ($) =>
+      seq(
+        "#fn_ptr",
+        field("parameters", $.fn_ptr_parameter_list),
+        optional(seq($.arrow, field("return_type", $._fn_ptr_return_type))),
+        repeat(choice("#c_call", "#no_context", $.lifetimes_directive)),
+        ";",
       ),
 
     constant_declaration_body: ($) =>
@@ -578,11 +629,15 @@ module.exports = grammar({
       choice(
         "#c_call",
         "#packed",
+        $.align_directive,
         $.modify_directive,
         $.derive_directive,
         $.magic_directive,
         $.lifetimes_directive,
       ),
+
+    align_directive: ($) =>
+      seq("#align", "(", field("alignment", $.integer_literal), ")"),
 
     empty_field: ($) =>
       seq(
@@ -691,47 +746,22 @@ module.exports = grammar({
         $._function_declaration_tail,
       ),
 
-    _function_declaration_tail: ($) =>
+    _prefixed_function_declaration: ($) =>
+      seq(field("parameters", $.parameter_list), functionTail($, false)),
+
+    _prefixed_inherent_function_declaration: ($) =>
       seq(
-        optional(seq($.arrow, field("return_type", $._type))),
-        choice(
-          seq(
-            repeat($._function_non_bodyless_modifier),
-            repeat($.where_clause),
-            field("body", $.block),
-          ),
-          seq(
-            repeat($._function_non_bodyless_modifier),
-            $._function_bodyless_modifier,
-            repeat($._function_modifier),
-            repeat($.where_clause),
-            ";",
-          ),
-        ),
+        field("parameters", alias($.inherent_parameter_list, $.parameter_list)),
+        functionTail($, false),
       ),
 
+    _function_declaration_tail: ($) => functionTail($, true),
+
     _typeclass_function_declaration: ($) =>
-      seq(
-        field("parameters", $.parameter_list),
-        optional(seq($.arrow, field("return_type", $._type))),
-        repeat($._function_non_bodyless_modifier),
-        choice(
-          seq(
-            repeat($.where_clause),
-            field("body", $.block),
-          ),
-          seq(
-            optional(
-              seq(
-                $._function_bodyless_modifier,
-                repeat($._function_modifier),
-              ),
-            ),
-            repeat($.where_clause),
-            ";",
-          ),
-        ),
-      ),
+      seq(field("parameters", $.parameter_list), functionTail($, true, true)),
+
+    _prefixed_typeclass_function_declaration: ($) =>
+      seq(field("parameters", $.parameter_list), functionTail($, false, true)),
 
     parameter_list: ($) =>
       seq("(", commaSep($._parameter), ")"),
@@ -759,7 +789,7 @@ module.exports = grammar({
         optional("noalias"),
         optional("mut"),
         optional(choice(
-          seq("*", optional("mut")),
+          seq("*", optional("const")),
           seq("&", optional($.lifetime), optional("mut")),
         )),
         $.self_expression,
@@ -842,22 +872,12 @@ module.exports = grammar({
       ),
 
     _function_modifier: ($) =>
-      choice(
-        $.lifetimes_directive,
-        $.operator_directive,
-        $.modify_directive,
-        $.expand_directive,
-        $.magic_directive,
-        $.foreign_directive,
-        "#c_call",
-        "#no_context",
-        "#dump",
-        "#must",
-        "#returns_twice",
-        $.inline_directive,
-      ),
+      choice($._function_non_bodyless_modifier, $._function_bodyless_modifier),
 
     _function_non_bodyless_modifier: ($) =>
+      choice($.memory_directive, $._function_plain_non_bodyless_modifier),
+
+    _function_plain_non_bodyless_modifier: ($) =>
       choice(
         $.lifetimes_directive,
         $.operator_directive,
@@ -868,6 +888,8 @@ module.exports = grammar({
         "#dump",
         "#must",
         "#returns_twice",
+        "#fresh_result",
+        "#unchecked_transfer",
         $.inline_directive,
       ),
 
@@ -886,6 +908,125 @@ module.exports = grammar({
 
     lifetimes_directive: ($) =>
       seq("#lifetimes", "(", sep1($.identifier, ","), ")"),
+
+    // Leading blocks attach only to functions and named function-pointer types.
+    // Trailing contracts retain the historical single-effect and (...) forms.
+    _memory_declaration_prefix: ($) =>
+      choice(
+        seq($.memory_prefix, optional(field("visibility", $.visibility_modifier))),
+        seq(field("visibility", $.visibility_modifier), $.memory_prefix),
+      ),
+
+    memory_prefix: ($) => seq("#memory", "{", commaSep($.memory_effect), "}"),
+
+    memory_directive: ($) =>
+      seq(
+        "#memory",
+        choice(
+          $.memory_effect,
+          seq("{", commaSep($.memory_effect), "}"),
+          seq("(", commaSep($.memory_effect), ")"),
+        ),
+      ),
+
+    memory_effect: ($) =>
+      prec.right(choice(
+        seq(
+          field("kind", alias(choice("returns_fresh", "returns_static"), $.identifier)),
+          optional(seq("(", sep1($.memory_place, ","), ")")),
+        ),
+        seq(
+          field("kind", alias(choice("returns_borrow", "returns_unique_borrow"), $.identifier)),
+          "(", $.memory_place, optional(seq(",", $.memory_place)), ")",
+        ),
+        seq(
+          field("kind", alias(choice(
+            "kills", "maybe_kills", "invalidates", "maybe_invalidates",
+            "noescape", "reads", "maybe_reads", "writes", "maybe_writes",
+          ), $.identifier)),
+          "(", sep1($.memory_place, ","), ")",
+        ),
+        seq(
+          field("kind", alias(choice("owns", "maybe_owns", "escapes", "maybe_escapes"), $.identifier)),
+          "(", sep1($.memory_place, ","),
+          optional(seq(",", alias("into", $.identifier), ":", $.memory_place)),
+          ")",
+        ),
+        seq(
+          field("kind", alias(choice("gives", "maybe_gives"), $.identifier)),
+          "(", sep1($.memory_place, ","),
+          optional(seq(",", alias("released_by", $.identifier), ":", $._memory_releaser)),
+          ")",
+        ),
+        seq(
+          field("kind", alias("released_by", $.identifier)),
+          "(",
+          choice(
+            seq(
+              $._memory_releaser,
+              optional(seq(
+                ",", choice($.memory_place, $.memory_typed_releaser),
+                optional(seq(",", $.memory_place)),
+              )),
+            ),
+            commaSep1($.memory_release_argument),
+          ),
+          ")",
+        ),
+        seq(
+          field("kind", alias("leak", $.identifier)),
+          optional(seq("(", $.memory_qualified_name, ")")),
+        ),
+        seq(
+          field("kind", alias("unknown", $.identifier)),
+          optional(seq("(", sep1($.memory_unknown_argument, ","), ")")),
+        ),
+      )),
+
+    memory_release_argument: ($) =>
+      choice(
+        seq(field("name", alias("by", $.identifier)), ":", $._memory_releaser),
+        seq(field("name", alias(choice("place", "instance"), $.identifier)), ":", $.memory_place),
+      ),
+
+    memory_unknown_argument: ($) =>
+      choice(
+        seq(field("name", alias("arg", $.identifier)), ":", $.memory_place),
+        seq(field("name", alias("result", $.identifier)), ":", $.memory_qualified_name),
+        seq(field("name", alias("reason", $.identifier)), ":", $.string_literal),
+      ),
+
+    memory_place: ($) =>
+      prec.right(seq(
+        choice(
+          $.identifier,
+          $.self_expression,
+          seq(alias("arg", $.identifier), optional(seq("(", $.integer_literal, ")"))),
+        ),
+        repeat(seq(".", field("field", choice($.identifier, $.integer_literal)))),
+      )),
+
+    memory_qualified_name: ($) =>
+      seq($.identifier, repeat(seq(".", field("field", choice($.identifier, $.integer_literal))))),
+
+    _memory_releaser: ($) =>
+      choice($.memory_qualified_name, $.memory_typed_releaser),
+
+    memory_typed_releaser: ($) =>
+      seq("(", field("owner", $._type), ")", ".", field("method", $.identifier)),
+
+    memory_overlay: ($) =>
+      seq($._memory_overlay_body, optional(";")),
+
+    _memory_overlay_body: ($) =>
+      seq(
+        "#memory",
+        field("target", $.memory_qualified_name),
+        "{", commaSep1($.memory_effect), "}",
+      ),
+
+    memory_trusted_statement: ($) =>
+      seq("#memory", "trusted", "(", field("reason", $.string_literal), ")", field("body", $.block)),
 
     modify_directive: ($) =>
       seq(
@@ -958,6 +1099,8 @@ module.exports = grammar({
     _statement: ($) =>
       choice(
         $.nested_declaration,
+        $.memory_overlay,
+        $.memory_trusted_statement,
         $.block,
         $.inline_bytes_statement,
         $.inline_asm_statement,
@@ -989,17 +1132,23 @@ module.exports = grammar({
       ),
 
     nested_declaration: ($) =>
-      seq(
-        field("name", $.declaration_name),
-        "::",
-        choice(
-          alias($._nested_distinct_type_declaration, $.distinct_type_declaration),
-          $.struct_declaration,
-          $.enum_declaration,
-          $.union_declaration,
-          $.function_declaration,
+      choice(
+        seq(
+          field("name", $.declaration_name),
+          "::",
+          choice(
+            alias($._nested_distinct_type_declaration, $.distinct_type_declaration),
+            $.struct_declaration,
+            $.enum_declaration,
+            $.union_declaration,
+            $.function_declaration,
+          ),
         ),
+        $._memory_nested_declaration,
       ),
+
+    _memory_nested_declaration: ($) =>
+      seq($.memory_prefix, $._memory_named_declaration_body),
 
     _nested_distinct_type_declaration: ($) =>
       seq($._distinct_type_declaration_body, optional(";")),
@@ -1339,7 +1488,7 @@ module.exports = grammar({
         field("function", $.if_call_start),
         field("arguments", $.if_call_arguments),
         repeat(choice(
-          seq(".", field("field", choice($.identifier, $.code_splice_identifier, $.integer_literal))),
+          seq(".", field("field", choice($.identifier, $.code_splice_identifier, alias($._tuple_index, $.integer_literal)))),
           ".*",
           seq(".&", optional($._address_qualifier)),
           field("arguments", $.argument_list),
@@ -1347,6 +1496,7 @@ module.exports = grammar({
           field("index", $.qualified_index_suffix),
           seq(".", "cast", "(", field("type", $._type), ")"),
           seq(".", "acast"),
+          $.memory_directive,
         )),
         optional(field("operator", $.try_operator)),
         optional(";"),
@@ -1402,6 +1552,8 @@ module.exports = grammar({
 
     _single_statement: ($) =>
       choice(
+        $.memory_overlay,
+        $.memory_trusted_statement,
         $.inline_bytes_statement,
         $.inline_asm_statement,
         $.label_statement,
@@ -1551,6 +1703,7 @@ module.exports = grammar({
       prec.right(
         seq(
           $._variable_declaration_body,
+          repeat($.memory_directive),
           ";",
         ),
       ),
@@ -1831,7 +1984,7 @@ module.exports = grammar({
         seq(
           "[",
           "]",
-          repeat(choice("mut", "volatile")),
+          repeat(choice("const", "volatile")),
           field("element", $._modified_type),
         ),
         seq(
@@ -1855,7 +2008,7 @@ module.exports = grammar({
         "[",
         "*",
         "]",
-        repeat(choice("mut", "volatile")),
+        repeat(choice("const", "volatile")),
         field("element", $._modified_type),
       ),
 
@@ -1865,7 +2018,7 @@ module.exports = grammar({
     pointer_type: ($) =>
       seq(
         "*",
-        repeat(choice("mut", "volatile")),
+        repeat(choice("const", "volatile")),
         field("pointee", $._modified_type),
       ),
 
@@ -2027,13 +2180,13 @@ module.exports = grammar({
           "[",
           "*",
           "]",
-          repeat(choice("mut", "volatile")),
+          repeat(choice("const", "volatile")),
           optional(field("element", $.type_constructor_pattern)),
         ),
         seq(
           "[",
           "]",
-          repeat(choice("mut", "volatile")),
+          repeat(choice("const", "volatile")),
           optional(field("element", $.type_constructor_pattern)),
         ),
         seq(
@@ -2052,7 +2205,7 @@ module.exports = grammar({
     pointer_type_constructor_pattern: ($) =>
       seq(
         "*",
-        repeat(choice("mut", "volatile")),
+        repeat(choice("const", "volatile")),
         field("pointee", $.type_constructor_pattern),
       ),
 
@@ -2238,7 +2391,7 @@ module.exports = grammar({
     _address_qualifier: (_) =>
       choice("mut", "raw_mut", seq("raw", optional("mut"))),
 
-    _pointer_type_qualifier: (_) => choice("mut", "volatile"),
+    _pointer_type_qualifier: (_) => choice("const", "volatile"),
 
     qualified_operator: ($) =>
       seq(
@@ -2521,9 +2674,10 @@ module.exports = grammar({
           prec.dynamic(2, seq(
             field("object", $._postfix_expression_base),
             ".",
-            field("field", choice($.identifier, $.code_splice_identifier, $.integer_literal)),
+            field("field", choice($.identifier, $.code_splice_identifier, alias($._tuple_index, $.integer_literal))),
           )),
           seq(field("type", $._postfix_expression_base), field("literal", $.struct_literal)),
+          seq(field("argument", $._postfix_expression_base), $.memory_directive),
           seq(
             field("argument", $._postfix_expression_base),
             field("operator", $.quoted_operator),
@@ -2647,6 +2801,9 @@ module.exports = grammar({
       prec.right(
         -1,
         choice(
+          alias($._memory_overlay_body, $.memory_overlay),
+          $.memory_trusted_statement,
+          alias($._memory_nested_declaration, $.nested_declaration),
           $.on_drop_error_statement,
           alias($._code_final_variable_declaration, $.variable_declaration),
           alias(
@@ -2726,7 +2883,7 @@ module.exports = grammar({
       ),
 
     _code_final_variable_declaration: ($) =>
-      prec.right($._variable_declaration_body),
+      prec.right(seq($._variable_declaration_body, repeat($.memory_directive))),
 
     _code_final_return_statement: ($) =>
       prec.right(
@@ -2844,6 +3001,7 @@ module.exports = grammar({
     _identifier: ($) => choice(
       $.identifier,
       alias("mut", $.identifier),
+      alias("const", $.identifier),
       alias("raw", $.identifier),
       alias("raw_mut", $.identifier),
     ),
@@ -2946,6 +3104,8 @@ module.exports = grammar({
         /[0-9][0-9_]*/,
       )),
 
+    _tuple_index: (_) => token(/[0-9][0-9_]*/),
+
     float_literal: (_) =>
       token(choice(
         /[0-9][0-9_]*\.[0-9][0-9_]*(?:[eE][+-]?[0-9][0-9_]*)?/,
@@ -2965,6 +3125,28 @@ module.exports = grammar({
 
 function quotedString(start) {
   return token(seq(start, repeat(choice(/[^"\\]/, /\\[\s\S]/)), '"'));
+}
+
+function functionTail($, allowMemory, allowSignature = false) {
+  const nonBodyless = allowMemory
+    ? $._function_non_bodyless_modifier
+    : $._function_plain_non_bodyless_modifier;
+  const modifier = allowMemory
+    ? $._function_modifier
+    : choice(nonBodyless, $._function_bodyless_modifier);
+  const bodyless = seq($._function_bodyless_modifier, repeat(modifier));
+  return seq(
+    optional(seq($.arrow, field("return_type", $._type))),
+    choice(
+      seq(repeat(nonBodyless), repeat($.where_clause), field("body", $.block)),
+      seq(
+        repeat(nonBodyless),
+        allowSignature ? optional(bodyless) : bodyless,
+        repeat($.where_clause),
+        ";",
+      ),
+    ),
+  );
 }
 
 function commaSep(rule) {

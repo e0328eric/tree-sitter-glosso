@@ -47,8 +47,7 @@ assemble :: (value: s64) -> s64 {
           (identifier))))))
 
 ==================
-removed memory effect directives are rejected
-:error
+memory effect directives
 ==================
 
 view :: (buffer: []u8) -> []u8
@@ -66,7 +65,87 @@ release :: (buffer: []u8)
 
 ---
 
-(source_file)
+(source_file
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (function_declaration
+      (parameter_list
+        (parameter
+          (binding_list
+            (identifier))
+          (array_type
+            (named_type
+              (identifier)))))
+      (arrow)
+      (array_type
+        (named_type
+          (identifier)))
+      (foreign_directive
+        (string_literal)
+        (string_literal))
+      (memory_directive
+        (memory_effect
+          (identifier)
+          (memory_place
+            (identifier)))
+        (memory_effect
+          (identifier)
+          (memory_place
+            (identifier))))
+      (memory_directive
+        (memory_effect
+          (identifier)
+          (memory_place
+            (identifier))))))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (function_declaration
+      (parameter_list)
+      (arrow)
+      (pointer_type
+        (named_type
+          (identifier)))
+      (memory_directive
+        (memory_effect
+          (identifier)))
+      (memory_directive
+        (memory_effect
+          (identifier)))
+      (memory_directive
+        (memory_effect
+          (identifier)))
+      (block)))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (function_declaration
+      (parameter_list
+        (parameter
+          (binding_list
+            (identifier))
+          (array_type
+            (named_type
+              (identifier)))))
+      (memory_directive
+        (memory_effect
+          (identifier)
+          (memory_place
+            (identifier)))
+        (memory_effect
+          (identifier)
+          (memory_place
+            (identifier)))
+        (memory_effect
+          (identifier)
+          (memory_place
+            (identifier)))
+        (memory_effect
+          (identifier)
+          (memory_place
+            (identifier))))
+      (block))))
 
 ==================
 based and scientific numeric literals
@@ -391,8 +470,7 @@ VALUE :: #comptime 1 + 2;
       (argument_list))))
 
 ==================
-removed memory overlays and use-site effects are rejected
-:error
+memory overlays and use-site effects
 ==================
 
 Texture :: struct { id: u32; }
@@ -412,4 +490,82 @@ main :: () {
 
 ---
 
-(source_file)
+(source_file
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (struct_declaration
+      (struct_field
+        (identifier)
+        (named_type
+          (identifier)))))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (function_declaration
+      (parameter_list
+        (parameter
+          (binding_list
+            (identifier))
+          (named_type
+            (identifier))))
+      (arrow)
+      (named_type
+        (identifier))
+      (foreign_directive
+        (string_literal)
+        (string_literal))))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (function_declaration
+      (parameter_list
+        (parameter
+          (binding_list
+            (identifier))
+          (named_type
+            (identifier))))
+      (foreign_directive
+        (string_literal)
+        (string_literal))))
+  (memory_overlay
+    (memory_qualified_name
+      (identifier)
+      (identifier))
+    (memory_effect
+      (identifier))
+    (memory_effect
+      (identifier)
+      (memory_qualified_name
+        (identifier)
+        (identifier)))
+    (memory_effect
+      (identifier)
+      (memory_place
+        (identifier)
+        (integer_literal))))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (function_declaration
+      (parameter_list)
+      (block
+        (variable_declaration
+          (binding_list
+            (identifier))
+          (postfix_expression
+            (postfix_expression
+              (identifier)
+              (argument_list
+                (string_literal)))
+            (memory_directive
+              (memory_effect
+                (identifier)
+                (memory_qualified_name
+                  (identifier)
+                  (identifier)))
+              (memory_effect
+                (identifier)
+                (memory_place
+                  (identifier)
+                  (integer_literal))))))))))

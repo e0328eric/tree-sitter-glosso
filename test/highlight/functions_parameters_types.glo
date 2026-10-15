@@ -4,6 +4,10 @@ Value :: struct {}
 Packed_Value :: struct #packed {}
 //                       ^ attribute
 
+Aligned_Value :: struct #c_call #align(64) {}
+//                              ^ attribute
+//                                     ^ number
+
 global := 1;
 // <- variable
 

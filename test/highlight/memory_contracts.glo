@@ -1,0 +1,66 @@
+#memory {
+// <- attribute
+    reads(source),
+//  ^ attribute
+//        ^ variable.parameter
+    returns_fresh(returned.0),
+//  ^ attribute
+//                ^ variable.builtin
+//                         ^ number
+    released_by(place: returned.0, by: C.free),
+//  ^ attribute
+//              ^ attribute
+//                                 ^ attribute
+//                                       ^ function
+    unknown(arg: source, reason: "opaque"),
+//  ^ attribute
+//          ^ attribute
+//                       ^ attribute
+//                               ^ string
+    unknown(result: returned.Err),
+//          ^ attribute
+//                  ^ variable.builtin
+//                           ^ property
+}
+acquire :: (source: *const u8) -> *u8 #foreign "c";
+// <- function
+//          ^ variable.parameter
+
+Box ::: {
+    #memory { reads(#self.value), noescape(#self) }
+//  ^ attribute
+//            ^ attribute
+//                  ^ variable.builtin
+//                        ^ property
+    inspect :: (*#self) {}
+//  ^ function
+}
+
+main :: () {
+    #memory {} Local_Callback :: #fn_ptr(p: *u8);
+//             ^ type.definition
+    #memory trusted("external invariant") {
+//  ^ attribute
+//          ^ attribute
+        result := acquire(null) #memory { returns_fresh };
+//                ^ function.call
+//                              ^ attribute
+    }
+}
+
+move_out :: (slot: *$T) -> T #unchecked_transfer { return slot.*; }
+//                           ^ attribute
+fresh :: () -> *u8 #fresh_result #foreign "c";
+//                 ^ attribute
+
+#memory { released_by(by: (?*void).free), gives(out, released_by: (Box(u8)).release) }
+//        ^ attribute
+//                    ^ attribute
+//                           ^ type.builtin
+//                                 ^ function
+//                                        ^ attribute
+//                                              ^ variable.parameter
+//                                                   ^ attribute
+//                                                                 ^ type
+//                                                                          ^ function
+typed_releaser :: (out: *?*void) #foreign "c";

@@ -36,6 +36,10 @@
         "named": true
       },
       {
+        "type": "memory_overlay",
+        "named": true
+      },
+      {
         "type": "named_declaration",
         "named": true
       },
@@ -438,6 +442,14 @@
         "named": true
       },
       {
+        "type": "memory_overlay",
+        "named": true
+      },
+      {
+        "type": "memory_trusted_statement",
+        "named": true
+      },
+      {
         "type": "nested_declaration",
         "named": true
       },
@@ -572,6 +584,22 @@
         "named": true
       }
     ]
+  },
+  {
+    "type": "align_directive",
+    "named": true,
+    "fields": {
+      "alignment": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "integer_literal",
+            "named": true
+          }
+        ]
+      }
+    }
   },
   {
     "type": "argument_list",
@@ -1383,6 +1411,18 @@
             "named": true
           },
           {
+            "type": "memory_overlay",
+            "named": true
+          },
+          {
+            "type": "memory_trusted_statement",
+            "named": true
+          },
+          {
+            "type": "nested_declaration",
+            "named": true
+          },
+          {
             "type": "on_drop_error_statement",
             "named": true
           },
@@ -2165,11 +2205,15 @@
       }
     },
     "children": {
-      "multiple": false,
+      "multiple": true,
       "required": false,
       "types": [
         {
           "type": "_expression",
+          "named": true
+        },
+        {
+          "type": "memory_directive",
           "named": true
         }
       ]
@@ -2426,6 +2470,14 @@
           },
           {
             "type": "label_statement",
+            "named": true
+          },
+          {
+            "type": "memory_overlay",
+            "named": true
+          },
+          {
+            "type": "memory_trusted_statement",
             "named": true
           },
           {
@@ -2818,6 +2870,10 @@
           "named": true
         },
         {
+          "type": "memory_directive",
+          "named": true
+        },
+        {
           "type": "modify_directive",
           "named": true
         },
@@ -2947,6 +3003,10 @@
         },
         {
           "type": "lifetimes_directive",
+          "named": true
+        },
+        {
+          "type": "memory_directive",
           "named": true
         }
       ]
@@ -3236,6 +3296,14 @@
             "named": true
           },
           {
+            "type": "memory_overlay",
+            "named": true
+          },
+          {
+            "type": "memory_trusted_statement",
+            "named": true
+          },
+          {
             "type": "on_drop_error_statement",
             "named": true
           },
@@ -3361,6 +3429,14 @@
           },
           {
             "type": "label_statement",
+            "named": true
+          },
+          {
+            "type": "memory_overlay",
+            "named": true
+          },
+          {
+            "type": "memory_trusted_statement",
             "named": true
           },
           {
@@ -3635,11 +3711,15 @@
       }
     },
     "children": {
-      "multiple": false,
+      "multiple": true,
       "required": true,
       "types": [
         {
           "type": "function_declaration",
+          "named": true
+        },
+        {
+          "type": "memory_prefix",
           "named": true
         }
       ]
@@ -3952,11 +4032,15 @@
       }
     },
     "children": {
-      "multiple": false,
+      "multiple": true,
       "required": true,
       "types": [
         {
           "type": "function_declaration",
+          "named": true
+        },
+        {
+          "type": "memory_prefix",
           "named": true
         }
       ]
@@ -4467,6 +4551,296 @@
     }
   },
   {
+    "type": "memory_directive",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": true,
+      "required": false,
+      "types": [
+        {
+          "type": "memory_effect",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
+    "type": "memory_effect",
+    "named": true,
+    "fields": {
+      "kind": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "identifier",
+            "named": true
+          }
+        ]
+      }
+    },
+    "children": {
+      "multiple": true,
+      "required": false,
+      "types": [
+        {
+          "type": "identifier",
+          "named": true
+        },
+        {
+          "type": "memory_place",
+          "named": true
+        },
+        {
+          "type": "memory_qualified_name",
+          "named": true
+        },
+        {
+          "type": "memory_release_argument",
+          "named": true
+        },
+        {
+          "type": "memory_typed_releaser",
+          "named": true
+        },
+        {
+          "type": "memory_unknown_argument",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
+    "type": "memory_overlay",
+    "named": true,
+    "fields": {
+      "target": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "memory_qualified_name",
+            "named": true
+          }
+        ]
+      }
+    },
+    "children": {
+      "multiple": true,
+      "required": true,
+      "types": [
+        {
+          "type": "memory_effect",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
+    "type": "memory_place",
+    "named": true,
+    "fields": {
+      "field": {
+        "multiple": true,
+        "required": false,
+        "types": [
+          {
+            "type": "identifier",
+            "named": true
+          },
+          {
+            "type": "integer_literal",
+            "named": true
+          }
+        ]
+      }
+    },
+    "children": {
+      "multiple": true,
+      "required": true,
+      "types": [
+        {
+          "type": "identifier",
+          "named": true
+        },
+        {
+          "type": "integer_literal",
+          "named": true
+        },
+        {
+          "type": "self_expression",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
+    "type": "memory_prefix",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": true,
+      "required": false,
+      "types": [
+        {
+          "type": "memory_effect",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
+    "type": "memory_qualified_name",
+    "named": true,
+    "fields": {
+      "field": {
+        "multiple": true,
+        "required": false,
+        "types": [
+          {
+            "type": "identifier",
+            "named": true
+          },
+          {
+            "type": "integer_literal",
+            "named": true
+          }
+        ]
+      }
+    },
+    "children": {
+      "multiple": false,
+      "required": true,
+      "types": [
+        {
+          "type": "identifier",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
+    "type": "memory_release_argument",
+    "named": true,
+    "fields": {
+      "name": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "identifier",
+            "named": true
+          }
+        ]
+      }
+    },
+    "children": {
+      "multiple": false,
+      "required": true,
+      "types": [
+        {
+          "type": "memory_place",
+          "named": true
+        },
+        {
+          "type": "memory_qualified_name",
+          "named": true
+        },
+        {
+          "type": "memory_typed_releaser",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
+    "type": "memory_trusted_statement",
+    "named": true,
+    "fields": {
+      "body": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "block",
+            "named": true
+          }
+        ]
+      },
+      "reason": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "string_literal",
+            "named": true
+          }
+        ]
+      }
+    }
+  },
+  {
+    "type": "memory_typed_releaser",
+    "named": true,
+    "fields": {
+      "method": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "identifier",
+            "named": true
+          }
+        ]
+      },
+      "owner": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "_type",
+            "named": true
+          }
+        ]
+      }
+    }
+  },
+  {
+    "type": "memory_unknown_argument",
+    "named": true,
+    "fields": {
+      "name": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "identifier",
+            "named": true
+          }
+        ]
+      }
+    },
+    "children": {
+      "multiple": false,
+      "required": true,
+      "types": [
+        {
+          "type": "memory_place",
+          "named": true
+        },
+        {
+          "type": "memory_qualified_name",
+          "named": true
+        },
+        {
+          "type": "string_literal",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
     "type": "minimal_atom",
     "named": true,
     "fields": {},
@@ -4656,7 +5030,7 @@
       }
     },
     "children": {
-      "multiple": false,
+      "multiple": true,
       "required": true,
       "types": [
         {
@@ -4689,6 +5063,10 @@
         },
         {
           "type": "library_declaration",
+          "named": true
+        },
+        {
+          "type": "memory_prefix",
           "named": true
         },
         {
@@ -4754,10 +5132,20 @@
             "named": true
           }
         ]
+      },
+      "type": {
+        "multiple": false,
+        "required": false,
+        "types": [
+          {
+            "type": "_type",
+            "named": true
+          }
+        ]
       }
     },
     "children": {
-      "multiple": false,
+      "multiple": true,
       "required": true,
       "types": [
         {
@@ -4770,6 +5158,14 @@
         },
         {
           "type": "function_declaration",
+          "named": true
+        },
+        {
+          "type": "function_pointer_type_declaration",
+          "named": true
+        },
+        {
+          "type": "memory_prefix",
           "named": true
         },
         {
@@ -6737,6 +7133,16 @@
           }
         ]
       }
+    },
+    "children": {
+      "multiple": false,
+      "required": false,
+      "types": [
+        {
+          "type": "memory_directive",
+          "named": true
+        }
+      ]
     }
   },
   {
@@ -7632,6 +8038,14 @@
             "named": true
           },
           {
+            "type": "memory_overlay",
+            "named": true
+          },
+          {
+            "type": "memory_trusted_statement",
+            "named": true
+          },
+          {
             "type": "on_drop_error_statement",
             "named": true
           },
@@ -7757,6 +8171,14 @@
           },
           {
             "type": "label_statement",
+            "named": true
+          },
+          {
+            "type": "memory_overlay",
+            "named": true
+          },
+          {
+            "type": "memory_trusted_statement",
             "named": true
           },
           {
@@ -8010,6 +8432,10 @@
       "multiple": false,
       "required": false,
       "types": [
+        {
+          "type": "align_directive",
+          "named": true
+        },
         {
           "type": "derive_directive",
           "named": true
@@ -8749,11 +9175,15 @@
       }
     },
     "children": {
-      "multiple": false,
+      "multiple": true,
       "required": true,
       "types": [
         {
           "type": "function_declaration",
+          "named": true
+        },
+        {
+          "type": "memory_prefix",
           "named": true
         }
       ]
@@ -9042,6 +9472,16 @@
           }
         ]
       }
+    },
+    "children": {
+      "multiple": true,
+      "required": false,
+      "types": [
+        {
+          "type": "memory_directive",
+          "named": true
+        }
+      ]
     }
   },
   {
@@ -9226,6 +9666,14 @@
             "named": true
           },
           {
+            "type": "memory_overlay",
+            "named": true
+          },
+          {
+            "type": "memory_trusted_statement",
+            "named": true
+          },
+          {
             "type": "on_drop_error_statement",
             "named": true
           },
@@ -9281,6 +9729,10 @@
   },
   {
     "type": "!",
+    "named": false
+  },
+  {
+    "type": "#align",
     "named": false
   },
   {
@@ -9360,6 +9812,10 @@
     "named": false
   },
   {
+    "type": "#fresh_result",
+    "named": false
+  },
+  {
     "type": "#if",
     "named": false
   },
@@ -9397,6 +9853,10 @@
   },
   {
     "type": "#meaningful",
+    "named": false
+  },
+  {
+    "type": "#memory",
     "named": false
   },
   {
@@ -9473,6 +9933,10 @@
   },
   {
     "type": "#try",
+    "named": false
+  },
+  {
+    "type": "#unchecked_transfer",
     "named": false
   },
   {
@@ -9725,6 +10189,10 @@
     "named": true
   },
   {
+    "type": "const",
+    "named": false
+  },
+  {
     "type": "context_expression",
     "named": true
   },
@@ -9946,6 +10414,10 @@
   },
   {
     "type": "true",
+    "named": false
+  },
+  {
+    "type": "trusted",
     "named": false
   },
   {

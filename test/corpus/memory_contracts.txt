@@ -1,0 +1,1122 @@
+==================
+leading contracts and visibility on functions and function pointers
+==================
+
+#enable(memory_strict);
+#memory { reads(source), noescape(source), returns_borrow(source), }
+view :: (source: []u8) -> []u8 { return source; }
+#memory {} explicit_empty :: () {}
+#public #memory { returns_fresh, released_by(by: release), }
+acquire :: () -> *u8 #foreign "c" "acquire";
+#memory { kills(p) } #private release :: (p: *u8) #magic "release";
+#public { #memory { reads(p) } Callback :: #fn_ptr(p: *u8) #c_call; }
+#memory {} inferred := () {}
+#memory {} computed ::= () {}
+#memory {} typed: : () {}
+#memory {} known: () -> void : () {}
+#memory { reads(arg), noescape(arg) }
+linker :: (arg: string) #magic "compiler_add_current_linker_arg";
+#disable(memory_strict);
+
+---
+
+(source_file
+  (feature_directive
+    (identifier))
+  (named_declaration
+    (memory_prefix
+      (memory_effect
+        (identifier)
+        (memory_place
+          (identifier)))
+      (memory_effect
+        (identifier)
+        (memory_place
+          (identifier)))
+      (memory_effect
+        (identifier)
+        (memory_place
+          (identifier))))
+    (declaration_name
+      (identifier))
+    (function_declaration
+      (parameter_list
+        (parameter
+          (binding_list
+            (identifier))
+          (array_type
+            (named_type
+              (identifier)))))
+      (arrow)
+      (array_type
+        (named_type
+          (identifier)))
+      (block
+        (return_statement
+          (identifier)))))
+  (named_declaration
+    (memory_prefix)
+    (declaration_name
+      (identifier))
+    (function_declaration
+      (parameter_list)
+      (block)))
+  (named_declaration
+    (visibility_modifier)
+    (memory_prefix
+      (memory_effect
+        (identifier))
+      (memory_effect
+        (identifier)
+        (memory_release_argument
+          (identifier)
+          (memory_qualified_name
+            (identifier)))))
+    (declaration_name
+      (identifier))
+    (function_declaration
+      (parameter_list)
+      (arrow)
+      (pointer_type
+        (named_type
+          (identifier)))
+      (foreign_directive
+        (string_literal)
+        (string_literal))))
+  (named_declaration
+    (memory_prefix
+      (memory_effect
+        (identifier)
+        (memory_place
+          (identifier))))
+    (visibility_modifier)
+    (declaration_name
+      (identifier))
+    (function_declaration
+      (parameter_list
+        (parameter
+          (binding_list
+            (identifier))
+          (pointer_type
+            (named_type
+              (identifier)))))
+      (magic_directive
+        (string_literal))))
+  (visibility_group
+    (visibility_modifier)
+    (declaration_block
+      (named_declaration
+        (memory_prefix
+          (memory_effect
+            (identifier)
+            (memory_place
+              (identifier))))
+        (declaration_name
+          (identifier))
+        (function_pointer_type_declaration
+          (fn_ptr_parameter_list
+            (fn_ptr_parameter
+              (identifier)
+              (pointer_type
+                (named_type
+                  (identifier)))))))))
+  (named_declaration
+    (memory_prefix)
+    (declaration_name
+      (identifier))
+    (function_declaration
+      (parameter_list)
+      (block)))
+  (named_declaration
+    (memory_prefix)
+    (declaration_name
+      (identifier))
+    (function_declaration
+      (parameter_list)
+      (block)))
+  (named_declaration
+    (memory_prefix)
+    (declaration_name
+      (identifier))
+    (function_declaration
+      (parameter_list)
+      (block)))
+  (named_declaration
+    (memory_prefix)
+    (declaration_name
+      (identifier))
+    (function_type
+      (arrow)
+      (named_type
+        (identifier)))
+    (function_declaration
+      (parameter_list)
+      (block)))
+  (named_declaration
+    (memory_prefix
+      (memory_effect
+        (identifier)
+        (memory_place
+          (identifier)))
+      (memory_effect
+        (identifier)
+        (memory_place
+          (identifier))))
+    (declaration_name
+      (identifier))
+    (function_declaration
+      (parameter_list
+        (parameter
+          (binding_list
+            (identifier))
+          (named_type
+            (identifier))))
+      (magic_directive
+        (string_literal))))
+  (feature_directive
+    (identifier)))
+
+==================
+leading contracts on inherent typeclass instance and nested functions
+==================
+
+Box :: struct { value: u8; }
+Box ::: #public {
+    #memory { reads(#self.value), noescape(#self) }
+    #private read :: (*#self) -> u8 { return #self.*.value; }
+    #public #memory { writes(#self) }
+    write :: (*#self) { #self.*.value = 1; }
+    #private { #memory {} empty :: (#self) {} }
+}
+Read :: typeclass(T: type) {
+    #memory { reads(value), noescape(value) }
+    read :: (value: T) -> u8;
+}
+Box ::: instance Read {
+    #memory { reads(value), noescape(value) }
+    read :: (value: Box) -> u8 { return value.value; }
+}
+outer :: () {
+    #memory { reads(p), noescape(p) }
+    inner :: (p: *u8) {}
+    #memory {} local_callback :: #fn_ptr(p: *u8);
+    #memory {} local_inferred := () {}
+    #memory trusted("reviewed") {}
+    vendor() #memory { unknown(reason: "opaque vendor call") };
+}
+
+---
+
+(source_file
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (struct_declaration
+      (struct_field
+        (identifier)
+        (named_type
+          (identifier)))))
+  (inherent_declaration
+    (type_constructor_pattern
+      (identifier))
+    (visibility_modifier)
+    (inherent_method
+      (memory_prefix
+        (memory_effect
+          (identifier)
+          (memory_place
+            (self_expression)
+            (identifier)))
+        (memory_effect
+          (identifier)
+          (memory_place
+            (self_expression))))
+      (visibility_modifier)
+      (identifier)
+      (function_declaration
+        (parameter_list
+          (receiver_parameter
+            (self_expression)))
+        (arrow)
+        (named_type
+          (identifier))
+        (block
+          (return_statement
+            (postfix_expression
+              (postfix_expression
+                (self_expression))
+              (identifier))))))
+    (inherent_method
+      (visibility_modifier)
+      (memory_prefix
+        (memory_effect
+          (identifier)
+          (memory_place
+            (self_expression))))
+      (identifier)
+      (function_declaration
+        (parameter_list
+          (receiver_parameter
+            (self_expression)))
+        (block
+          (assignment_statement
+            (postfix_expression
+              (postfix_expression
+                (self_expression))
+              (identifier))
+            (integer_literal)))))
+    (inherent_visibility_group
+      (visibility_modifier)
+      (inherent_method
+        (memory_prefix)
+        (identifier)
+        (function_declaration
+          (parameter_list
+            (receiver_parameter
+              (self_expression)))
+          (block)))))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (typeclass_declaration
+      (typeclass_parameter
+        (identifier)
+        (named_type
+          (identifier)))
+      (typeclass_method_signature
+        (memory_prefix
+          (memory_effect
+            (identifier)
+            (memory_place
+              (identifier)))
+          (memory_effect
+            (identifier)
+            (memory_place
+              (identifier))))
+        (declaration_name
+          (identifier))
+        (function_declaration
+          (parameter_list
+            (parameter
+              (binding_list
+                (identifier))
+              (named_type
+                (identifier))))
+          (arrow)
+          (named_type
+            (identifier))))))
+  (instance_declaration
+    (type_constructor_pattern
+      (identifier))
+    (identifier)
+    (instance_method
+      (memory_prefix
+        (memory_effect
+          (identifier)
+          (memory_place
+            (identifier)))
+        (memory_effect
+          (identifier)
+          (memory_place
+            (identifier))))
+      (declaration_name
+        (identifier))
+      (function_declaration
+        (parameter_list
+          (parameter
+            (binding_list
+              (identifier))
+            (named_type
+              (identifier))))
+        (arrow)
+        (named_type
+          (identifier))
+        (block
+          (return_statement
+            (postfix_expression
+              (identifier)
+              (identifier)))))))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (function_declaration
+      (parameter_list)
+      (block
+        (nested_declaration
+          (memory_prefix
+            (memory_effect
+              (identifier)
+              (memory_place
+                (identifier)))
+            (memory_effect
+              (identifier)
+              (memory_place
+                (identifier))))
+          (declaration_name
+            (identifier))
+          (function_declaration
+            (parameter_list
+              (parameter
+                (binding_list
+                  (identifier))
+                (pointer_type
+                  (named_type
+                    (identifier)))))
+            (block)))
+        (nested_declaration
+          (memory_prefix)
+          (declaration_name
+            (identifier))
+          (function_pointer_type_declaration
+            (fn_ptr_parameter_list
+              (fn_ptr_parameter
+                (identifier)
+                (pointer_type
+                  (named_type
+                    (identifier)))))))
+        (nested_declaration
+          (memory_prefix)
+          (declaration_name
+            (identifier))
+          (function_declaration
+            (parameter_list)
+            (block)))
+        (memory_trusted_statement
+          (string_literal)
+          (block))
+        (expression_statement
+          (postfix_expression
+            (postfix_expression
+              (identifier)
+              (argument_list))
+            (memory_directive
+              (memory_effect
+                (identifier)
+                (memory_unknown_argument
+                  (identifier)
+                  (string_literal))))))))))
+
+==================
+memory place lists qualified releasers and tuple projections
+==================
+
+#memory {
+    returns_fresh(returned.0, returned.1),
+    returns_static(returned.2),
+    released_by(place: returned.0, by: C.free, instance: allocator,),
+    released_by(by: release),
+    released_by(C.free), released_by(C.free, allocator),
+    released_by(returned.1, release),
+    released_by(returned.1, release, allocator),
+    reads(a, b), writes(arg(0).field.0),
+    owns(a, b, into: returned), escapes(a, b, into: returned),
+    gives(a, b, released_by: C.free),
+    returns_borrow(returned.0, arg(0).field),
+    returns_unique_borrow(arg(1)),
+    unknown, unknown(arg: arg(0), result: returned.1, reason: "opaque"),
+}
+produce :: (a: *u8, b: *u8, allocator: *void) -> (*u8, *u8, string) #foreign "c";
+main :: () {
+    values: [..]s64 #memory leak;
+    storage: *u8 #memory leak(storage);
+    result := acquire() #memory { returns_fresh, } #memory released_by(C.free);
+    #memory C.acquire { returns_fresh, released_by(C.free), };
+}
+
+---
+
+(source_file
+  (named_declaration
+    (memory_prefix
+      (memory_effect
+        (identifier)
+        (memory_place
+          (identifier)
+          (integer_literal))
+        (memory_place
+          (identifier)
+          (integer_literal)))
+      (memory_effect
+        (identifier)
+        (memory_place
+          (identifier)
+          (integer_literal)))
+      (memory_effect
+        (identifier)
+        (memory_release_argument
+          (identifier)
+          (memory_place
+            (identifier)
+            (integer_literal)))
+        (memory_release_argument
+          (identifier)
+          (memory_qualified_name
+            (identifier)
+            (identifier)))
+        (memory_release_argument
+          (identifier)
+          (memory_place
+            (identifier))))
+      (memory_effect
+        (identifier)
+        (memory_release_argument
+          (identifier)
+          (memory_qualified_name
+            (identifier))))
+      (memory_effect
+        (identifier)
+        (memory_qualified_name
+          (identifier)
+          (identifier)))
+      (memory_effect
+        (identifier)
+        (memory_qualified_name
+          (identifier)
+          (identifier))
+        (memory_place
+          (identifier)))
+      (memory_effect
+        (identifier)
+        (memory_qualified_name
+          (identifier)
+          (integer_literal))
+        (memory_place
+          (identifier)))
+      (memory_effect
+        (identifier)
+        (memory_qualified_name
+          (identifier)
+          (integer_literal))
+        (memory_place
+          (identifier))
+        (memory_place
+          (identifier)))
+      (memory_effect
+        (identifier)
+        (memory_place
+          (identifier))
+        (memory_place
+          (identifier)))
+      (memory_effect
+        (identifier)
+        (memory_place
+          (identifier)
+          (integer_literal)
+          (identifier)
+          (integer_literal)))
+      (memory_effect
+        (identifier)
+        (memory_place
+          (identifier))
+        (memory_place
+          (identifier))
+        (identifier)
+        (memory_place
+          (identifier)))
+      (memory_effect
+        (identifier)
+        (memory_place
+          (identifier))
+        (memory_place
+          (identifier))
+        (identifier)
+        (memory_place
+          (identifier)))
+      (memory_effect
+        (identifier)
+        (memory_place
+          (identifier))
+        (memory_place
+          (identifier))
+        (identifier)
+        (memory_qualified_name
+          (identifier)
+          (identifier)))
+      (memory_effect
+        (identifier)
+        (memory_place
+          (identifier)
+          (integer_literal))
+        (memory_place
+          (identifier)
+          (integer_literal)
+          (identifier)))
+      (memory_effect
+        (identifier)
+        (memory_place
+          (identifier)
+          (integer_literal)))
+      (memory_effect
+        (identifier))
+      (memory_effect
+        (identifier)
+        (memory_unknown_argument
+          (identifier)
+          (memory_place
+            (identifier)
+            (integer_literal)))
+        (memory_unknown_argument
+          (identifier)
+          (memory_qualified_name
+            (identifier)
+            (integer_literal)))
+        (memory_unknown_argument
+          (identifier)
+          (string_literal))))
+    (declaration_name
+      (identifier))
+    (function_declaration
+      (parameter_list
+        (parameter
+          (binding_list
+            (identifier))
+          (pointer_type
+            (named_type
+              (identifier))))
+        (parameter
+          (binding_list
+            (identifier))
+          (pointer_type
+            (named_type
+              (identifier))))
+        (parameter
+          (binding_list
+            (identifier))
+          (pointer_type
+            (named_type
+              (identifier)))))
+      (arrow)
+      (tuple_type
+        (type_element
+          (pointer_type
+            (named_type
+              (identifier))))
+        (type_element
+          (pointer_type
+            (named_type
+              (identifier))))
+        (type_element
+          (named_type
+            (identifier))))
+      (foreign_directive
+        (string_literal))))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (function_declaration
+      (parameter_list)
+      (block
+        (variable_declaration
+          (binding_list
+            (identifier))
+          (array_type
+            (named_type
+              (identifier)))
+          (memory_directive
+            (memory_effect
+              (identifier))))
+        (variable_declaration
+          (binding_list
+            (identifier))
+          (pointer_type
+            (named_type
+              (identifier)))
+          (memory_directive
+            (memory_effect
+              (identifier)
+              (memory_qualified_name
+                (identifier)))))
+        (variable_declaration
+          (binding_list
+            (identifier))
+          (postfix_expression
+            (postfix_expression
+              (postfix_expression
+                (identifier)
+                (argument_list))
+              (memory_directive
+                (memory_effect
+                  (identifier))))
+            (memory_directive
+              (memory_effect
+                (identifier)
+                (memory_qualified_name
+                  (identifier)
+                  (identifier))))))
+        (memory_overlay
+          (memory_qualified_name
+            (identifier)
+            (identifier))
+          (memory_effect
+            (identifier))
+          (memory_effect
+            (identifier)
+            (memory_qualified_name
+              (identifier)
+              (identifier))))))))
+
+==================
+duplicate leading memory contracts
+:error
+==================
+
+#memory {} #memory {} f :: () {}
+
+---
+
+(source_file)
+
+==================
+leading and trailing memory contracts cannot be combined
+:error
+==================
+
+#memory {} f :: () #memory {} {}
+
+---
+
+(source_file)
+
+==================
+leading contracts require a function declaration
+:error
+==================
+
+#memory {} value :: 1;
+
+---
+
+(source_file)
+
+==================
+leading contracts cannot attach to an aggregate
+:error
+==================
+
+#memory {} Record :: struct {}
+
+---
+
+(source_file)
+
+==================
+leading contracts cannot attach to a visibility group
+:error
+==================
+
+#memory {} #public { f :: () {} }
+
+---
+
+(source_file)
+
+==================
+leading contracts cannot end before the declaration
+:error
+==================
+
+#memory {}; f :: () {}
+
+---
+
+(source_file)
+
+==================
+leading contracts require a following declaration
+:error
+==================
+
+#memory {}
+
+---
+
+(source_file)
+
+==================
+local contract prefixes cannot declare visibility
+:error
+==================
+
+main :: () { #memory {} #private inner :: () {} }
+
+---
+
+(source_file)
+
+==================
+memory overlays require at least one effect
+:error
+==================
+
+#memory target {}
+
+---
+
+(source_file)
+
+==================
+memory trusted blocks require a reason
+:error
+==================
+
+main :: () { #memory trusted {} }
+
+---
+
+(source_file)
+
+==================
+removed memory resource effect
+:error
+==================
+
+f :: () #memory resource(release) {}
+
+---
+
+(source_file)
+
+==================
+memory return origins cannot use maybe
+:error
+==================
+
+f :: () #memory maybe_returns_fresh {}
+
+---
+
+(source_file)
+
+==================
+memory noescape cannot use maybe
+:error
+==================
+
+f :: (p: *u8) #memory maybe_noescape(p) {}
+
+---
+
+(source_file)
+
+==================
+memory reads require a place
+:error
+==================
+
+f :: () #memory reads() {}
+
+---
+
+(source_file)
+
+==================
+memory return place lists cannot be empty
+:error
+==================
+
+f :: () #memory returns_fresh() {}
+
+---
+
+(source_file)
+
+==================
+memory unknown arguments require labels
+:error
+==================
+
+f :: () #memory unknown(p) {}
+
+---
+
+(source_file)
+
+==================
+memory arg positions cannot be negative
+:error
+==================
+
+f :: () #memory reads(arg(-1)) {}
+
+---
+
+(source_file)
+
+==================
+fresh result and unchecked transfer modifiers
+==================
+
+#memory { returns_fresh }
+acquire :: () -> *u8 #fresh_result #foreign "c";
+move_out :: (slot: *$T) -> T #unchecked_transfer { return slot.*; }
+Box ::: { move_out :: (*#self) #unchecked_transfer {} }
+
+---
+
+(source_file
+  (named_declaration
+    (memory_prefix
+      (memory_effect
+        (identifier)))
+    (declaration_name
+      (identifier))
+    (function_declaration
+      (parameter_list)
+      (arrow)
+      (pointer_type
+        (named_type
+          (identifier)))
+      (foreign_directive
+        (string_literal))))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (function_declaration
+      (parameter_list
+        (parameter
+          (binding_list
+            (identifier))
+          (pointer_type
+            (generic_type_variable
+              (identifier)))))
+      (arrow)
+      (named_type
+        (identifier))
+      (block
+        (return_statement
+          (postfix_expression
+            (identifier))))))
+  (inherent_declaration
+    (type_constructor_pattern
+      (identifier))
+    (inherent_method
+      (identifier)
+      (function_declaration
+        (parameter_list
+          (receiver_parameter
+            (self_expression)))
+        (block)))))
+
+==================
+typeclass contracts cannot combine leading and trailing annotations
+:error
+==================
+
+Read :: typeclass(T: type) { #memory {} read :: (value: T) #memory {}; }
+
+---
+
+(source_file)
+
+==================
+instance contracts cannot combine leading and trailing annotations
+:error
+==================
+
+T ::: instance Read { #memory {} read :: () #memory {} {} }
+
+---
+
+(source_file)
+
+==================
+inherent contracts cannot combine leading and trailing annotations
+:error
+==================
+
+T ::: { #memory {} read :: (#self) #memory {} {} }
+
+---
+
+(source_file)
+
+==================
+function pointer contracts cannot combine leading and trailing annotations
+:error
+==================
+
+#memory {} Callback :: #fn_ptr() #memory {};
+
+---
+
+(source_file)
+
+==================
+tuple indices must use decimal digits
+:error
+==================
+
+main :: () { value := pair.16#ff; }
+
+---
+
+(source_file)
+
+==================
+memory annotations in unbraced bodies and code quotes
+==================
+
+main :: () {
+    if enabled consume(p) #memory { reads(arg(0)) };
+    while enabled consume(p) #memory reads(arg(0));
+    for i: 0..10 consume(p) #memory { noescape(arg(0)) };
+    if enabled #memory trusted("reviewed call") { consume(p); }
+    if enabled #memory C.consume { reads(arg(0)) };
+    quoted :: #code values: [..]u8 #memory leak;
+    trusted :: #code #memory trusted("reviewed quote") { consume(p); };
+    overlay :: #code #memory C.consume { reads(arg(0)) };
+    function :: #code #memory { reads(p) } inner :: (p: *u8) {};
+    #comptime { acquire() #memory { returns_fresh }; }
+}
+
+---
+
+(source_file
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (function_declaration
+      (parameter_list)
+      (block
+        (if_statement
+          (identifier)
+          (expression_statement
+            (if_call_start)
+            (if_call_arguments
+              (identifier))
+            (memory_directive
+              (memory_effect
+                (identifier)
+                (memory_place
+                  (identifier)
+                  (integer_literal))))))
+        (while_statement
+          (identifier)
+          (expression_statement
+            (if_call_start)
+            (if_call_arguments
+              (identifier))
+            (memory_directive
+              (memory_effect
+                (identifier)
+                (memory_place
+                  (identifier)
+                  (integer_literal))))))
+        (for_statement
+          (identifier)
+          (range_expression
+            (integer_literal)
+            (range_operator)
+            (integer_literal))
+          (expression_statement
+            (if_call_start)
+            (if_call_arguments
+              (identifier))
+            (memory_directive
+              (memory_effect
+                (identifier)
+                (memory_place
+                  (identifier)
+                  (integer_literal))))))
+        (if_statement
+          (identifier)
+          (memory_trusted_statement
+            (string_literal)
+            (block
+              (expression_statement
+                (postfix_expression
+                  (identifier)
+                  (argument_list
+                    (identifier)))))))
+        (if_statement
+          (identifier)
+          (memory_overlay
+            (memory_qualified_name
+              (identifier)
+              (identifier))
+            (memory_effect
+              (identifier)
+              (memory_place
+                (identifier)
+                (integer_literal)))))
+        (variable_declaration
+          (binding_list
+            (identifier))
+          (code_expression
+            (variable_declaration
+              (binding_list
+                (identifier))
+              (array_type
+                (named_type
+                  (identifier)))
+              (memory_directive
+                (memory_effect
+                  (identifier))))))
+        (variable_declaration
+          (binding_list
+            (identifier))
+          (code_expression
+            (memory_trusted_statement
+              (string_literal)
+              (block
+                (expression_statement
+                  (postfix_expression
+                    (identifier)
+                    (argument_list
+                      (identifier))))))))
+        (variable_declaration
+          (binding_list
+            (identifier))
+          (code_expression
+            (memory_overlay
+              (memory_qualified_name
+                (identifier)
+                (identifier))
+              (memory_effect
+                (identifier)
+                (memory_place
+                  (identifier)
+                  (integer_literal))))))
+        (variable_declaration
+          (binding_list
+            (identifier))
+          (code_expression
+            (nested_declaration
+              (memory_prefix
+                (memory_effect
+                  (identifier)
+                  (memory_place
+                    (identifier))))
+              (declaration_name
+                (identifier))
+              (function_declaration
+                (parameter_list
+                  (parameter
+                    (binding_list
+                      (identifier))
+                    (pointer_type
+                      (named_type
+                        (identifier)))))
+                (block)))))
+        (expression_statement
+          (run_expression
+            (block
+              (expression_statement
+                (postfix_expression
+                  (postfix_expression
+                    (identifier)
+                    (argument_list))
+                  (memory_directive
+                    (memory_effect
+                      (identifier))))))))))))
+
+==================
+tuple call indices must use decimal digits in unbraced bodies
+:error
+==================
+
+main :: () { if enabled get_pair().16#ff; }
+
+---
+
+(source_file)
