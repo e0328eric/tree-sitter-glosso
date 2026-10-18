@@ -230,7 +230,7 @@ Callback :: #fn_ptr(data: *void) -> ?*void #c_call
 main :: () {
   value := Runtime.acquire()
     #memory{released_by(Runtime.destroy), noescape(arg(0))};
-  #memory trusted("external allocator invariant") {
+  #memory,trusted {
     Runtime.use(value);
   }
 }
@@ -315,7 +315,6 @@ main :: () {
                   (identifier)
                   (integer_literal))))))
         (memory_trusted_statement
-          (string_literal)
           (block
             (expression_statement
               (postfix_expression

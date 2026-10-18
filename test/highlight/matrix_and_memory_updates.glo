@@ -1,0 +1,32 @@
+make :: (value: s64) -> Matrix(s64, 2, 2) {
+    return #matrix .[value, 2; 3, 4];
+//         ^ attribute
+//                   ^ variable.parameter
+//                          ^ number
+//                             ^ number
+}
+
+#memory { requires_unsafe(arg: source, result: returned.0, reason: "caller checks bounds") }
+//        ^ attribute
+//                        ^ attribute
+//                             ^ variable.parameter
+//                                     ^ attribute
+//                                             ^ variable.builtin
+//                                                         ^ attribute
+//                                                                 ^ string
+acquire :: (source: *u8) -> *u8 #foreign "c";
+
+main :: () {
+    // The caller checked the buffer bounds.
+    #memory , trusted {
+//  ^ attribute
+//            ^ attribute
+        acquire(null) #memory requires_unsafe;
+//                            ^ attribute
+    }
+    requires_unsafe := 1;
+//  ^ variable
+    trusted := requires_unsafe;
+//  ^ variable
+//             ^ variable
+}

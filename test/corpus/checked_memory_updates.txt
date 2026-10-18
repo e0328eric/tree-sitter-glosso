@@ -1,0 +1,494 @@
+==================
+checked memory predicates retain place lists and ordered pairs
+==================
+
+#memory {
+    exclusive(a, b),
+    disjoint(a, b),
+    outlives(a, b),
+    initialized(a, b),
+    initializes(b),
+    valid(a, b),
+    sendable(a, b),
+    shareable(a, b),
+    thread_safe(entry),
+    guarded_by(b, a),
+}
+check :: (a: *s64, b: *s64, entry: () -> void) {}
+
+---
+
+(source_file
+  (named_declaration
+    (memory_prefix
+      (memory_effect
+        (identifier)
+        (memory_place
+          (identifier))
+        (memory_place
+          (identifier)))
+      (memory_effect
+        (identifier)
+        (memory_place
+          (identifier))
+        (memory_place
+          (identifier)))
+      (memory_effect
+        (identifier)
+        (memory_place
+          (identifier))
+        (memory_place
+          (identifier)))
+      (memory_effect
+        (identifier)
+        (memory_place
+          (identifier))
+        (memory_place
+          (identifier)))
+      (memory_effect
+        (identifier)
+        (memory_place
+          (identifier)))
+      (memory_effect
+        (identifier)
+        (memory_place
+          (identifier))
+        (memory_place
+          (identifier)))
+      (memory_effect
+        (identifier)
+        (memory_place
+          (identifier))
+        (memory_place
+          (identifier)))
+      (memory_effect
+        (identifier)
+        (memory_place
+          (identifier))
+        (memory_place
+          (identifier)))
+      (memory_effect
+        (identifier)
+        (memory_place
+          (identifier)))
+      (memory_effect
+        (identifier)
+        (memory_place
+          (identifier))
+        (memory_place
+          (identifier))))
+    (declaration_name
+      (identifier))
+    (function_declaration
+      (parameter_list
+        (parameter
+          (binding_list
+            (identifier))
+          (pointer_type
+            (named_type
+              (identifier))))
+        (parameter
+          (binding_list
+            (identifier))
+          (pointer_type
+            (named_type
+              (identifier))))
+        (parameter
+          (binding_list
+            (identifier))
+          (function_type
+            (arrow)
+            (named_type
+              (identifier)))))
+      (block))))
+
+==================
+checked memory predicates in function pointers overlays and methods
+==================
+
+#memory { exclusive(p), initializes(p), writes(p) }
+Callback :: #fn_ptr(p: *s64);
+inspect :: (p: *s64) #memory valid(p) {}
+paired :: (a: *s64, b: *s64) #memory (disjoint(a, b), outlives(b, a)) {}
+#memory Native.copy {
+    disjoint(arg(0), arg(1)),
+    initializes(arg(0).value),
+    guarded_by(arg(0).value, arg(1).lock),
+}
+Holder ::: {
+    #memory { exclusive(#self), valid(#self.value), guarded_by(#self.value, #self.guard) }
+    inspect :: (*#self) {}
+}
+main :: () {
+    #memory Native.copy { outlives(arg(1), returned.0) }
+}
+
+---
+
+(source_file
+  (named_declaration
+    (memory_prefix
+      (memory_effect
+        (identifier)
+        (memory_place
+          (identifier)))
+      (memory_effect
+        (identifier)
+        (memory_place
+          (identifier)))
+      (memory_effect
+        (identifier)
+        (memory_place
+          (identifier))))
+    (declaration_name
+      (identifier))
+    (function_pointer_type_declaration
+      (fn_ptr_parameter_list
+        (fn_ptr_parameter
+          (identifier)
+          (pointer_type
+            (named_type
+              (identifier)))))))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (function_declaration
+      (parameter_list
+        (parameter
+          (binding_list
+            (identifier))
+          (pointer_type
+            (named_type
+              (identifier)))))
+      (memory_directive
+        (memory_effect
+          (identifier)
+          (memory_place
+            (identifier))))
+      (block)))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (function_declaration
+      (parameter_list
+        (parameter
+          (binding_list
+            (identifier))
+          (pointer_type
+            (named_type
+              (identifier))))
+        (parameter
+          (binding_list
+            (identifier))
+          (pointer_type
+            (named_type
+              (identifier)))))
+      (memory_directive
+        (memory_effect
+          (identifier)
+          (memory_place
+            (identifier))
+          (memory_place
+            (identifier)))
+        (memory_effect
+          (identifier)
+          (memory_place
+            (identifier))
+          (memory_place
+            (identifier))))
+      (block)))
+  (memory_overlay
+    (memory_qualified_name
+      (identifier)
+      (identifier))
+    (memory_effect
+      (identifier)
+      (memory_place
+        (identifier)
+        (integer_literal))
+      (memory_place
+        (identifier)
+        (integer_literal)))
+    (memory_effect
+      (identifier)
+      (memory_place
+        (identifier)
+        (integer_literal)
+        (identifier)))
+    (memory_effect
+      (identifier)
+      (memory_place
+        (identifier)
+        (integer_literal)
+        (identifier))
+      (memory_place
+        (identifier)
+        (integer_literal)
+        (identifier))))
+  (inherent_declaration
+    (type_constructor_pattern
+      (identifier))
+    (inherent_method
+      (memory_prefix
+        (memory_effect
+          (identifier)
+          (memory_place
+            (self_expression)))
+        (memory_effect
+          (identifier)
+          (memory_place
+            (self_expression)
+            (identifier)))
+        (memory_effect
+          (identifier)
+          (memory_place
+            (self_expression)
+            (identifier))
+          (memory_place
+            (self_expression)
+            (identifier))))
+      (identifier)
+      (function_declaration
+        (parameter_list
+          (receiver_parameter
+            (self_expression)))
+        (block))))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (function_declaration
+      (parameter_list)
+      (block
+        (memory_overlay
+          (memory_qualified_name
+            (identifier)
+            (identifier))
+          (memory_effect
+            (identifier)
+            (memory_place
+              (identifier)
+              (integer_literal))
+            (memory_place
+              (identifier)
+              (integer_literal))))))))
+
+==================
+short trust spelling accepts whitespace comments and nested trusted blocks
+==================
+
+main :: () {
+    #memory,trust {}
+    #memory , trust {
+        #memory,trusted {}
+        #memory, /* nested trust */ trust {}
+    }
+    #memory,
+        trust {}
+    if enabled #memory,trust { call(); }
+    quoted :: #code #memory,trust { call(); };
+    #memory trust { reads(value) }
+    trust := 1;
+    exclusive := trust;
+    thread_safe := exclusive;
+}
+
+---
+
+(source_file
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (function_declaration
+      (parameter_list)
+      (block
+        (memory_trusted_statement
+          (block))
+        (memory_trusted_statement
+          (block
+            (memory_trusted_statement
+              (block))
+            (memory_trusted_statement
+              (comment)
+              (block))))
+        (memory_trusted_statement
+          (block))
+        (if_statement
+          (identifier)
+          (memory_trusted_statement
+            (block
+              (expression_statement
+                (postfix_expression
+                  (identifier)
+                  (argument_list))))))
+        (variable_declaration
+          (binding_list
+            (identifier))
+          (code_expression
+            (memory_trusted_statement
+              (block
+                (expression_statement
+                  (postfix_expression
+                    (identifier)
+                    (argument_list)))))))
+        (memory_overlay
+          (memory_qualified_name
+            (identifier))
+          (memory_effect
+            (identifier)
+            (memory_place
+              (identifier))))
+        (variable_declaration
+          (binding_list
+            (identifier))
+          (integer_literal))
+        (variable_declaration
+          (binding_list
+            (identifier))
+          (identifier))
+        (variable_declaration
+          (binding_list
+            (identifier))
+          (identifier))))))
+
+==================
+disjoint requires two places
+:error
+==================
+
+#memory { disjoint(p) } f :: (p: *s64) {}
+
+---
+
+(source_file)
+
+==================
+outlives rejects a third place
+:error
+==================
+
+#memory { outlives(a, b, c) } f :: (a: *s64, b: *s64, c: *s64) {}
+
+---
+
+(source_file)
+
+==================
+guarded by rejects trailing commas inside a pair
+:error
+==================
+
+#memory { guarded_by(p, guard,) } f :: (p: *s64, guard: *s64) {}
+
+---
+
+(source_file)
+
+==================
+checked memory place lists cannot be empty
+:error
+==================
+
+#memory { exclusive() } f :: () {}
+
+---
+
+(source_file)
+
+==================
+checked memory effects require parentheses
+:error
+==================
+
+#memory { initialized } f :: (p: *s64) {}
+
+---
+
+(source_file)
+
+==================
+checked memory place lists reject trailing commas
+:error
+==================
+
+#memory { valid(p,) } f :: (p: *s64) {}
+
+---
+
+(source_file)
+
+==================
+checked memory effects reject named operands
+:error
+==================
+
+#memory { sendable(arg: p) } f :: (p: s64) {}
+
+---
+
+(source_file)
+
+==================
+initializes has no maybe form
+:error
+==================
+
+#memory { maybe_initializes(p) } f :: (p: *s64) {}
+
+---
+
+(source_file)
+
+==================
+paired checked memory effects have no maybe form
+:error
+==================
+
+#memory { maybe_disjoint(a, b) } f :: (a: *s64, b: *s64) {}
+
+---
+
+(source_file)
+
+==================
+short trust spelling still requires a comma
+:error
+==================
+
+main :: () { #memory trust {} }
+
+---
+
+(source_file)
+
+==================
+short trust spelling rejects reason arguments
+:error
+==================
+
+main :: () { #memory,trust("reviewed") {} }
+
+---
+
+(source_file)
+
+==================
+short trust spelling requires a statement block
+:error
+==================
+
+main :: () { #memory,trust call(); }
+
+---
+
+(source_file)
+
+==================
+short trust spelling cannot be a top level declaration
+:error
+==================
+
+#memory,trust {}
+
+---
+
+(source_file)

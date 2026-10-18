@@ -201,7 +201,7 @@ outer :: () {
     inner :: (p: *u8) {}
     #memory {} local_callback :: #fn_ptr(p: *u8);
     #memory {} local_inferred := () {}
-    #memory trusted("reviewed") {}
+    #memory,trusted {}
     vendor() #memory { unknown(reason: "opaque vendor call") };
 }
 
@@ -382,7 +382,6 @@ outer :: () {
             (parameter_list)
             (block)))
         (memory_trusted_statement
-          (string_literal)
           (block))
         (expression_statement
           (postfix_expression
@@ -755,7 +754,7 @@ memory overlays require at least one effect
 (source_file)
 
 ==================
-memory trusted blocks require a reason
+memory trusted blocks require a comma before the modifier
 :error
 ==================
 
@@ -960,10 +959,10 @@ main :: () {
     if enabled consume(p) #memory { reads(arg(0)) };
     while enabled consume(p) #memory reads(arg(0));
     for i: 0..10 consume(p) #memory { noescape(arg(0)) };
-    if enabled #memory trusted("reviewed call") { consume(p); }
+    if enabled #memory,trusted { consume(p); }
     if enabled #memory C.consume { reads(arg(0)) };
     quoted :: #code values: [..]u8 #memory leak;
-    trusted :: #code #memory trusted("reviewed quote") { consume(p); };
+    trusted :: #code #memory,trusted { consume(p); };
     overlay :: #code #memory C.consume { reads(arg(0)) };
     function :: #code #memory { reads(p) } inner :: (p: *u8) {};
     #comptime { acquire() #memory { returns_fresh }; }
@@ -1021,7 +1020,6 @@ main :: () {
         (if_statement
           (identifier)
           (memory_trusted_statement
-            (string_literal)
             (block
               (expression_statement
                 (postfix_expression
@@ -1057,7 +1055,6 @@ main :: () {
             (identifier))
           (code_expression
             (memory_trusted_statement
-              (string_literal)
               (block
                 (expression_statement
                   (postfix_expression

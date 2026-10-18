@@ -1,0 +1,47 @@
+#memory {
+    exclusive(source),
+//  ^ attribute
+//            ^ variable.parameter
+    disjoint(source, target),
+//  ^ attribute
+//           ^ variable.parameter
+//                   ^ variable.parameter
+    outlives(source, target),
+//  ^ attribute
+    initialized(source),
+//  ^ attribute
+    initializes(target),
+//  ^ attribute
+    valid(source),
+//  ^ attribute
+    sendable(source),
+//  ^ attribute
+    shareable(source),
+//  ^ attribute
+    thread_safe(entry),
+//  ^ attribute
+    guarded_by(target.value, source.guard),
+//  ^ attribute
+//             ^ variable.parameter
+//                    ^ property
+//                           ^ variable.parameter
+//                                  ^ property
+}
+check :: (source: *Box, target: *Box, entry: () -> void) {}
+
+main :: () {
+    #memory,trust {
+//  ^ attribute
+//          ^ attribute
+        #memory,trusted {}
+//              ^ attribute
+    }
+    trust := 1;
+//  ^ variable
+    exclusive := trust;
+//  ^ variable
+//               ^ variable
+    thread_safe := exclusive;
+//  ^ variable
+//                 ^ variable
+}

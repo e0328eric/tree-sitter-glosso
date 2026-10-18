@@ -1431,7 +1431,7 @@ Buffer ::: { inspect :: (*#self) #memory reads(#self) {} }
 memory trusted block
 ==================
 
-main :: () { #memory trusted("reviewed") {} }
+main :: () { #memory,trusted {} }
 
 ---
 
@@ -1443,7 +1443,6 @@ main :: () { #memory trusted("reviewed") {} }
       (parameter_list)
       (block
         (memory_trusted_statement
-          (string_literal)
           (block))))))
 
 ==================

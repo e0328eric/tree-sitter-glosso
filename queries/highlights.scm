@@ -73,6 +73,7 @@
   "#code"
   "#string"
   "#simd"
+  "#matrix"
   "#enable"
   "#disable"
   "#derive"
@@ -326,7 +327,7 @@
 (memory_release_argument name: (identifier) @attribute)
 (memory_typed_releaser method: (identifier) @function)
 (memory_unknown_argument name: (identifier) @attribute)
-(memory_trusted_statement "trusted" @attribute)
+(memory_trusted_statement ["trusted" "trust"] @attribute)
 (memory_place . (identifier) @variable.parameter)
 (memory_place field: (identifier) @property)
 ((memory_place . (identifier) @variable.builtin)

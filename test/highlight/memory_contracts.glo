@@ -39,7 +39,7 @@ Box ::: {
 main :: () {
     #memory {} Local_Callback :: #fn_ptr(p: *u8);
 //             ^ type.definition
-    #memory trusted("external invariant") {
+    #memory,trusted {
 //  ^ attribute
 //          ^ attribute
         result := acquire(null) #memory { returns_fresh };

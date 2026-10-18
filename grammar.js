@@ -945,8 +945,14 @@ module.exports = grammar({
           field("kind", alias(choice(
             "kills", "maybe_kills", "invalidates", "maybe_invalidates",
             "noescape", "reads", "maybe_reads", "writes", "maybe_writes",
+            "exclusive", "initialized", "initializes", "valid",
+            "sendable", "shareable", "thread_safe",
           ), $.identifier)),
           "(", sep1($.memory_place, ","), ")",
+        ),
+        seq(
+          field("kind", alias(choice("disjoint", "outlives", "guarded_by"), $.identifier)),
+          "(", $.memory_place, ",", $.memory_place, ")",
         ),
         seq(
           field("kind", alias(choice("owns", "maybe_owns", "escapes", "maybe_escapes"), $.identifier)),
@@ -980,7 +986,7 @@ module.exports = grammar({
           optional(seq("(", $.memory_qualified_name, ")")),
         ),
         seq(
-          field("kind", alias("unknown", $.identifier)),
+          field("kind", alias(choice("unknown", "requires_unsafe"), $.identifier)),
           optional(seq("(", sep1($.memory_unknown_argument, ","), ")")),
         ),
       )),
@@ -1028,7 +1034,7 @@ module.exports = grammar({
       ),
 
     memory_trusted_statement: ($) =>
-      seq("#memory", "trusted", "(", field("reason", $.string_literal), ")", field("body", $.block)),
+      seq("#memory", ",", choice("trusted", "trust"), field("body", $.block)),
 
     modify_directive: ($) =>
       seq(
@@ -2445,6 +2451,7 @@ module.exports = grammar({
         $.borrowed_slice_type,
         alias($._bracket_reference_type, $.reference_type),
         $.simd_literal,
+        $.matrix_literal,
         $.struct_literal,
         $.non_hygienic_identifier,
         $._identifier,
@@ -2775,6 +2782,7 @@ module.exports = grammar({
         $.borrowed_slice_type,
         alias($._bracket_reference_type, $.reference_type),
         $.simd_literal,
+        $.matrix_literal,
         $.struct_literal,
         $.quoted_operator,
         $.non_hygienic_identifier,
@@ -2986,6 +2994,16 @@ module.exports = grammar({
     array_literal: ($) => seq(".[", commaSep($._expression), "]"),
 
     simd_literal: ($) => seq("#simd", field("value", $.array_literal)),
+
+    matrix_literal: ($) =>
+      seq(
+        "#matrix",
+        ".[",
+        optional(seq(sep1($.matrix_row, ";"), optional(";"))),
+        "]",
+      ),
+
+    matrix_row: ($) => commaSep1($._expression),
 
     _operator: ($) =>
       choice($._unqualified_operator, $.quoted_operator, $.qualified_operator),

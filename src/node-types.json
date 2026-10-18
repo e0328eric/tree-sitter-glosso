@@ -158,6 +158,10 @@
         "named": true
       },
       {
+        "type": "matrix_literal",
+        "named": true
+      },
+      {
         "type": "meaningful_expression",
         "named": true
       },
@@ -1635,6 +1639,10 @@
             "named": true
           },
           {
+            "type": "matrix_literal",
+            "named": true
+          },
+          {
             "type": "meaningful_expression",
             "named": true
           },
@@ -2670,6 +2678,10 @@
           },
           {
             "type": "many_pointer_type",
+            "named": true
+          },
+          {
+            "type": "matrix_literal",
             "named": true
           },
           {
@@ -4489,6 +4501,36 @@
     }
   },
   {
+    "type": "matrix_literal",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": true,
+      "required": false,
+      "types": [
+        {
+          "type": "matrix_row",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
+    "type": "matrix_row",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": true,
+      "required": true,
+      "types": [
+        {
+          "type": "_expression",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
     "type": "matrix_type",
     "named": true,
     "fields": {
@@ -4764,16 +4806,6 @@
         "types": [
           {
             "type": "block",
-            "named": true
-          }
-        ]
-      },
-      "reason": {
-        "multiple": false,
-        "required": true,
-        "types": [
-          {
-            "type": "string_literal",
             "named": true
           }
         ]
@@ -6448,6 +6480,10 @@
             "named": true
           },
           {
+            "type": "matrix_literal",
+            "named": true
+          },
+          {
             "type": "never_type",
             "named": true
           },
@@ -6615,6 +6651,10 @@
           },
           {
             "type": "many_pointer_type",
+            "named": true
+          },
+          {
+            "type": "matrix_literal",
             "named": true
           },
           {
@@ -6794,6 +6834,10 @@
             "named": true
           },
           {
+            "type": "matrix_literal",
+            "named": true
+          },
+          {
             "type": "never_type",
             "named": true
           },
@@ -6954,6 +6998,10 @@
             "named": true
           },
           {
+            "type": "matrix_literal",
+            "named": true
+          },
+          {
             "type": "never_type",
             "named": true
           },
@@ -7081,6 +7129,10 @@
           },
           {
             "type": "lambda_expression",
+            "named": true
+          },
+          {
+            "type": "matrix_literal",
             "named": true
           },
           {
@@ -9848,6 +9900,10 @@
     "named": false
   },
   {
+    "type": "#matrix",
+    "named": false
+  },
+  {
     "type": "#meaningful",
     "named": false
   },
@@ -10410,6 +10466,10 @@
   },
   {
     "type": "true",
+    "named": false
+  },
+  {
+    "type": "trust",
     "named": false
   },
   {

@@ -1,0 +1,654 @@
+==================
+matrix literals preserve rows and accept trailing separators
+==================
+
+CONSTANT: Matrix(s64, 2, 3): #matrix .[1, 2, 3; 4, 5, 6];
+global: Matrix(s64, 2, 2) = #matrix .[1, 2,; 3, 4,;];
+make :: (first: s64) -> Matrix(s64, 2, 2) {
+    return #matrix .[first, first + 1; -first, last(first)];
+}
+main :: () {
+    row := #matrix .[1, 2, 3,];
+    column := #matrix .[1; 2; 3;];
+    empty := #matrix .[];
+    value = cast(Matrix(s64, 2, 2))#matrix .[1, 2; 3, 4];
+    value = cast #matrix .[1, 2; 3, 4];
+    first := #matrix .[1, 2; 3, 4][0];
+    nested := .[#matrix .[1; 2], #matrix .[3; 4]];
+    holder := .{.value = #matrix .[1, 2; 3, 4]};
+    consume(#matrix .[1, 2; 3, 4]);
+    quoted :: #code { #matrix .[1, 2; 3, 4] };
+}
+
+---
+
+(source_file
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (typed_constant_declaration_tail
+      (matrix_type
+        (named_type
+          (identifier))
+        (type_dimension
+          (integer_literal))
+        (type_dimension
+          (integer_literal)))
+      (matrix_literal
+        (matrix_row
+          (integer_literal)
+          (integer_literal)
+          (integer_literal))
+        (matrix_row
+          (integer_literal)
+          (integer_literal)
+          (integer_literal)))))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (global_variable_declaration_tail
+      (matrix_type
+        (named_type
+          (identifier))
+        (type_dimension
+          (integer_literal))
+        (type_dimension
+          (integer_literal)))
+      (matrix_literal
+        (matrix_row
+          (integer_literal)
+          (integer_literal))
+        (matrix_row
+          (integer_literal)
+          (integer_literal)))))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (function_declaration
+      (parameter_list
+        (parameter
+          (binding_list
+            (identifier))
+          (named_type
+            (identifier))))
+      (arrow)
+      (matrix_type
+        (named_type
+          (identifier))
+        (type_dimension
+          (integer_literal))
+        (type_dimension
+          (integer_literal)))
+      (block
+        (return_statement
+          (matrix_literal
+            (matrix_row
+              (identifier)
+              (binary_expression
+                (identifier)
+                (operator)
+                (integer_literal)))
+            (matrix_row
+              (unary_expression
+                (prefix_operator)
+                (identifier))
+              (postfix_expression
+                (identifier)
+                (argument_list
+                  (identifier)))))))))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (function_declaration
+      (parameter_list)
+      (block
+        (variable_declaration
+          (binding_list
+            (identifier))
+          (matrix_literal
+            (matrix_row
+              (integer_literal)
+              (integer_literal)
+              (integer_literal))))
+        (variable_declaration
+          (binding_list
+            (identifier))
+          (matrix_literal
+            (matrix_row
+              (integer_literal))
+            (matrix_row
+              (integer_literal))
+            (matrix_row
+              (integer_literal))))
+        (variable_declaration
+          (binding_list
+            (identifier))
+          (matrix_literal))
+        (assignment_statement
+          (identifier)
+          (cast_expression
+            (matrix_type
+              (named_type
+                (identifier))
+              (type_dimension
+                (integer_literal))
+              (type_dimension
+                (integer_literal)))
+            (matrix_literal
+              (matrix_row
+                (integer_literal)
+                (integer_literal))
+              (matrix_row
+                (integer_literal)
+                (integer_literal)))))
+        (assignment_statement
+          (identifier)
+          (cast_expression
+            (matrix_literal
+              (matrix_row
+                (integer_literal)
+                (integer_literal))
+              (matrix_row
+                (integer_literal)
+                (integer_literal)))))
+        (variable_declaration
+          (binding_list
+            (identifier))
+          (postfix_expression
+            (matrix_literal
+              (matrix_row
+                (integer_literal)
+                (integer_literal))
+              (matrix_row
+                (integer_literal)
+                (integer_literal)))
+            (index_suffix
+              (integer_literal))))
+        (variable_declaration
+          (binding_list
+            (identifier))
+          (array_literal
+            (matrix_literal
+              (matrix_row
+                (integer_literal))
+              (matrix_row
+                (integer_literal)))
+            (matrix_literal
+              (matrix_row
+                (integer_literal))
+              (matrix_row
+                (integer_literal)))))
+        (variable_declaration
+          (binding_list
+            (identifier))
+          (struct_literal
+            (struct_literal_field
+              (identifier)
+              (matrix_literal
+                (matrix_row
+                  (integer_literal)
+                  (integer_literal))
+                (matrix_row
+                  (integer_literal)
+                  (integer_literal))))))
+        (expression_statement
+          (postfix_expression
+            (identifier)
+            (argument_list
+              (matrix_literal
+                (matrix_row
+                  (integer_literal)
+                  (integer_literal))
+                (matrix_row
+                  (integer_literal)
+                  (integer_literal))))))
+        (variable_declaration
+          (binding_list
+            (identifier))
+          (code_expression
+            (code_block
+              (expression_statement
+                (matrix_literal
+                  (matrix_row
+                    (integer_literal)
+                    (integer_literal))
+                  (matrix_row
+                    (integer_literal)
+                    (integer_literal)))))))))))
+
+==================
+matrix elements accept nested expressions and suffix operators at row boundaries
+==================
+
+'%%' :: (value: s64) -> s64 #operator(suffix) { return value + value; }
+make :: (value: s64) -> Matrix(s64, 2, 2) {
+    return #matrix .[
+        value%%, value%% /* end of row */;
+        pair(1, 2).0, (value + 1)%%
+    ];
+}
+
+---
+
+(source_file
+  (named_declaration
+    (declaration_name
+      (quoted_operator))
+    (function_declaration
+      (parameter_list
+        (parameter
+          (binding_list
+            (identifier))
+          (named_type
+            (identifier))))
+      (arrow)
+      (named_type
+        (identifier))
+      (operator_directive
+        (identifier))
+      (block
+        (return_statement
+          (binary_expression
+            (identifier)
+            (operator)
+            (identifier))))))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (function_declaration
+      (parameter_list
+        (parameter
+          (binding_list
+            (identifier))
+          (named_type
+            (identifier))))
+      (arrow)
+      (matrix_type
+        (named_type
+          (identifier))
+        (type_dimension
+          (integer_literal))
+        (type_dimension
+          (integer_literal)))
+      (block
+        (return_statement
+          (matrix_literal
+            (matrix_row
+              (postfix_expression
+                (identifier)
+                (suffix_operator))
+              (postfix_expression
+                (identifier)
+                (suffix_operator)))
+            (comment)
+            (matrix_row
+              (postfix_expression
+                (postfix_expression
+                  (identifier)
+                  (argument_list
+                    (integer_literal)
+                    (integer_literal)))
+                (integer_literal))
+              (postfix_expression
+                (parenthesized_expression
+                  (binary_expression
+                    (identifier)
+                    (operator)
+                    (integer_literal)))
+                (suffix_operator)))))))))
+
+==================
+trusted memory blocks accept comments whitespace and nesting
+==================
+
+main :: () {
+    #memory,trusted {}
+    // The caller checked the buffer bounds.
+    #memory , trusted {
+        // Justification can also appear inside the block.
+        #memory, /* nested trust */ trusted {}
+    }
+    #memory,
+        trusted {}
+    #memory trusted { reads(value) }
+}
+
+---
+
+(source_file
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (function_declaration
+      (parameter_list)
+      (block
+        (memory_trusted_statement
+          (block))
+        (comment)
+        (memory_trusted_statement
+          (block
+            (comment)
+            (memory_trusted_statement
+              (comment)
+              (block))))
+        (memory_trusted_statement
+          (block))
+        (memory_overlay
+          (memory_qualified_name
+            (identifier))
+          (memory_effect
+            (identifier)
+            (memory_place
+              (identifier))))))))
+
+==================
+requires unsafe memory effects in contracts overlays and call annotations
+==================
+
+#memory {
+    reads(source),
+    requires_unsafe(arg: source, result: returned.0, reason: "caller checks bounds"),
+}
+acquire :: (source: *u8) -> *u8 #foreign "c";
+Callback :: #fn_ptr(p: *u8) #memory requires_unsafe;
+inspect :: (p: *u8) #memory { requires_unsafe(reason: "caller checks lifetime") } {}
+grouped :: () #memory (requires_unsafe) {}
+#memory Vendor.inspect { requires_unsafe }
+main :: () {
+    #memory inspect { requires_unsafe(arg: arg(0).value) }
+    Vendor.inspect(null) #memory requires_unsafe(arg: arg(0));
+    requires_unsafe := 1;
+    trusted := requires_unsafe;
+}
+
+---
+
+(source_file
+  (named_declaration
+    (memory_prefix
+      (memory_effect
+        (identifier)
+        (memory_place
+          (identifier)))
+      (memory_effect
+        (identifier)
+        (memory_unknown_argument
+          (identifier)
+          (memory_place
+            (identifier)))
+        (memory_unknown_argument
+          (identifier)
+          (memory_qualified_name
+            (identifier)
+            (integer_literal)))
+        (memory_unknown_argument
+          (identifier)
+          (string_literal))))
+    (declaration_name
+      (identifier))
+    (function_declaration
+      (parameter_list
+        (parameter
+          (binding_list
+            (identifier))
+          (pointer_type
+            (named_type
+              (identifier)))))
+      (arrow)
+      (pointer_type
+        (named_type
+          (identifier)))
+      (foreign_directive
+        (string_literal))))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (function_pointer_type_declaration
+      (fn_ptr_parameter_list
+        (fn_ptr_parameter
+          (identifier)
+          (pointer_type
+            (named_type
+              (identifier)))))
+      (memory_directive
+        (memory_effect
+          (identifier)))))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (function_declaration
+      (parameter_list
+        (parameter
+          (binding_list
+            (identifier))
+          (pointer_type
+            (named_type
+              (identifier)))))
+      (memory_directive
+        (memory_effect
+          (identifier)
+          (memory_unknown_argument
+            (identifier)
+            (string_literal))))
+      (block)))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (function_declaration
+      (parameter_list)
+      (memory_directive
+        (memory_effect
+          (identifier)))
+      (block)))
+  (memory_overlay
+    (memory_qualified_name
+      (identifier)
+      (identifier))
+    (memory_effect
+      (identifier)))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (function_declaration
+      (parameter_list)
+      (block
+        (memory_overlay
+          (memory_qualified_name
+            (identifier))
+          (memory_effect
+            (identifier)
+            (memory_unknown_argument
+              (identifier)
+              (memory_place
+                (identifier)
+                (integer_literal)
+                (identifier)))))
+        (expression_statement
+          (postfix_expression
+            (postfix_expression
+              (postfix_expression
+                (identifier)
+                (identifier))
+              (argument_list
+                (null_literal)))
+            (memory_directive
+              (memory_effect
+                (identifier)
+                (memory_unknown_argument
+                  (identifier)
+                  (memory_place
+                    (identifier)
+                    (integer_literal)))))))
+        (variable_declaration
+          (binding_list
+            (identifier))
+          (integer_literal))
+        (variable_declaration
+          (binding_list
+            (identifier))
+          (identifier))))))
+
+==================
+matrix literals require dot bracket syntax
+:error
+==================
+
+main :: () { value := #matrix [1, 2; 3, 4]; }
+
+---
+
+(source_file)
+
+==================
+matrix literals require brackets around their elements
+:error
+==================
+
+main :: () { value := #matrix 1; }
+
+---
+
+(source_file)
+
+==================
+matrix rows require at least one element
+:error
+==================
+
+main :: () { value := #matrix .[;]; }
+
+---
+
+(source_file)
+
+==================
+matrix literals reject empty rows between separators
+:error
+==================
+
+main :: () { value := #matrix .[1, 2;; 3, 4]; }
+
+---
+
+(source_file)
+
+==================
+matrix elements require commas
+:error
+==================
+
+main :: () { value := #matrix .[1 2; 3 4]; }
+
+---
+
+(source_file)
+
+==================
+ordinary arrays do not accept matrix row separators
+:error
+==================
+
+main :: () { value := .[1, 2; 3, 4]; }
+
+---
+
+(source_file)
+
+==================
+trusted memory blocks reject the old reason argument syntax
+:error
+==================
+
+main :: () { #memory trusted("reviewed") {} }
+
+---
+
+(source_file)
+
+==================
+trusted memory modifiers reject reason arguments
+:error
+==================
+
+main :: () { #memory,trusted("reviewed") {} }
+
+---
+
+(source_file)
+
+==================
+trusted memory modifiers require a statement block
+:error
+==================
+
+main :: () { #memory,trusted; }
+
+---
+
+(source_file)
+
+==================
+trusted memory modifiers reject unbraced statements
+:error
+==================
+
+main :: () { #memory,trusted call(); }
+
+---
+
+(source_file)
+
+==================
+unknown is not a memory block modifier
+:error
+==================
+
+main :: () { #memory,unknown {} }
+
+---
+
+(source_file)
+
+==================
+trusted memory blocks are not top level declarations
+:error
+==================
+
+#memory,trusted {}
+
+---
+
+(source_file)
+
+==================
+requires unsafe arguments must be named
+:error
+==================
+
+inspect :: (p: *u8) #memory requires_unsafe(p) {}
+
+---
+
+(source_file)
+
+==================
+requires unsafe parentheses must contain an argument
+:error
+==================
+
+inspect :: () #memory requires_unsafe() {}
+
+---
+
+(source_file)
+
+==================
+requires unsafe rejects unsupported argument labels
+:error
+==================
+
+inspect :: () #memory requires_unsafe(by: release) {}
+
+---
+
+(source_file)
