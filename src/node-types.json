@@ -32,10 +32,6 @@
         "named": true
       },
       {
-        "type": "load_declaration",
-        "named": true
-      },
-      {
         "type": "memory_overlay",
         "named": true
       },
@@ -2129,6 +2125,16 @@
           }
         ]
       }
+    },
+    "children": {
+      "multiple": false,
+      "required": false,
+      "types": [
+        {
+          "type": "import_selector",
+          "named": true
+        }
+      ]
     }
   },
   {
@@ -3570,6 +3576,38 @@
     }
   },
   {
+    "type": "import_class_selector",
+    "named": true,
+    "fields": {
+      "class": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "code_splice_identifier",
+            "named": true
+          },
+          {
+            "type": "identifier",
+            "named": true
+          },
+          {
+            "type": "import_member_selector",
+            "named": true
+          },
+          {
+            "type": "non_hygienic_identifier",
+            "named": true
+          },
+          {
+            "type": "quoted_operator",
+            "named": true
+          }
+        ]
+      }
+    }
+  },
+  {
     "type": "import_declaration",
     "named": true,
     "fields": {
@@ -3593,6 +3631,56 @@
           "named": true
         }
       ]
+    }
+  },
+  {
+    "type": "import_member_selector",
+    "named": true,
+    "fields": {
+      "member": {
+        "multiple": true,
+        "required": true,
+        "types": [
+          {
+            "type": "code_splice_identifier",
+            "named": true
+          },
+          {
+            "type": "identifier",
+            "named": true
+          },
+          {
+            "type": "non_hygienic_identifier",
+            "named": true
+          },
+          {
+            "type": "quoted_operator",
+            "named": true
+          }
+        ]
+      },
+      "scope": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "code_splice_identifier",
+            "named": true
+          },
+          {
+            "type": "identifier",
+            "named": true
+          },
+          {
+            "type": "non_hygienic_identifier",
+            "named": true
+          },
+          {
+            "type": "quoted_operator",
+            "named": true
+          }
+        ]
+      }
     }
   },
   {
@@ -3624,6 +3712,14 @@
         },
         {
           "type": "identifier",
+          "named": true
+        },
+        {
+          "type": "import_class_selector",
+          "named": true
+        },
+        {
+          "type": "import_member_selector",
           "named": true
         },
         {
@@ -4362,37 +4458,6 @@
     }
   },
   {
-    "type": "load_declaration",
-    "named": true,
-    "fields": {
-      "path": {
-        "multiple": false,
-        "required": true,
-        "types": [
-          {
-            "type": "string_literal",
-            "named": true
-          }
-        ]
-      }
-    },
-    "children": {
-      "multiple": false,
-      "required": false,
-      "types": [
-        {
-          "type": "load_modifier",
-          "named": true
-        }
-      ]
-    }
-  },
-  {
-    "type": "load_modifier",
-    "named": true,
-    "fields": {}
-  },
-  {
     "type": "magic_directive",
     "named": true,
     "fields": {
@@ -5107,10 +5172,6 @@
         },
         {
           "type": "qualified_import_declaration",
-          "named": true
-        },
-        {
-          "type": "qualified_load_declaration",
           "named": true
         },
         {
@@ -7258,6 +7319,16 @@
           }
         ]
       }
+    },
+    "children": {
+      "multiple": false,
+      "required": false,
+      "types": [
+        {
+          "type": "import_selector",
+          "named": true
+        }
+      ]
     }
   },
   {
@@ -7310,32 +7381,6 @@
           }
         ]
       }
-    }
-  },
-  {
-    "type": "qualified_load_declaration",
-    "named": true,
-    "fields": {
-      "path": {
-        "multiple": false,
-        "required": true,
-        "types": [
-          {
-            "type": "string_literal",
-            "named": true
-          }
-        ]
-      }
-    },
-    "children": {
-      "multiple": false,
-      "required": false,
-      "types": [
-        {
-          "type": "load_modifier",
-          "named": true
-        }
-      ]
     }
   },
   {
@@ -9615,7 +9660,18 @@
   {
     "type": "visibility_modifier",
     "named": true,
-    "fields": {}
+    "fields": {
+      "recipient": {
+        "multiple": true,
+        "required": false,
+        "types": [
+          {
+            "type": "string_literal",
+            "named": true
+          }
+        ]
+      }
+    }
   },
   {
     "type": "where_clause",
@@ -9889,10 +9945,6 @@
   },
   {
     "type": "#lifetimes",
-    "named": false
-  },
-  {
-    "type": "#load",
     "named": false
   },
   {
@@ -10273,10 +10325,6 @@
     "named": false
   },
   {
-    "type": "embed",
-    "named": false
-  },
-  {
     "type": "enum",
     "named": false
   },
@@ -10462,6 +10510,10 @@
   },
   {
     "type": "system",
+    "named": false
+  },
+  {
+    "type": "to",
     "named": false
   },
   {

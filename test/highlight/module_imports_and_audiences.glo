@@ -1,0 +1,55 @@
+#import,only (Show(..), Element.Output, Ops.'+') "Prelude";
+// <- attribute
+//      ^ attribute
+//            ^ type
+//                 ^ operator
+//                      ^ type
+//                              ^ property
+//                                      ^ type
+//                                          ^ operator
+//                                               ^ string
+
+#export,hide (BitNot(..), Add(..)) "./operators.glo";
+// <- attribute
+//      ^ attribute
+//            ^ type
+//                   ^ operator
+//                        ^ type
+//                            ^ operator
+//                                 ^ string
+
+Api :: #export,only (Show(..)) "./api.glo"
+//     ^ attribute
+//             ^ attribute
+//                   ^ type
+//                        ^ operator
+//                             ^ string
+
+#public,to("./reader.glo", "./writer.glo") {
+// <- attribute
+//      ^ attribute
+//         ^ string
+//                         ^ string
+    Record :: struct {
+//  ^ type.definition
+        #public,to("./reader.glo") value: s64;
+//      ^ attribute
+//              ^ attribute
+//                 ^ string
+//                                 ^ property
+//                                        ^ type.builtin
+    }
+}
+
+Record ::: #public,unit {
+// <- type
+//         ^ attribute
+//                 ^ attribute
+    #public,to("./reader.glo") read :: (#self) -> s64 {
+//  ^ attribute
+//          ^ attribute
+//             ^ string
+//                             ^ function
+        return #self.value;
+    }
+}

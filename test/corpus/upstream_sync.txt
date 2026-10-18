@@ -5,7 +5,7 @@ current declaration terminators and braced exceptions
 #enable(lossy_numerics)
 #disable(lossy_numerics);
 #import "Io";
-#load "other.glo";
+#import "other.glo";
 #insert generated;
 
 Alias :: int;
@@ -40,7 +40,7 @@ run :: () {}
     (identifier))
   (import_declaration
     (string_literal))
-  (load_declaration
+  (import_declaration
     (string_literal))
   (insert_declaration
     (identifier))
@@ -367,7 +367,7 @@ T ::: instance Container {
         (identifier)))))
 
 ==================
-missing import terminator
+optional named import terminator
 ==================
 
 #import "Io"
@@ -376,21 +376,19 @@ missing import terminator
 
 (source_file
   (import_declaration
-    (string_literal)
-    (MISSING ";")))
+    (string_literal)))
 
 ==================
-missing load terminator
+optional file import terminator
 ==================
 
-#load "Other.glo"
+#import "Other.glo"
 
 ---
 
 (source_file
-  (load_declaration
-    (string_literal)
-    (MISSING ";")))
+  (import_declaration
+    (string_literal)))
 
 ==================
 missing constant terminator

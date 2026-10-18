@@ -163,7 +163,6 @@ module.exports = grammar({
         $.top_run_declaration,
         $.insert_declaration,
         $.import_declaration,
-        $.load_declaration,
         $.export_declaration,
         $.thread_local_declaration,
         $.instance_declaration,
@@ -183,8 +182,20 @@ module.exports = grammar({
         optional(";"),
       ),
 
-    visibility_modifier: (_) =>
-      choice("#private", seq("#public", optional(seq("(", "unit", ")")))),
+    visibility_modifier: ($) =>
+      choice(
+        "#private",
+        seq(
+          "#public",
+          optional(seq(
+            ",",
+            choice(
+              "unit",
+              seq("to", "(", commaSep1(field("recipient", $.string_literal)), ")"),
+            ),
+          )),
+        ),
+      ),
 
     visibility_group: ($) =>
       seq(field("visibility", $.visibility_modifier), $.declaration_block),
@@ -223,7 +234,7 @@ module.exports = grammar({
         "#import",
         optional($.import_selector),
         field("module", $.string_literal),
-        ";",
+        optional(";"),
       ),
 
     import_selector: ($) =>
@@ -231,22 +242,32 @@ module.exports = grammar({
         ",",
         field("mode", choice("only", "hide")),
         "(",
-        commaSep(choice($.identifier, $.quoted_operator, $.non_hygienic_identifier, $.code_splice_identifier)),
+        commaSep(choice($._import_selector_path, $.import_class_selector)),
         ")",
       ),
 
-    load_declaration: ($) =>
+    _import_selector_name: ($) =>
+      choice($.identifier, $.quoted_operator, $.non_hygienic_identifier, $.code_splice_identifier),
+
+    _import_selector_path: ($) =>
+      choice($._import_selector_name, $.import_member_selector),
+
+    import_member_selector: ($) =>
       seq(
-        "#load",
-        optional($.load_modifier),
-        field("path", $.string_literal),
-        ";",
+        field("scope", $._import_selector_name),
+        repeat1(seq(".", field("member", $._import_selector_name))),
       ),
 
-    export_declaration: ($) =>
-      seq("#export", field("path", $.string_literal), ";"),
+    import_class_selector: ($) =>
+      seq(field("class", $._import_selector_path), "(", "..", ")"),
 
-    load_modifier: (_) => seq(",", "embed"),
+    export_declaration: ($) =>
+      seq(
+        "#export",
+        optional($.import_selector),
+        field("path", $.string_literal),
+        optional(";"),
+      ),
 
     thread_local_declaration: ($) =>
       seq(
@@ -320,7 +341,6 @@ module.exports = grammar({
     _named_definition_body: ($) =>
       choice(
         $.qualified_import_declaration,
-        $.qualified_load_declaration,
         $.qualified_export_declaration,
         $.library_declaration,
         $.function_pointer_type_declaration,
@@ -500,19 +520,16 @@ module.exports = grammar({
         "#import",
         optional($.import_selector),
         field("module", $.string_literal),
-        ";",
-      ),
-
-    qualified_load_declaration: ($) =>
-      seq(
-        "#load",
-        optional($.load_modifier),
-        field("path", $.string_literal),
-        ";",
+        optional(";"),
       ),
 
     qualified_export_declaration: ($) =>
-      seq("#export", field("path", $.string_literal), ";"),
+      seq(
+        "#export",
+        optional($.import_selector),
+        field("path", $.string_literal),
+        optional(";"),
+      ),
 
     library_declaration: ($) =>
       seq(

@@ -5,15 +5,15 @@ declaration visibility prefixes and nested groups
 #public exported: s64 = 0;
 #public #thread_local count: s64 = 0;
 #private hidden :: () {}
-#public(unit) Imported :: #import "std/math";
-#public Loaded :: #load "types.glo";
+#public,unit Imported :: #import "std/math";
+#public Types :: #import "types.glo";
 #public {
   first :: () {}
   #private {
     inner :: () {}
     #public exception :: () {}
   }
-  #public(unit) { internal :: () {} }
+  #public,unit { internal :: () {} }
   restored :: () {}
 }
 after :: () {}
@@ -55,7 +55,7 @@ after :: () {}
     (visibility_modifier)
     (declaration_name
       (identifier))
-    (qualified_load_declaration
+    (qualified_import_declaration
       (string_literal)))
   (visibility_group
     (visibility_modifier)
@@ -115,7 +115,7 @@ aggregate member visibility and conversion fields
     #public third: s64;
     #empty: $T;
   }
-  #public(unit) #as using inner: Inner;
+  #public,unit #as using inner: Inner;
   #public #empty: $U;
 }
 
@@ -125,18 +125,18 @@ Choice :: union {
     Second: s64;
     #public #from Third: u64;
   }
-  #public(unit) Fourth: string;
+  #public,unit Fourth: string;
 }
 
 Code :: enum {
   First;
   #private { Second :: 5; #public Third; }
-  #public(unit) Fourth;
+  #public,unit Fourth;
 }
 
 Flags :: enum_flags u32 {
   #public Read;
-  #private { Write; #public(unit) Execute; }
+  #private { Write; #public,unit Execute; }
 }
 
 ---
@@ -369,7 +369,7 @@ inherent visibility headers and generic constraints
 Box($T) ::: #public where true {
   exposed :: (#self, U: type, value: U) -> U where true { return value; }
   #private hidden :: (*#self) {}
-  #public(unit) {
+  #public,unit {
     internal :: (*#self) {}
     #private { nested :: () {} }
   }
@@ -503,7 +503,7 @@ option result and array inherent owners
   map_or :: (*#self, fnt: (T) -> $U, default: U) -> U { return default; }
 }
 
-$E!$T ::: #public(unit) where true {
+$E!$T ::: #public,unit where true {
   same :: (#self) -> #Self_Type { return #self; }
 }
 
@@ -809,7 +809,7 @@ unsupported visibility audience
 :error
 ==================
 
-#public(siblings) item :: () {}
+#public,siblings item :: () {}
 
 ---
 
@@ -820,7 +820,7 @@ private visibility cannot have an audience
 :error
 ==================
 
-#private(unit) item :: () {}
+#private,unit item :: () {}
 
 ---
 

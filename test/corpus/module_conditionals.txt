@@ -103,7 +103,7 @@ visibility groups and nested module conditionals
     #private { hidden_branch :: () {} }
     #if false { nested :: 1; } else { nested :: 2; }
   } else {
-    #public(unit) { alternate :: () {} }
+    #public,unit { alternate :: () {} }
   }
   after_branch :: () {}
 }
@@ -176,7 +176,7 @@ directives inside declaration groups and branches
 
 #public {
   #import "std/math";
-  #load "parts.glo";
+  #import "parts.glo";
   #export "public.glo";
   #insert generated_source;
   #comptime initialize();
@@ -186,7 +186,7 @@ directives inside declaration groups and branches
     #import,only (sqrt) "std/math";
     Math :: #import "std/math";
   } else {
-    #load,embed "fallback.glo";
+    #import "fallback.glo";
   }
 }
 
@@ -198,7 +198,7 @@ directives inside declaration groups and branches
     (declaration_block
       (import_declaration
         (string_literal))
-      (load_declaration
+      (import_declaration
         (string_literal))
       (export_declaration
         (string_literal))
@@ -225,8 +225,7 @@ directives inside declaration groups and branches
             (qualified_import_declaration
               (string_literal))))
         (declaration_block
-          (load_declaration
-            (load_modifier)
+          (import_declaration
             (string_literal)))))))
 
 ==================

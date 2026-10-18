@@ -1,13 +1,13 @@
 ==================
-module exports, embedded loads, and value type arguments
+module imports, exports, and value type arguments
 ==================
 
-#load "parts/ordinary.glo";
+#import "parts/ordinary.glo";
 #export "parts/public.glo";
-#load,embed "parts/shared.glo";
-lib :: #load "parts/ordinary.glo";
+#import "parts/shared.glo";
+lib :: #import "parts/ordinary.glo";
 api : Namespace : #export "parts/public.glo";
-legacy := #load,embed "parts/shared.glo";
+shared := #import "parts/shared.glo";
 
 Formatter :: typeclass(T: type, #comptime spec: string, W: type) {}
 (u8, "Z", $W) ::: instance Formatter where Writer(W) {}
@@ -16,17 +16,16 @@ selected :: (value: Formatter(u8, "Z", Writer)) {}
 ---
 
 (source_file
-  (load_declaration
+  (import_declaration
     (string_literal))
   (export_declaration
     (string_literal))
-  (load_declaration
-    (load_modifier)
+  (import_declaration
     (string_literal))
   (named_declaration
     (declaration_name
       (identifier))
-    (qualified_load_declaration
+    (qualified_import_declaration
       (string_literal)))
   (named_declaration
     (declaration_name
@@ -38,8 +37,7 @@ selected :: (value: Formatter(u8, "Z", Writer)) {}
   (named_declaration
     (declaration_name
       (identifier))
-    (qualified_load_declaration
-      (load_modifier)
+    (qualified_import_declaration
       (string_literal)))
   (named_declaration
     (declaration_name

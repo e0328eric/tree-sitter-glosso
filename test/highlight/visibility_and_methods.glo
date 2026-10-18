@@ -1,4 +1,4 @@
-#public(unit) {
+#public,unit {
 // <- attribute
 //      ^ attribute
 Record :: struct {

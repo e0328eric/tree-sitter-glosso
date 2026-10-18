@@ -4,7 +4,7 @@ selective imports and generated declarations
 
 #import,only (Fractional, '/') "Math/Core";
 Math :: #import,hide (Internal) "Math/Core";
-Parts :: #load "parts/math.glo";
+Parts :: #import "parts/math.glo";
 #insert generated_source;
 
 ---
@@ -25,7 +25,7 @@ Parts :: #load "parts/math.glo";
   (named_declaration
     (declaration_name
       (identifier))
-    (qualified_load_declaration
+    (qualified_import_declaration
       (string_literal)))
   (insert_declaration
     (identifier)))

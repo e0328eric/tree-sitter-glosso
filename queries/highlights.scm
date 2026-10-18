@@ -34,7 +34,6 @@
   "#comptime"
   "#lazy"
   "#import"
-  "#load"
   "#export"
   "#thread_local"
   "#library"
@@ -315,10 +314,13 @@
 (structured_asm_operand_flag) @attribute
 (structured_asm_clobber_kind) @constant.builtin
 (import_selector mode: _ @attribute)
-(load_modifier "embed" @attribute)
+(import_member_selector scope: (identifier) @type)
+(import_member_selector member: (identifier) @property)
+(import_class_selector class: (identifier) @type)
+(import_class_selector ".." @operator)
 (expand_directive mode: (identifier) @attribute)
 (insert_scope "scope" @attribute)
-(visibility_modifier "unit" @attribute)
+(visibility_modifier ["unit" "to"] @attribute)
 (operator_try_modifier "try" @attribute)
 (operator_try_modifier target: (identifier) @type)
 

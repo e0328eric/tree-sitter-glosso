@@ -1,0 +1,642 @@
+==================
+canonical module imports and exports without terminators
+==================
+
+#import "Io"
+#import "./parts/geometry.glo"
+#export "Math/Core"
+#export "../shared.glo"
+Geometry :: #import "parts/geometry.glo"
+Api : Namespace : #export "./api.glo"
+#if true {
+  #import,only () "Prelude"
+  #export,hide () "./helpers.glo"
+}
+main :: () {}
+
+---
+
+(source_file
+  (import_declaration
+    (string_literal))
+  (import_declaration
+    (string_literal))
+  (export_declaration
+    (string_literal))
+  (export_declaration
+    (string_literal))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (qualified_import_declaration
+      (string_literal)))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (named_type
+      (identifier))
+    (qualified_export_declaration
+      (string_literal)))
+  (conditional_declaration
+    (boolean_literal)
+    (declaration_block
+      (import_declaration
+        (import_selector)
+        (string_literal))
+      (export_declaration
+        (import_selector)
+        (string_literal))))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (function_declaration
+      (parameter_list)
+      (block))))
+
+==================
+class member and wildcard import selectors
+==================
+
+#import,only (Show, Show(..), Element.Output, Ops.'+', Module.Class(..), Module.Class.Output, '>>') "Prelude";
+#import,hide (BitNot(..), Add(..), Internal.Output,) "./operators.glo";
+Operators :: #import,only (Ops.'%%', Class.`member, ``Class.``Member, `Class(..)) "./operators.glo";
+
+---
+
+(source_file
+  (import_declaration
+    (import_selector
+      (identifier)
+      (import_class_selector
+        (identifier))
+      (import_member_selector
+        (identifier)
+        (identifier))
+      (import_member_selector
+        (identifier)
+        (quoted_operator))
+      (import_class_selector
+        (import_member_selector
+          (identifier)
+          (identifier)))
+      (import_member_selector
+        (identifier)
+        (identifier)
+        (identifier))
+      (quoted_operator))
+    (string_literal))
+  (import_declaration
+    (import_selector
+      (import_class_selector
+        (identifier))
+      (import_class_selector
+        (identifier))
+      (import_member_selector
+        (identifier)
+        (identifier)))
+    (string_literal))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (qualified_import_declaration
+      (import_selector
+        (import_member_selector
+          (identifier)
+          (quoted_operator))
+        (import_member_selector
+          (identifier)
+          (non_hygienic_identifier))
+        (import_member_selector
+          (code_splice_identifier)
+          (code_splice_identifier))
+        (import_class_selector
+          (non_hygienic_identifier)))
+      (string_literal))))
+
+==================
+selective named and unaliased exports
+==================
+
+#export,only (Show(..), Element.Output, '+',) "Prelude";
+#export,hide (Internal, Ops.'%%') "./internal.glo"
+Api :: #export,only (Show(..), Element.Output) "./api.glo";
+Filtered : Namespace : #export,hide (Internal(..)) "./api.glo"
+Empty := #export,only () "./instances.glo";
+
+---
+
+(source_file
+  (export_declaration
+    (import_selector
+      (import_class_selector
+        (identifier))
+      (import_member_selector
+        (identifier)
+        (identifier))
+      (quoted_operator))
+    (string_literal))
+  (export_declaration
+    (import_selector
+      (identifier)
+      (import_member_selector
+        (identifier)
+        (quoted_operator)))
+    (string_literal))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (qualified_export_declaration
+      (import_selector
+        (import_class_selector
+          (identifier))
+        (import_member_selector
+          (identifier)
+          (identifier)))
+      (string_literal)))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (named_type
+      (identifier))
+    (qualified_export_declaration
+      (import_selector
+        (import_class_selector
+          (identifier)))
+      (string_literal)))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (qualified_export_declaration
+      (import_selector)
+      (string_literal))))
+
+==================
+recipient visibility on declarations and nested groups
+==================
+
+#public,to("./parser.glo", "./checker.glo",) Node :: struct {}
+#public,to("Consumer") Tools :: #import "./tools.glo";
+#public,to("./worker.glo") #thread_local count: s64 = 0;
+#public,to("../reader.glo") {
+  read :: () {}
+  #public,unit { reset :: () {} }
+  #private { hidden :: () {} }
+  #public,to("./writer.glo") { write :: () {} }
+}
+
+---
+
+(source_file
+  (named_declaration
+    (visibility_modifier
+      (string_literal)
+      (string_literal))
+    (declaration_name
+      (identifier))
+    (struct_declaration))
+  (named_declaration
+    (visibility_modifier
+      (string_literal))
+    (declaration_name
+      (identifier))
+    (qualified_import_declaration
+      (string_literal)))
+  (thread_local_declaration
+    (visibility_modifier
+      (string_literal))
+    (named_declaration
+      (declaration_name
+        (identifier))
+      (global_variable_declaration_tail
+        (named_type
+          (identifier))
+        (integer_literal))))
+  (visibility_group
+    (visibility_modifier
+      (string_literal))
+    (declaration_block
+      (named_declaration
+        (declaration_name
+          (identifier))
+        (function_declaration
+          (parameter_list)
+          (block)))
+      (visibility_group
+        (visibility_modifier)
+        (declaration_block
+          (named_declaration
+            (declaration_name
+              (identifier))
+            (function_declaration
+              (parameter_list)
+              (block)))))
+      (visibility_group
+        (visibility_modifier)
+        (declaration_block
+          (named_declaration
+            (declaration_name
+              (identifier))
+            (function_declaration
+              (parameter_list)
+              (block)))))
+      (visibility_group
+        (visibility_modifier
+          (string_literal))
+        (declaration_block
+          (named_declaration
+            (declaration_name
+              (identifier))
+            (function_declaration
+              (parameter_list)
+              (block))))))))
+
+==================
+recipient visibility on aggregate members and groups
+==================
+
+Node :: struct {
+  #public,to("./parser.glo") flags: u32;
+  #public,to("./checker.glo") { cached: bool; }
+}
+Value :: union {
+  #public,to("./reader.glo") Item: s64;
+  #public,to("./writer.glo") { Text: string; }
+}
+Kind :: enum {
+  #public,to("./parser.glo") Item;
+  #public,to("./checker.glo") { Text; }
+}
+Flags :: enum_flags u32 {
+  #public,to("./parser.glo") Read;
+  #public,to("./checker.glo") { Write; }
+}
+
+---
+
+(source_file
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (struct_declaration
+      (struct_field
+        (visibility_modifier
+          (string_literal))
+        (identifier)
+        (named_type
+          (identifier)))
+      (struct_visibility_group
+        (visibility_modifier
+          (string_literal))
+        (struct_field
+          (identifier)
+          (named_type
+            (identifier))))))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (union_declaration
+      (union_field
+        (visibility_modifier
+          (string_literal))
+        (identifier)
+        (named_type
+          (identifier)))
+      (union_visibility_group
+        (visibility_modifier
+          (string_literal))
+        (union_field
+          (identifier)
+          (named_type
+            (identifier))))))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (enum_declaration
+      (enum_variant
+        (visibility_modifier
+          (string_literal))
+        (identifier))
+      (enum_visibility_group
+        (visibility_modifier
+          (string_literal))
+        (enum_variant
+          (identifier)))))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (enum_flags_declaration
+      (named_type
+        (identifier))
+      (enum_variant
+        (visibility_modifier
+          (string_literal))
+        (identifier))
+      (enum_visibility_group
+        (visibility_modifier
+          (string_literal))
+        (enum_variant
+          (identifier))))))
+
+==================
+recipient visibility on inherent headers methods and groups
+==================
+
+Node ::: #public,to("./parser.glo", "./checker.glo") where true {
+  make :: () -> #Self_Type { return .{}; }
+  #public,to("./reader.glo") read :: (#self) -> s64 { return 0; }
+  #public,to("./writer.glo") {
+    reset :: (*#self) {}
+  }
+  #public,unit { refresh :: (*#self) {} }
+}
+
+---
+
+(source_file
+  (inherent_declaration
+    (type_constructor_pattern
+      (identifier))
+    (visibility_modifier
+      (string_literal)
+      (string_literal))
+    (where_clause
+      (boolean_literal))
+    (inherent_method
+      (identifier)
+      (function_declaration
+        (parameter_list)
+        (arrow)
+        (self_type)
+        (block
+          (return_statement
+            (struct_literal)))))
+    (inherent_method
+      (visibility_modifier
+        (string_literal))
+      (identifier)
+      (function_declaration
+        (parameter_list
+          (receiver_parameter
+            (self_expression)))
+        (arrow)
+        (named_type
+          (identifier))
+        (block
+          (return_statement
+            (integer_literal)))))
+    (inherent_visibility_group
+      (visibility_modifier
+        (string_literal))
+      (inherent_method
+        (identifier)
+        (function_declaration
+          (parameter_list
+            (receiver_parameter
+              (self_expression)))
+          (block))))
+    (inherent_visibility_group
+      (visibility_modifier)
+      (inherent_method
+        (identifier)
+        (function_declaration
+          (parameter_list
+            (receiver_parameter
+              (self_expression)))
+          (block))))))
+
+==================
+qualified associated types after generic arguments
+==================
+
+project :: (value: Lib.Element(s64).Output) -> Lib.Element(s64).Output {
+  Output :: Lib.Element(s64).Output;
+  result: Lib.Element(s64).Output = Lib.Element(s64).Output.{ .value = 42 };
+  callback := Lib.Element(s64).convert;
+  return result;
+}
+
+---
+
+(source_file
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (function_declaration
+      (parameter_list
+        (parameter
+          (binding_list
+            (identifier))
+          (generic_type
+            (identifier)
+            (identifier)
+            (named_type
+              (identifier))
+            (identifier))))
+      (arrow)
+      (generic_type
+        (identifier)
+        (identifier)
+        (named_type
+          (identifier))
+        (identifier))
+      (block
+        (variable_declaration
+          (binding_list
+            (identifier))
+          (postfix_expression
+            (postfix_expression
+              (postfix_expression
+                (identifier)
+                (identifier))
+              (argument_list
+                (identifier)))
+            (identifier)))
+        (variable_declaration
+          (binding_list
+            (identifier))
+          (generic_type
+            (identifier)
+            (identifier)
+            (named_type
+              (identifier))
+            (identifier))
+          (postfix_expression
+            (postfix_expression
+              (postfix_expression
+                (postfix_expression
+                  (identifier)
+                  (identifier))
+                (argument_list
+                  (identifier)))
+              (identifier))
+            (struct_literal
+              (struct_literal_field
+                (identifier)
+                (integer_literal)))))
+        (variable_declaration
+          (binding_list
+            (identifier))
+          (postfix_expression
+            (postfix_expression
+              (postfix_expression
+                (identifier)
+                (identifier))
+              (argument_list
+                (identifier)))
+            (identifier)))
+        (return_statement
+          (identifier))))))
+
+==================
+removed file load directive
+:error
+==================
+
+#load "./lib.glo";
+
+---
+
+(source_file)
+
+==================
+removed embedded load directive
+:error
+==================
+
+#load,embed "./lib.glo";
+
+---
+
+(source_file)
+
+==================
+removed named load directive
+:error
+==================
+
+Lib :: #load "./lib.glo";
+
+---
+
+(source_file)
+
+==================
+removed named embedded load directive
+:error
+==================
+
+Lib : Namespace : #load,embed "./lib.glo";
+
+---
+
+(source_file)
+
+==================
+removed parenthesized visibility audience
+:error
+==================
+
+#public(unit) value :: 1;
+
+---
+
+(source_file)
+
+==================
+recipient visibility requires a nonempty list
+:error
+==================
+
+#public,to() value :: 1;
+
+---
+
+(source_file)
+
+==================
+recipient visibility requires string literals
+:error
+==================
+
+#public,to(Consumer) value :: 1;
+
+---
+
+(source_file)
+
+==================
+unit and recipient visibility audiences cannot combine
+:error
+==================
+
+#public,unit,to("./reader.glo") value :: 1;
+
+---
+
+(source_file)
+
+==================
+recipient and unit visibility audiences cannot combine
+:error
+==================
+
+#public,to("./reader.glo"),unit value :: 1;
+
+---
+
+(source_file)
+
+==================
+private visibility cannot have a recipient audience
+:error
+==================
+
+#private,to("./reader.glo") value :: 1;
+
+---
+
+(source_file)
+
+==================
+class selectors require the member wildcard
+:error
+==================
+
+#import,only (Show(s64)) "Prelude";
+
+---
+
+(source_file)
+
+==================
+class selectors reject ellipsis wildcards
+:error
+==================
+
+#export,only (Show(...)) "Prelude";
+
+---
+
+(source_file)
+
+==================
+class selectors reject inclusive range wildcards
+:error
+==================
+
+Api :: #export,hide (Show(..=)) "Prelude";
+
+---
+
+(source_file)
+
+==================
+import directives do not support embedding
+:error
+==================
+
+#import,embed "./lib.glo";
+
+---
+
+(source_file)
