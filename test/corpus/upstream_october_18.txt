@@ -1,0 +1,861 @@
+==================
+runtime switches share implicit and explicit pattern cases
+==================
+
+LIMIT :: 5;
+match_value :: (value: ?s64, limit: s64) -> s64 {
+  if value == {
+    case .Some(==LIMIT); return 1;
+    case .Some(number) if number < limit; return number;
+    case .None, .Some(0); return 0;
+  }
+  return ifx value == {
+    case .Some(==LIMIT), .Some(0) if limit > 0; 1;
+    else; 0;
+  };
+}
+
+---
+
+(source_file
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (constant_declaration_body
+      (integer_literal)))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (function_declaration
+      (parameter_list
+        (parameter
+          (binding_list
+            (identifier))
+          (optional_type
+            (named_type
+              (identifier))))
+        (parameter
+          (binding_list
+            (identifier))
+          (named_type
+            (identifier))))
+      (arrow)
+      (named_type
+        (identifier))
+      (block
+        (switch_statement
+          (identifier)
+          (operator)
+          (pattern_case_clause
+            (pattern_postfix_expression
+              (shorthand_member_pattern
+                (identifier))
+              (pattern_argument_list
+                (constant_pattern
+                  (constant_pattern_operator)
+                  (identifier))))
+            (return_statement
+              (integer_literal)))
+          (pattern_case_clause
+            (pattern_postfix_expression
+              (shorthand_member_pattern
+                (identifier))
+              (pattern_argument_list
+                (pattern_binding
+                  (identifier))))
+            (binary_expression
+              (identifier)
+              (operator)
+              (identifier))
+            (return_statement
+              (identifier)))
+          (pattern_case_clause
+            (shorthand_member_pattern
+              (identifier))
+            (pattern_postfix_expression
+              (shorthand_member_pattern
+                (identifier))
+              (pattern_argument_list
+                (integer_literal)))
+            (return_statement
+              (integer_literal))))
+        (return_statement
+          (ifx_expression
+            (identifier)
+            (operator)
+            (pattern_case_clause
+              (pattern_postfix_expression
+                (shorthand_member_pattern
+                  (identifier))
+                (pattern_argument_list
+                  (constant_pattern
+                    (constant_pattern_operator)
+                    (identifier))))
+              (pattern_postfix_expression
+                (shorthand_member_pattern
+                  (identifier))
+                (pattern_argument_list
+                  (integer_literal)))
+              (binary_expression
+                (identifier)
+                (operator)
+                (integer_literal))
+              (expression_statement
+                (integer_literal)))
+            (default_clause
+              (expression_statement
+                (integer_literal)))))))))
+
+==================
+explicit pattern switches accept comma alternatives and guards
+==================
+
+match_value :: (value: ?s64) -> s64 {
+  if #pattern value == {
+    case .None, .Some(0); return 0;
+    case .Some(number) if number > 0; return number;
+    else; return -1;
+  }
+  return ifx #pattern value == {
+    case .None, .Some(0); 0;
+    else; 1;
+  };
+}
+
+---
+
+(source_file
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (function_declaration
+      (parameter_list
+        (parameter
+          (binding_list
+            (identifier))
+          (optional_type
+            (named_type
+              (identifier)))))
+      (arrow)
+      (named_type
+        (identifier))
+      (block
+        (switch_statement
+          (identifier)
+          (operator)
+          (pattern_case_clause
+            (shorthand_member_pattern
+              (identifier))
+            (pattern_postfix_expression
+              (shorthand_member_pattern
+                (identifier))
+              (pattern_argument_list
+                (integer_literal)))
+            (return_statement
+              (integer_literal)))
+          (pattern_case_clause
+            (pattern_postfix_expression
+              (shorthand_member_pattern
+                (identifier))
+              (pattern_argument_list
+                (pattern_binding
+                  (identifier))))
+            (binary_expression
+              (identifier)
+              (operator)
+              (integer_literal))
+            (return_statement
+              (identifier)))
+          (default_clause
+            (return_statement
+              (unary_expression
+                (prefix_operator)
+                (integer_literal)))))
+        (return_statement
+          (ifx_expression
+            (identifier)
+            (operator)
+            (pattern_case_clause
+              (shorthand_member_pattern
+                (identifier))
+              (pattern_postfix_expression
+                (shorthand_member_pattern
+                  (identifier))
+                (pattern_argument_list
+                  (integer_literal)))
+              (expression_statement
+                (integer_literal)))
+            (default_clause
+              (expression_statement
+                (integer_literal)))))))))
+
+==================
+custom symbolic suffix operators stop before separators
+==================
+
+'%%' :: (value: s64) -> s64 #operator(suffix) { return value + value; }
+main :: () {
+  print("{} {}\n", 5 %%, 1);
+  print("{} {}\n", 6%%,1);
+  values := .[5 %%, 1];
+  pair := .(7%%, 2);
+  record := .{ .value = 8%%, .other = 3 };
+  commented := .[8%% /* suffix */, 1];
+  print("{} {}", 9%% // suffix
+      , 1);
+  indexed := values[0%%];
+  quoted := #code { 10%% };
+  final_value := 9%%;
+  return 10%%;
+}
+
+---
+
+(source_file
+  (named_declaration
+    (declaration_name
+      (quoted_operator))
+    (function_declaration
+      (parameter_list
+        (parameter
+          (binding_list
+            (identifier))
+          (named_type
+            (identifier))))
+      (arrow)
+      (named_type
+        (identifier))
+      (operator_directive
+        (identifier))
+      (block
+        (return_statement
+          (binary_expression
+            (identifier)
+            (operator)
+            (identifier))))))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (function_declaration
+      (parameter_list)
+      (block
+        (expression_statement
+          (postfix_expression
+            (identifier)
+            (argument_list
+              (string_literal)
+              (postfix_expression
+                (integer_literal)
+                (suffix_operator))
+              (integer_literal))))
+        (expression_statement
+          (postfix_expression
+            (identifier)
+            (argument_list
+              (string_literal)
+              (postfix_expression
+                (integer_literal)
+                (suffix_operator))
+              (integer_literal))))
+        (variable_declaration
+          (binding_list
+            (identifier))
+          (array_literal
+            (postfix_expression
+              (integer_literal)
+              (suffix_operator))
+            (integer_literal)))
+        (variable_declaration
+          (binding_list
+            (identifier))
+          (tuple_literal
+            (postfix_expression
+              (integer_literal)
+              (suffix_operator))
+            (integer_literal)))
+        (variable_declaration
+          (binding_list
+            (identifier))
+          (struct_literal
+            (struct_literal_field
+              (identifier)
+              (postfix_expression
+                (integer_literal)
+                (suffix_operator)))
+            (struct_literal_field
+              (identifier)
+              (integer_literal))))
+        (variable_declaration
+          (binding_list
+            (identifier))
+          (array_literal
+            (postfix_expression
+              (integer_literal)
+              (suffix_operator))
+            (comment)
+            (integer_literal)))
+        (expression_statement
+          (postfix_expression
+            (identifier)
+            (argument_list
+              (string_literal)
+              (postfix_expression
+                (integer_literal)
+                (suffix_operator))
+              (comment)
+              (integer_literal))))
+        (variable_declaration
+          (binding_list
+            (identifier))
+          (postfix_expression
+            (identifier)
+            (index_suffix
+              (postfix_expression
+                (integer_literal)
+                (suffix_operator)))))
+        (variable_declaration
+          (binding_list
+            (identifier))
+          (code_expression
+            (code_block
+              (expression_statement
+                (postfix_expression
+                  (integer_literal)
+                  (suffix_operator))))))
+        (variable_declaration
+          (binding_list
+            (identifier))
+          (postfix_expression
+            (integer_literal)
+            (suffix_operator)))
+        (return_statement
+          (postfix_expression
+            (integer_literal)
+            (suffix_operator)))))))
+
+==================
+binary operands retain precedence over custom suffix operators
+==================
+
+main :: () {
+  sum := first + second;
+  product := first * second;
+  difference := first - second;
+  equal := first == second;
+  custom := first %% second;
+  call(first + second, first %% second, first%%);
+}
+
+---
+
+(source_file
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (function_declaration
+      (parameter_list)
+      (block
+        (variable_declaration
+          (binding_list
+            (identifier))
+          (binary_expression
+            (identifier)
+            (operator)
+            (identifier)))
+        (variable_declaration
+          (binding_list
+            (identifier))
+          (binary_expression
+            (identifier)
+            (operator)
+            (identifier)))
+        (variable_declaration
+          (binding_list
+            (identifier))
+          (binary_expression
+            (identifier)
+            (operator)
+            (identifier)))
+        (variable_declaration
+          (binding_list
+            (identifier))
+          (binary_expression
+            (identifier)
+            (operator)
+            (identifier)))
+        (variable_declaration
+          (binding_list
+            (identifier))
+          (binary_expression
+            (identifier)
+            (operator)
+            (identifier)))
+        (expression_statement
+          (postfix_expression
+            (identifier)
+            (argument_list
+              (binary_expression
+                (identifier)
+                (operator)
+                (identifier))
+              (binary_expression
+                (identifier)
+                (operator)
+                (identifier))
+              (postfix_expression
+                (identifier)
+                (suffix_operator)))))))))
+
+==================
+comparison chains retain member access and condition boundaries
+==================
+
+main :: () {
+  if expanded && layout.tokens[i + 1].kind == .Open &&
+      layout.tokens[i + 1].mate == end - 1 && separated_group(layout.tokens, i + 1) {
+    update();
+  }
+  if x >= 0 && x < width &&
+      pixels[cast(ssize)(y*width + x)].r == 255 &&
+      check(position, radius, .{ map.x - 0.5 + cast(f32)x,
+                                map.z - 0.5 + cast(f32)y,
+                                1.0, 1.0 }) {
+    camera.position = old;
+  }
+  #if OUT.os == {
+    case .Windows; windows();
+    else; other();
+  }
+}
+
+---
+
+(source_file
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (function_declaration
+      (parameter_list)
+      (block
+        (if_statement
+          (binary_expression
+            (binary_expression
+              (binary_expression
+                (binary_expression
+                  (binary_expression
+                    (binary_expression
+                      (identifier)
+                      (operator)
+                      (postfix_expression
+                        (postfix_expression
+                          (postfix_expression
+                            (identifier)
+                            (identifier))
+                          (index_suffix
+                            (binary_expression
+                              (identifier)
+                              (operator)
+                              (integer_literal))))
+                        (identifier)))
+                    (operator)
+                    (shorthand_member_expression
+                      (identifier)))
+                  (operator)
+                  (postfix_expression
+                    (postfix_expression
+                      (postfix_expression
+                        (identifier)
+                        (identifier))
+                      (index_suffix
+                        (binary_expression
+                          (identifier)
+                          (operator)
+                          (integer_literal))))
+                    (identifier)))
+                (operator)
+                (identifier))
+              (operator)
+              (integer_literal))
+            (operator)
+            (postfix_expression
+              (identifier)
+              (argument_list
+                (postfix_expression
+                  (identifier)
+                  (identifier))
+                (binary_expression
+                  (identifier)
+                  (operator)
+                  (integer_literal)))))
+          (block
+            (expression_statement
+              (postfix_expression
+                (identifier)
+                (argument_list)))))
+        (if_statement
+          (binary_expression
+            (binary_expression
+              (binary_expression
+                (binary_expression
+                  (binary_expression
+                    (binary_expression
+                      (identifier)
+                      (operator)
+                      (integer_literal))
+                    (operator)
+                    (identifier))
+                  (operator)
+                  (identifier))
+                (operator)
+                (postfix_expression
+                  (postfix_expression
+                    (identifier)
+                    (index_suffix
+                      (cast_expression
+                        (named_type
+                          (identifier))
+                        (parenthesized_expression
+                          (binary_expression
+                            (binary_expression
+                              (identifier)
+                              (operator)
+                              (identifier))
+                            (operator)
+                            (identifier))))))
+                  (identifier)))
+              (operator)
+              (integer_literal))
+            (operator)
+            (postfix_expression
+              (identifier)
+              (argument_list
+                (identifier)
+                (identifier)
+                (struct_literal
+                  (struct_literal_field
+                    (binary_expression
+                      (binary_expression
+                        (postfix_expression
+                          (identifier)
+                          (identifier))
+                        (operator)
+                        (float_literal))
+                      (operator)
+                      (cast_expression
+                        (named_type
+                          (identifier))
+                        (identifier))))
+                  (struct_literal_field
+                    (binary_expression
+                      (binary_expression
+                        (postfix_expression
+                          (identifier)
+                          (identifier))
+                        (operator)
+                        (float_literal))
+                      (operator)
+                      (cast_expression
+                        (named_type
+                          (identifier))
+                        (identifier))))
+                  (struct_literal_field
+                    (float_literal))
+                  (struct_literal_field
+                    (float_literal))))))
+          (block
+            (assignment_statement
+              (postfix_expression
+                (identifier)
+                (identifier))
+              (identifier))))
+        (static_if_statement
+          (postfix_expression
+            (identifier)
+            (identifier))
+          (operator)
+          (case_clause
+            (shorthand_member_expression
+              (identifier))
+            (expression_statement
+              (postfix_expression
+                (identifier)
+                (argument_list))))
+          (default_clause
+            (expression_statement
+              (postfix_expression
+                (identifier)
+                (argument_list)))))))))
+
+==================
+inline case generation remains a switch with optional pattern markers
+==================
+
+generate :: () {
+  quoted :: #code {
+    if value == {
+      #inline for variant: info.variants { ``variant.make_case() }
+    }
+    if #pattern value == {
+      #inline for variant: info.variants { ``variant.make_case() }
+    }
+    result := ifx value == {
+      #inline for variant: info.variants { ``variant.make_case() }
+    };
+    explicit_result := ifx #pattern value == {
+      #inline for variant: info.variants { ``variant.make_case() }
+    };
+  };
+}
+
+---
+
+(source_file
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (function_declaration
+      (parameter_list)
+      (block
+        (variable_declaration
+          (binding_list
+            (identifier))
+          (code_expression
+            (code_block
+              (switch_statement
+                (identifier)
+                (operator)
+                (inline_statement
+                  (for_statement
+                    (identifier)
+                    (postfix_expression
+                      (identifier)
+                      (identifier))
+                    (block
+                      (expression_statement
+                        (postfix_expression
+                          (postfix_expression
+                            (code_splice_identifier)
+                            (identifier))
+                          (argument_list)))))))
+              (switch_statement
+                (identifier)
+                (operator)
+                (inline_statement
+                  (for_statement
+                    (identifier)
+                    (postfix_expression
+                      (identifier)
+                      (identifier))
+                    (block
+                      (expression_statement
+                        (postfix_expression
+                          (postfix_expression
+                            (code_splice_identifier)
+                            (identifier))
+                          (argument_list)))))))
+              (variable_declaration
+                (binding_list
+                  (identifier))
+                (ifx_expression
+                  (identifier)
+                  (operator)
+                  (inline_statement
+                    (for_statement
+                      (identifier)
+                      (postfix_expression
+                        (identifier)
+                        (identifier))
+                      (block
+                        (expression_statement
+                          (postfix_expression
+                            (postfix_expression
+                              (code_splice_identifier)
+                              (identifier))
+                            (argument_list))))))))
+              (variable_declaration
+                (binding_list
+                  (identifier))
+                (ifx_expression
+                  (identifier)
+                  (operator)
+                  (inline_statement
+                    (for_statement
+                      (identifier)
+                      (postfix_expression
+                        (identifier)
+                        (identifier))
+                      (block
+                        (expression_statement
+                          (postfix_expression
+                            (postfix_expression
+                              (code_splice_identifier)
+                              (identifier))
+                            (argument_list)))))))))))))))
+
+==================
+brace format selectors remain ordinary library interpreted strings
+==================
+
+FOLDED :: #comptime tprint("{1:c}{0:}/{1:x}", "x", cast(u8)65);
+main :: () {
+  builder.writef("{0:c}{0:c}?{0:c}", separator);
+  print("{} {c} {x} {name} {:c} {:} {{}} 100%", value);
+  literal := "{unclosed {{ text }} % \\%";
+  c_literal := c"{0:x}";
+  bytes := b"{}";
+  multiline := #string
+  \\{0:c} {{braces}}
+  \\{} 100%
+  ;
+}
+
+---
+
+(source_file
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (constant_declaration_body
+      (run_expression
+        (postfix_expression
+          (identifier)
+          (argument_list
+            (string_literal)
+            (string_literal)
+            (cast_expression
+              (named_type
+                (identifier))
+              (integer_literal)))))))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (function_declaration
+      (parameter_list)
+      (block
+        (expression_statement
+          (postfix_expression
+            (postfix_expression
+              (identifier)
+              (identifier))
+            (argument_list
+              (string_literal)
+              (identifier))))
+        (expression_statement
+          (postfix_expression
+            (identifier)
+            (argument_list
+              (string_literal)
+              (identifier))))
+        (variable_declaration
+          (binding_list
+            (identifier))
+          (string_literal))
+        (variable_declaration
+          (binding_list
+            (identifier))
+          (c_string_literal))
+        (variable_declaration
+          (binding_list
+            (identifier))
+          (byte_string_literal))
+        (variable_declaration
+          (binding_list
+            (identifier))
+          (string_block
+            (multiline_string_line)
+            (multiline_string_line)))))))
+
+==================
+pointer fields use ordinary member access with qualifiers and addresses
+==================
+
+Box :: struct { value: s64; }
+Box ::: {
+  set :: (*#self, value: s64) { #self.value = value; }
+  get :: (*const #self) -> s64 { return #self.value; }
+}
+main :: (pointer: *const volatile Box) {
+  address := &pointer.value;
+  suffix_address := pointer.value.&;
+  explicit_value := pointer.*.value;
+}
+
+---
+
+(source_file
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (struct_declaration
+      (struct_field
+        (identifier)
+        (named_type
+          (identifier)))))
+  (inherent_declaration
+    (type_constructor_pattern
+      (identifier))
+    (inherent_method
+      (identifier)
+      (function_declaration
+        (parameter_list
+          (receiver_parameter
+            (self_expression))
+          (parameter
+            (binding_list
+              (identifier))
+            (named_type
+              (identifier))))
+        (block
+          (assignment_statement
+            (postfix_expression
+              (self_expression)
+              (identifier))
+            (identifier)))))
+    (inherent_method
+      (identifier)
+      (function_declaration
+        (parameter_list
+          (receiver_parameter
+            (self_expression)))
+        (arrow)
+        (named_type
+          (identifier))
+        (block
+          (return_statement
+            (postfix_expression
+              (self_expression)
+              (identifier)))))))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (function_declaration
+      (parameter_list
+        (parameter
+          (binding_list
+            (identifier))
+          (pointer_type
+            (named_type
+              (identifier)))))
+      (block
+        (variable_declaration
+          (binding_list
+            (identifier))
+          (unary_expression
+            (prefix_operator)
+            (postfix_expression
+              (identifier)
+              (identifier))))
+        (variable_declaration
+          (binding_list
+            (identifier))
+          (postfix_expression
+            (postfix_expression
+              (identifier)
+              (identifier))))
+        (variable_declaration
+          (binding_list
+            (identifier))
+          (postfix_expression
+            (postfix_expression
+              (identifier))
+            (identifier)))))))

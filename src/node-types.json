@@ -3543,11 +3543,11 @@
       "required": false,
       "types": [
         {
-          "type": "case_clause",
+          "type": "default_clause",
           "named": true
         },
         {
-          "type": "default_clause",
+          "type": "inline_statement",
           "named": true
         },
         {
@@ -5873,7 +5873,7 @@
         ]
       },
       "value": {
-        "multiple": false,
+        "multiple": true,
         "required": true,
         "types": [
           {
@@ -8780,10 +8780,6 @@
       "multiple": true,
       "required": false,
       "types": [
-        {
-          "type": "case_clause",
-          "named": true
-        },
         {
           "type": "default_clause",
           "named": true

@@ -278,7 +278,7 @@ compare :: (value: s32) {
         (switch_statement
           (identifier)
           (operator)
-          (case_clause
+          (pattern_case_clause
             (integer_literal)
             (integer_literal)
             (integer_literal)

@@ -211,7 +211,7 @@ main :: () {
           (ifx_expression
             (integer_literal)
             (operator)
-            (case_clause
+            (pattern_case_clause
               (integer_literal)
               (expression_statement
                 (string_literal)))
@@ -225,10 +225,12 @@ main :: () {
             (identifier)
             (operator)
             (pattern_case_clause
-              (postfix_expression
-                (identifier)
-                (argument_list
-                  (identifier)))
+              (pattern_postfix_expression
+                (pattern_binding
+                  (identifier))
+                (pattern_argument_list
+                  (pattern_binding
+                    (identifier))))
               (binary_expression
                 (identifier)
                 (operator)

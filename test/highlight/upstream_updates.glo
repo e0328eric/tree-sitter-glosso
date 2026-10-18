@@ -1,0 +1,47 @@
+LIMIT :: 5;
+
+match_value :: (value: ?s64, number: s64) -> s64 {
+    if value == {
+        case .Some(==LIMIT); return number;
+//            ^ property
+//                 ^ operator
+//                                  ^ variable.parameter
+        case .Some(number) if number > 0; return number;
+//                 ^ variable
+//                         ^ keyword
+//                            ^ variable
+//                                               ^ variable
+        case .None; return number;
+//                         ^ variable.parameter
+    }
+    return ifx value == {
+        case .Some(==LIMIT), .None; 0;
+//                 ^ operator
+        else; number;
+//            ^ variable.parameter
+    };
+}
+
+'%%' :: (value: s64) -> s64 #operator(suffix) { return value + value; }
+// <- function
+
+format_value :: (value: s64, pointer: *const volatile Box) {
+    print("{} {c} {x} {1:name} {:} {{}} 100%", value%%, 1);
+//         ^ string
+//                 ^ string
+//                      ^ string
+//                                    ^ string
+//                                             ^ variable.parameter
+//                                                  ^ operator
+    values := .[value%% /* suffix */, 1];
+//                   ^ operator
+//                         ^ comment
+    builder.writef("{0:c}{0:c}?{0:c}", value);
+//          ^ function.method.call
+//                   ^ string
+//                                     ^ variable.parameter
+    address := pointer.value.&;
+//             ^ variable.parameter
+//                     ^ property
+//                          ^ operator
+}

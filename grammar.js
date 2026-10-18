@@ -22,6 +22,8 @@ module.exports = grammar({
 
   word: ($) => $.identifier,
 
+  externals: ($) => [$._symbolic_suffix_operator],
+
   extras: ($) => [/\s/, $.comment],
 
   conflicts: ($) => [
@@ -1387,7 +1389,8 @@ module.exports = grammar({
           field("subject", $._expression),
           field("operator", $._unqualified_operator),
           "{",
-          repeat(choice($.case_clause, $.default_clause, $.inline_statement)),
+          // Runtime switches use patterns with or without #pattern.
+          repeat(choice($.pattern_case_clause, $.default_clause, $.inline_statement)),
           "}",
         ),
         prec.dynamic(1, seq(
@@ -1397,14 +1400,14 @@ module.exports = grammar({
           choice(
             seq(
               "{",
-              repeat(choice($.pattern_case_clause, $.default_clause)),
+              repeat(choice($.pattern_case_clause, $.default_clause, $.inline_statement)),
               "}",
             ),
             seq(
               optional(field("subject", $._expression)),
               field("operator", $._unqualified_operator),
               "{",
-              repeat(choice($.pattern_case_clause, $.default_clause)),
+              repeat(choice($.pattern_case_clause, $.default_clause, $.inline_statement)),
               "}",
             ),
           ),
@@ -1429,7 +1432,11 @@ module.exports = grammar({
         10,
         seq(
           "case",
-          field("value", choice($.pattern_arm_block, $._pattern, $._expression)),
+          commaSep1(field("value", choice(
+            $.pattern_arm_block,
+            prec.dynamic(1, $._pattern),
+            $._expression,
+          ))),
           optional(seq("if", field("guard", $._expression))),
           ";",
           repeat($._statement),
@@ -2291,21 +2298,21 @@ module.exports = grammar({
     ifx_expression: ($) =>
       prec.right(
         choice(
-          seq(
+          prec.dynamic(1, seq(
             "ifx",
             "#pattern",
             optional(field("subject", $._expression)),
             field("operator", $._unqualified_operator),
             "{",
-            repeat(choice($.pattern_case_clause, $.default_clause)),
+            repeat(choice($.pattern_case_clause, $.default_clause, $.inline_statement)),
             "}",
-          ),
+          )),
           seq(
             "ifx",
             field("subject", $._expression),
             field("operator", $._unqualified_operator),
             "{",
-            repeat(choice($.case_clause, $.default_clause)),
+            repeat(choice($.pattern_case_clause, $.default_clause, $.inline_statement)),
             "}",
           ),
           seq(
@@ -2686,6 +2693,12 @@ module.exports = grammar({
             field("argument", $._postfix_expression_base),
             field("operator", $.suffix_operator),
           ),
+          // Fixity is declared in source. Treat an operator at a delimiter as a
+          // suffix only when a binary expression or switch cannot consume it.
+          prec.dynamic(-1, seq(
+            field("argument", $._postfix_expression_base),
+            field("operator", alias($._symbolic_suffix_operator, $.suffix_operator)),
+          )),
           seq(
             field("argument", $._postfix_expression_base),
             field("operator", $.try_operator),

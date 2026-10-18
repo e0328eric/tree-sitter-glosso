@@ -35,7 +35,7 @@ matrix SIMD and constrained variadics
 ==================
 
 show_all :: (values: ...(Show && PartialEq)) {
-  print("%\n", values...);
+  print("{}\n", values...);
 }
 
 main :: () {

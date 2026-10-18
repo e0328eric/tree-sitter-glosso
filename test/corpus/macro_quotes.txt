@@ -12,8 +12,8 @@ code :: #code print("x");
 
 main :: () {
     repeat_three_times(#code total += 14);
-    insert_in_caller(#code print("%\n", message));
-    print("scoped=%\n", scoped_less(#code (a < b)));
+    insert_in_caller(#code print("{}\n", message));
+    print("scoped={}\n", scoped_less(#code (a < b)));
     value := (#insert,scope() comparison);
     named := (#insert,scope(environment) comparison);
     #insert -> string {

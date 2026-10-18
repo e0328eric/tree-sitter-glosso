@@ -848,7 +848,7 @@ main :: () {
   case #char " "; print("space");
   }
 
-  if #pattern Foo.{ .z = Bar.Pax(val), ... } = f { print("%\n", val); }
+  if #pattern Foo.{ .z = Bar.Pax(val), ... } = f { print("{}\n", val); }
   if #pattern Foo.{ .z = .None, ... } = g && f.x < 0 { print("none"); }
 
   while #pattern {
@@ -859,7 +859,7 @@ main :: () {
   }
 
   if #pattern f == {
-  case Foo.{ .z = .Pax(other), ... }; print("%\n", other);
+  case Foo.{ .z = .Pax(other), ... }; print("{}\n", other);
   else;
   }
 
@@ -932,7 +932,7 @@ main :: () {
           (partial_directive)
           (identifier)
           (operator)
-          (case_clause
+          (pattern_case_clause
             (char_literal)
             (expression_statement
               (postfix_expression

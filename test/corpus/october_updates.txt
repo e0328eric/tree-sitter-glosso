@@ -856,20 +856,21 @@ entry :: () {
         (switch_statement
           (identifier)
           (operator)
-          (case_clause
-            (postfix_expression
-              (shorthand_member_expression
+          (pattern_case_clause
+            (pattern_postfix_expression
+              (shorthand_member_pattern
                 (identifier))
-              (argument_list
+              (pattern_argument_list
                 (tuple_literal)))
             (return_statement
               (integer_literal)))
-          (case_clause
-            (postfix_expression
-              (shorthand_member_expression
+          (pattern_case_clause
+            (pattern_postfix_expression
+              (shorthand_member_pattern
                 (identifier))
-              (argument_list
-                (identifier)))
+              (pattern_argument_list
+                (pattern_binding
+                  (identifier))))
             (return_statement
               (identifier)))))))
   (named_declaration
@@ -889,7 +890,7 @@ entry :: () {
         (switch_statement
           (identifier)
           (operator)
-          (case_clause
+          (pattern_case_clause
             (tuple_literal)
             (return_statement
               (integer_literal)))))))
