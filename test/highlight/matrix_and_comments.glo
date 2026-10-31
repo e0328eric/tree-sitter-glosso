@@ -1,0 +1,43 @@
+make :: (value: s64) -> Matrix(s64, 2, 2) {
+    return #matrix .[value, 2; 3, 4];
+//         ^ attribute
+//                   ^ variable.parameter
+//                          ^ number
+//                             ^ number
+}
+
+/* An outer comment
+   /* holds a nested one */
+   and is still a comment here. */
+// ^ comment
+
+main :: () {
+    total := 1 /* inline */ + /* /* nested */ */ 2;
+//  ^ variable
+//             ^ comment
+//                          ^ operator
+//                            ^ comment
+//                                       ^ comment
+//                                               ^ number
+    print("{}\n", total); // trailing /* not a block
+//                        ^ comment
+    value := total.* /* comment */;
+//                 ^ operator
+}
+
+Holder :: struct {
+// <- type.definition
+    items: []struct { v: s64; };
+//  ^ property
+//           ^ keyword
+//                    ^ property
+//                       ^ type.builtin
+    choice: ?union { a: s64; b: f64; };
+//  ^ property
+//           ^ keyword
+//                   ^ property
+    kind: enum u8 { A; B; };
+//        ^ keyword
+//             ^ type.builtin
+//                  ^ constant
+}

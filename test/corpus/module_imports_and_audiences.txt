@@ -9,8 +9,8 @@ canonical module imports and exports without terminators
 Geometry :: #import "parts/geometry.glo"
 Api : Namespace : #export "./api.glo"
 #if true {
-  #import,only () "Prelude"
-  #export,hide () "./helpers.glo"
+  #import "Prelude" ()
+  #export "./helpers.glo" (helper)
 }
 main :: () {}
 
@@ -41,11 +41,12 @@ main :: () {}
     (boolean_literal)
     (declaration_block
       (import_declaration
-        (import_selector)
-        (string_literal))
+        (string_literal)
+        (import_list))
       (export_declaration
-        (import_selector)
-        (string_literal))))
+        (string_literal)
+        (import_list
+          (identifier)))))
   (named_declaration
     (declaration_name
       (identifier))
@@ -54,121 +55,116 @@ main :: () {}
       (block))))
 
 ==================
-class member and wildcard import selectors
+import lists with classes members and operators
 ==================
 
-#import,only (Show, Show(..), Element.Output, Ops.'+', Module.Class(..), Module.Class.Output, '>>') "Prelude";
-#import,hide (BitNot(..), Add(..), Internal.Output,) "./operators.glo";
-Operators :: #import,only (Ops.'%%', Class.`member, ``Class.``Member, `Class(..)) "./operators.glo";
+#import "Prelude" (Show, Element.Output, Ops.'+', Module.Class, Module.Class.Output, '>>');
+#import "./operators.glo" (BitNot, Add, Internal.Output,);
+#import "./instances.glo" ();
+Operators :: #import "./operators.glo" (Ops.'%%', Class.`member, ``Class.``Member, `Class);
 
 ---
 
 (source_file
   (import_declaration
-    (import_selector
+    (string_literal)
+    (import_list
       (identifier)
-      (import_class_selector
-        (identifier))
-      (import_member_selector
+      (import_member
         (identifier)
         (identifier))
-      (import_member_selector
+      (import_member
         (identifier)
         (quoted_operator))
-      (import_class_selector
-        (import_member_selector
-          (identifier)
-          (identifier)))
-      (import_member_selector
+      (import_member
+        (identifier)
+        (identifier))
+      (import_member
         (identifier)
         (identifier)
         (identifier))
-      (quoted_operator))
-    (string_literal))
+      (quoted_operator)))
   (import_declaration
-    (import_selector
-      (import_class_selector
-        (identifier))
-      (import_class_selector
-        (identifier))
-      (import_member_selector
+    (string_literal)
+    (import_list
+      (identifier)
+      (identifier)
+      (import_member
         (identifier)
-        (identifier)))
-    (string_literal))
+        (identifier))))
+  (import_declaration
+    (string_literal)
+    (import_list))
   (named_declaration
     (declaration_name
       (identifier))
     (qualified_import_declaration
-      (import_selector
-        (import_member_selector
+      (string_literal)
+      (import_list
+        (import_member
           (identifier)
           (quoted_operator))
-        (import_member_selector
+        (import_member
           (identifier)
           (non_hygienic_identifier))
-        (import_member_selector
+        (import_member
           (code_splice_identifier)
           (code_splice_identifier))
-        (import_class_selector
-          (non_hygienic_identifier)))
-      (string_literal))))
+        (non_hygienic_identifier)))))
 
 ==================
-selective named and unaliased exports
+export lists on named and unaliased exports
 ==================
 
-#export,only (Show(..), Element.Output, '+',) "Prelude";
-#export,hide (Internal, Ops.'%%') "./internal.glo"
-Api :: #export,only (Show(..), Element.Output) "./api.glo";
-Filtered : Namespace : #export,hide (Internal(..)) "./api.glo"
-Empty := #export,only () "./instances.glo";
+#export "Prelude" (Show, Element.Output, '+',);
+#export "./internal.glo" (Internal, Ops.'%%')
+Api :: #export "./api.glo" (Show, Element.Output);
+Filtered : Namespace : #export "./api.glo" (Internal)
+Empty := #export "./instances.glo" ();
 
 ---
 
 (source_file
   (export_declaration
-    (import_selector
-      (import_class_selector
-        (identifier))
-      (import_member_selector
-        (identifier)
-        (identifier))
-      (quoted_operator))
-    (string_literal))
-  (export_declaration
-    (import_selector
+    (string_literal)
+    (import_list
       (identifier)
-      (import_member_selector
+      (import_member
         (identifier)
-        (quoted_operator)))
-    (string_literal))
+        (identifier))
+      (quoted_operator)))
+  (export_declaration
+    (string_literal)
+    (import_list
+      (identifier)
+      (import_member
+        (identifier)
+        (quoted_operator))))
   (named_declaration
     (declaration_name
       (identifier))
     (qualified_export_declaration
-      (import_selector
-        (import_class_selector
-          (identifier))
-        (import_member_selector
+      (string_literal)
+      (import_list
+        (identifier)
+        (import_member
           (identifier)
-          (identifier)))
-      (string_literal)))
+          (identifier)))))
   (named_declaration
     (declaration_name
       (identifier))
     (named_type
       (identifier))
     (qualified_export_declaration
-      (import_selector
-        (import_class_selector
-          (identifier)))
-      (string_literal)))
+      (string_literal)
+      (import_list
+        (identifier))))
   (named_declaration
     (declaration_name
       (identifier))
     (qualified_export_declaration
-      (import_selector)
-      (string_literal))))
+      (string_literal)
+      (import_list))))
 
 ==================
 recipient visibility on declarations and nested groups

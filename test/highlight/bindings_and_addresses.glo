@@ -1,0 +1,94 @@
+View :: struct {
+// <- type.definition
+    values: []u8;
+//            ^ type.builtin
+}
+
+identity :: (value: *const u8, mut: u8, a: u8) -> *u8 {
+//           ^ variable.parameter
+//                   ^ keyword
+//                             ^ variable.parameter
+//                                      ^ variable.parameter
+    local := value;
+//  ^ variable
+//           ^ variable.parameter
+    return local;
+//         ^ variable
+}
+
+View ::: {
+    read :: (*const #self) -> []u8 {
+//            ^ keyword
+//                  ^ variable.builtin
+        return #self.values;
+//             ^ variable.builtin
+    }
+    change :: (*#self) {
+//              ^ variable.builtin
+    }
+}
+
+addresses :: (value: u8) {
+    shared := &value;
+//            ^ operator
+//             ^ variable.parameter
+    suffix := value.&;
+//                 ^ operator
+    loaded := shared.*;
+//                  ^ operator
+    raw := 1;
+//  ^ variable
+    mut := raw;
+//  ^ variable
+//         ^ variable
+    raw_mut := &mut;
+//              ^ variable
+}
+
+bindings :: (item: u8, index: u8) {
+    item, index: u8;
+//  ^ variable
+//        ^ variable
+    item;
+//  ^ variable
+    index;
+//  ^ variable
+    for *item, index: values {
+//      ^ operator
+//       ^ variable
+//             ^ variable
+        item;
+//      ^ variable
+        index;
+//      ^ variable
+    }
+    for mut: values {
+//      ^ variable
+        mut;
+//      ^ variable
+    }
+    callback := |value: u8, mut| value;
+//               ^ variable.parameter
+//                          ^ variable.parameter
+//                               ^ variable.parameter
+}
+
+quoted_pattern :: (value: u8) {
+    quoted := #pattern .Some(value);
+//                           ^ variable
+    value;
+//  ^ variable.parameter
+}
+
+quoted_code :: (value: u8) {
+    single :: #code value := 0;
+//                  ^ variable
+    value;
+//  ^ variable.parameter
+    block_quote :: #code {
+        value := 0;
+//      ^ variable
+    };
+    value;
+//  ^ variable.parameter
+}

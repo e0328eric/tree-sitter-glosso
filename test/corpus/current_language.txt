@@ -1,0 +1,415 @@
+==================
+nested block comments
+==================
+
+/* outer /* nested */ still a comment */
+value :: 1 /* a /* b */ c */ + 2;
+// line comment /* not a block
+suffix := value++ /* before the terminator */;
+
+---
+
+(source_file
+  (comment)
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (constant_declaration_body
+      (binary_expression
+        (integer_literal)
+        (comment)
+        (operator)
+        (integer_literal))))
+  (comment)
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (global_variable_declaration_tail
+      (postfix_expression
+        (identifier)
+        (suffix_operator))
+      (comment))))
+
+==================
+inline aggregate types inside field types
+==================
+
+Shape :: struct {
+    items: []struct { v: s64; };
+    maybe: ?union { a: s64; b: f64; };
+    kind: enum u8 { Small; Large; };
+    pair: [2]struct #packed { x: u8; y: u8; };
+}
+
+---
+
+(source_file
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (struct_declaration
+      (struct_field
+        (identifier)
+        (array_type
+          (struct_declaration
+            (struct_field
+              (identifier)
+              (named_type
+                (identifier))))))
+      (struct_field
+        (identifier)
+        (optional_type
+          (union_declaration
+            (union_field
+              (identifier)
+              (named_type
+                (identifier)))
+            (union_field
+              (identifier)
+              (named_type
+                (identifier))))))
+      (struct_field
+        (identifier)
+        (enum_declaration
+          (named_type
+            (identifier))
+          (enum_variant
+            (identifier))
+          (enum_variant
+            (identifier))))
+      (struct_field
+        (identifier)
+        (array_type
+          (integer_literal)
+          (struct_declaration
+            (struct_modifier)
+            (struct_field
+              (identifier)
+              (named_type
+                (identifier)))
+            (struct_field
+              (identifier)
+              (named_type
+                (identifier)))))))))
+
+==================
+true and false as declared names
+==================
+
+true := 1;
+main :: () {
+    false := 2;
+    print("{} {}\n", true, false);
+}
+
+---
+
+(source_file
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (global_variable_declaration_tail
+      (integer_literal)))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (function_declaration
+      (parameter_list)
+      (block
+        (variable_declaration
+          (binding_list
+            (identifier))
+          (integer_literal))
+        (expression_statement
+          (postfix_expression
+            (identifier)
+            (argument_list
+              (string_literal)
+              (boolean_literal)
+              (boolean_literal))))))))
+
+==================
+nested type declarations and temporary scopes
+==================
+
+main :: () {
+    Local_Flags :: enum_flags u8 { X; }
+    Callback :: #fn_ptr(x: s64) -> s64;
+    Local_Class :: typeclass (T: type) {}
+    #temp_scope {
+        s: Shape;
+    }
+}
+
+---
+
+(source_file
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (function_declaration
+      (parameter_list)
+      (block
+        (nested_declaration
+          (declaration_name
+            (identifier))
+          (enum_flags_declaration
+            (named_type
+              (identifier))
+            (enum_variant
+              (identifier))))
+        (nested_declaration
+          (declaration_name
+            (identifier))
+          (function_pointer_type_declaration
+            (fn_ptr_parameter_list
+              (fn_ptr_parameter
+                (identifier)
+                (named_type
+                  (identifier))))
+            (arrow)
+            (named_type
+              (identifier))))
+        (nested_declaration
+          (declaration_name
+            (identifier))
+          (typeclass_declaration
+            (typeclass_parameter
+              (identifier)
+              (named_type
+                (identifier)))))
+        (temp_scope_statement
+          (block
+            (variable_declaration
+              (binding_list
+                (identifier))
+              (named_type
+                (identifier)))))))))
+
+==================
+typeclass magic directives
+==================
+
+Send :: typeclass (T: type) #magic "send" {}
+
+---
+
+(source_file
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (typeclass_declaration
+      (typeclass_parameter
+        (identifier)
+        (named_type
+          (identifier)))
+      (magic_directive
+        (string_literal)))))
+
+==================
+operators containing equals and operator member calls
+==================
+
+main :: () {
+    print("{}\n", false ==> true ==> false);
+    print("{}\n", Implies.'==>'(true, false));
+    ordered := left <=> right;
+    unequal := left != -1;
+    named := value==.Red;
+}
+
+---
+
+(source_file
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (function_declaration
+      (parameter_list)
+      (block
+        (expression_statement
+          (postfix_expression
+            (identifier)
+            (argument_list
+              (string_literal)
+              (binary_expression
+                (binary_expression
+                  (boolean_literal)
+                  (operator)
+                  (boolean_literal))
+                (operator)
+                (boolean_literal)))))
+        (expression_statement
+          (postfix_expression
+            (identifier)
+            (argument_list
+              (string_literal)
+              (postfix_expression
+                (postfix_expression
+                  (identifier)
+                  (quoted_operator))
+                (argument_list
+                  (boolean_literal)
+                  (boolean_literal))))))
+        (variable_declaration
+          (binding_list
+            (identifier))
+          (binary_expression
+            (identifier)
+            (operator)
+            (identifier)))
+        (variable_declaration
+          (binding_list
+            (identifier))
+          (binary_expression
+            (identifier)
+            (operator)
+            (unary_expression
+              (prefix_operator)
+              (integer_literal))))
+        (variable_declaration
+          (binding_list
+            (identifier))
+          (binary_expression
+            (identifier)
+            (operator)
+            (shorthand_member_expression
+              (identifier))))))))
+
+==================
+unbraced loop bodies assigning through call chains
+==================
+
+main :: () {
+    for i: 0..4 b.items().*[i] = i;
+    for i: 0..4 b.items().*[i] += 1;
+    while ready() state.next().value = 0;
+}
+
+---
+
+(source_file
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (function_declaration
+      (parameter_list)
+      (block
+        (for_statement
+          (identifier)
+          (range_expression
+            (integer_literal)
+            (range_operator)
+            (integer_literal))
+          (assignment_statement
+            (postfix_expression
+              (if_call_start)
+              (if_call_arguments)
+              (index_suffix
+                (identifier)))
+            (identifier)))
+        (for_statement
+          (identifier)
+          (range_expression
+            (integer_literal)
+            (range_operator)
+            (integer_literal))
+          (assignment_statement
+            (postfix_expression
+              (if_call_start)
+              (if_call_arguments)
+              (index_suffix
+                (identifier)))
+            (assignment_operator)
+            (integer_literal)))
+        (while_statement
+          (postfix_expression
+            (identifier)
+            (argument_list))
+          (assignment_statement
+            (postfix_expression
+              (if_call_start)
+              (if_call_arguments)
+              (identifier))
+            (integer_literal)))))))
+
+==================
+single statement code quotes in expressions
+==================
+
+STEP :: #code count += 1;
+main :: () {
+    IS_ONE :: #code count == 1;
+    #insert #code print("{}\n", count);
+    print("{}\n", #insert IS_ONE);
+}
+doubled :: (#comptime field: str) -> Code {
+    return #code (value.``field * 2);
+}
+
+---
+
+(source_file
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (constant_declaration_body
+      (code_expression
+        (assignment_statement
+          (identifier)
+          (assignment_operator)
+          (integer_literal)))))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (function_declaration
+      (parameter_list)
+      (block
+        (variable_declaration
+          (binding_list
+            (identifier))
+          (code_expression
+            (expression_statement
+              (binary_expression
+                (identifier)
+                (operator)
+                (integer_literal)))))
+        (insert_statement
+          (code_expression
+            (expression_statement
+              (postfix_expression
+                (identifier)
+                (argument_list
+                  (string_literal)
+                  (identifier))))))
+        (expression_statement
+          (postfix_expression
+            (identifier)
+            (argument_list
+              (string_literal)
+              (insert_expression
+                (identifier))))))))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (function_declaration
+      (parameter_list
+        (comptime_parameter
+          (binding_list
+            (identifier))
+          (named_type
+            (identifier))))
+      (arrow)
+      (named_type
+        (identifier))
+      (block
+        (return_statement
+          (code_expression
+            (expression_statement
+              (parenthesized_expression
+                (binary_expression
+                  (postfix_expression
+                    (identifier)
+                    (code_splice_identifier))
+                  (operator)
+                  (integer_literal))))))))))

@@ -1,29 +1,32 @@
-#import,only (Show(..), Element.Output, Ops.'+') "Prelude";
+#import "Prelude" (Show, Element.Output, Ops.'+', sqrt);
 // <- attribute
-//      ^ attribute
-//            ^ type
-//                 ^ operator
-//                      ^ type
-//                              ^ property
-//                                      ^ type
-//                                          ^ operator
-//                                               ^ string
+//      ^ string
+//                 ^ type
+//                       ^ type
+//                               ^ type
+//                                       ^ type
+//                                           ^ operator
+//                                                ^ variable
 
-#export,hide (BitNot(..), Add(..)) "./operators.glo";
+#export "./operators.glo" (BitNot, Add);
 // <- attribute
-//      ^ attribute
-//            ^ type
-//                   ^ operator
-//                        ^ type
-//                            ^ operator
-//                                 ^ string
+//      ^ string
+//                         ^ type
+//                                 ^ type
 
-Api :: #export,only (Show(..)) "./api.glo"
+#import "./instances.glo" ();
+// <- attribute
+
+Api :: #export "./api.glo" (Show);
 //     ^ attribute
-//             ^ attribute
-//                   ^ type
-//                        ^ operator
-//                             ^ string
+//             ^ string
+//                          ^ type
+
+Math :: #import "Math/Core" (Fractional, Ops.sqrt);
+//      ^ attribute
+//                           ^ type
+//                                       ^ type
+//                                           ^ property
 
 #public,to("./reader.glo", "./writer.glo") {
 // <- attribute

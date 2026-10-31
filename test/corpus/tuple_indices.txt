@@ -1,0 +1,21 @@
+==================
+tuple indices must use decimal digits
+:error
+==================
+
+main :: () { value := pair.16#ff; }
+
+---
+
+(source_file)
+
+==================
+tuple call indices must use decimal digits in unbraced bodies
+:error
+==================
+
+main :: () { if enabled get_pair().16#ff; }
+
+---
+
+(source_file)

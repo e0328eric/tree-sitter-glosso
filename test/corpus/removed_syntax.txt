@@ -1,0 +1,206 @@
+==================
+removed mutable local binding
+:error
+==================
+
+entry :: () { mut value := 1; }
+
+---
+
+(source_file)
+
+==================
+removed mutable global binding
+:error
+==================
+
+mut counter: s64 = 0;
+
+---
+
+(source_file)
+
+==================
+removed mutable parameter
+:error
+==================
+
+entry :: (mut value: s64) {}
+
+---
+
+(source_file)
+
+==================
+removed mutable loop binding
+:error
+==================
+
+entry :: () { for mut item: items {} }
+
+---
+
+(source_file)
+
+==================
+removed mutable lambda parameter
+:error
+==================
+
+entry :: () { callback := |mut value: s64| value; }
+
+---
+
+(source_file)
+
+==================
+removed reference type
+:error
+==================
+
+read :: (value: &s64) {}
+
+---
+
+(source_file)
+
+==================
+removed exclusive borrow
+:error
+==================
+
+entry :: () { value := 1; borrowed := &mut value; }
+
+---
+
+(source_file)
+
+==================
+removed raw address qualifier
+:error
+==================
+
+entry :: () { value := 1; address := value.&raw; }
+
+---
+
+(source_file)
+
+==================
+removed borrowed slice type
+:error
+==================
+
+read :: (values: [&]s64) {}
+
+---
+
+(source_file)
+
+==================
+removed lifetimes directive
+:error
+==================
+
+View :: struct #lifetimes(source) { bytes: []u8; }
+
+---
+
+(source_file)
+
+==================
+removed leading memory contract
+:error
+==================
+
+#memory { reads(source), noescape(source) }
+view :: (source: []u8) -> []u8 { return source; }
+
+---
+
+(source_file)
+
+==================
+removed trailing memory contract
+:error
+==================
+
+view :: (source: []u8) -> []u8 #memory reads(source) { return source; }
+
+---
+
+(source_file)
+
+==================
+removed trusted memory block
+:error
+==================
+
+entry :: () { #memory,trusted { use(); } }
+
+---
+
+(source_file)
+
+==================
+removed drop error handler
+:error
+==================
+
+entry :: () { #on_drop_error(resource, error) {} }
+
+---
+
+(source_file)
+
+==================
+removed fresh result modifier
+:error
+==================
+
+allocate :: () -> *u8 #fresh_result { return null; }
+
+---
+
+(source_file)
+
+==================
+removed unchecked transfer modifier
+:error
+==================
+
+take :: (slot: *$T) -> T #unchecked_transfer { return slot.*; }
+
+---
+
+(source_file)
+
+==================
+removed subject-less pattern switch without equality
+:error
+==================
+
+entry :: () {
+  if #pattern {
+  case true; run();
+  }
+}
+
+---
+
+(source_file)
+
+==================
+switches use the equality operator
+:error
+==================
+
+entry :: (value: s64) {
+  if value < {
+  case 1; run();
+  }
+}
+
+---
+
+(source_file)

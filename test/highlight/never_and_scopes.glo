@@ -11,15 +11,10 @@ error := 0;
 
 cleanup :: (owner: Owner) {
 //          ^ variable.parameter
-    #on_drop_error(owner, error) {
+    #temp_scope {
 //  ^ attribute
-//                 ^ variable.parameter
-//                        ^ variable.parameter
         consume(error, owner);
-//              ^ variable.parameter
+//              ^ variable
 //                     ^ variable.parameter
     }
-    consume(error, owner);
-//          ^ variable
-//                 ^ variable.parameter
 }

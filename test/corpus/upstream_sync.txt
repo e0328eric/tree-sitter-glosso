@@ -392,19 +392,14 @@ optional file import terminator
 
 ==================
 missing constant terminator
+:error
 ==================
 
 K :: 5
 
 ---
 
-(source_file
-  (named_declaration
-    (declaration_name
-      (identifier))
-    (constant_declaration_body
-      (integer_literal)
-      (MISSING ";"))))
+(source_file)
 
 ==================
 missing global terminator
@@ -456,24 +451,14 @@ Alias :: int
 
 ==================
 missing struct literal constant terminator
+:error
 ==================
 
 P :: Point.{ .x = 1 }
 
 ---
 
-(source_file
-  (named_declaration
-    (declaration_name
-      (identifier))
-    (constant_declaration_body
-      (postfix_expression
-        (identifier)
-        (struct_literal
-          (struct_literal_field
-            (identifier)
-            (integer_literal))))
-      (MISSING ";"))))
+(source_file)
 
 ==================
 stray semicolons after declarations
@@ -760,17 +745,6 @@ worker :: (value: int) -> int;
     (arrow)
     (named_type
       (identifier))))
-
-==================
-removed global memory tails are rejected
-:error
-==================
-
-buffer: *u8 #memory leak(buffer);
-
----
-
-(source_file)
 
 ==================
 missing local declaration terminator

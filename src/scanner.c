@@ -2,6 +2,7 @@
 
 enum TokenType {
   SYMBOLIC_SUFFIX_OPERATOR,
+  COMMENT,
 };
 
 static bool is_space(int32_t c) {
@@ -18,29 +19,41 @@ static bool is_operator(int32_t c) {
   }
 }
 
+// Consumes the rest of a comment whose opening '/' has been consumed and whose
+// second character ('/' or '*') is the lookahead. Block comments nest as in the
+// compiler's lexer: every "/*" needs its own "*/". Returns false for an
+// unterminated block comment, which the compiler rejects.
+static bool finish_comment(TSLexer *lexer) {
+  if (lexer->lookahead == '/') {
+    while (!lexer->eof(lexer) && lexer->lookahead != '\n') lexer->advance(lexer, false);
+    return true;
+  }
+  lexer->advance(lexer, false);
+  unsigned depth = 1;
+  while (depth > 0) {
+    if (lexer->eof(lexer)) return false;
+    int32_t c = lexer->lookahead;
+    lexer->advance(lexer, false);
+    if (c == '/' && lexer->lookahead == '*') {
+      lexer->advance(lexer, false);
+      depth++;
+    } else if (c == '*' && lexer->lookahead == '/') {
+      lexer->advance(lexer, false);
+      depth--;
+    }
+  }
+  return true;
+}
+
+// Skips whitespace and comments, nested ones included. Returns false when a
+// '/' starts something other than a comment or a block comment never closes.
 static bool skip_trivia(TSLexer *lexer) {
   for (;;) {
     while (is_space(lexer->lookahead)) lexer->advance(lexer, false);
     if (lexer->lookahead != '/') return true;
-
     lexer->advance(lexer, false);
-    if (lexer->lookahead == '/') {
-      do {
-        lexer->advance(lexer, false);
-      } while (!lexer->eof(lexer) && lexer->lookahead != '\n');
-    } else if (lexer->lookahead == '*') {
-      lexer->advance(lexer, false);
-      bool star = false;
-      for (;;) {
-        if (lexer->eof(lexer)) return false;
-        int32_t c = lexer->lookahead;
-        lexer->advance(lexer, false);
-        if (star && c == '/') break;
-        star = c == '*';
-      }
-    } else {
-      return false;
-    }
+    if (lexer->lookahead != '/' && lexer->lookahead != '*') return false;
+    if (!finish_comment(lexer)) return false;
   }
 }
 
@@ -61,14 +74,22 @@ void tree_sitter_glosso_external_scanner_deserialize(void *payload, const char *
 
 bool tree_sitter_glosso_external_scanner_scan(void *payload, TSLexer *lexer, const bool *valid_symbols) {
   (void)payload;
-  if (!valid_symbols[SYMBOLIC_SUFFIX_OPERATOR]) return false;
+  if (!valid_symbols[COMMENT] && !valid_symbols[SYMBOLIC_SUFFIX_OPERATOR]) return false;
   while (is_space(lexer->lookahead)) lexer->advance(lexer, true);
 
   int32_t first = lexer->lookahead;
   if (!is_operator(first)) return false;
   lexer->advance(lexer, false);
   int32_t second = lexer->lookahead;
-  if (first == '/' && (second == '/' || second == '*')) return false;
+
+  // Comments are extras, so they are valid wherever a token may start.
+  if (first == '/' && (second == '/' || second == '*')) {
+    if (!valid_symbols[COMMENT] || !finish_comment(lexer)) return false;
+    lexer->mark_end(lexer);
+    lexer->result_symbol = COMMENT;
+    return true;
+  }
+  if (!valid_symbols[SYMBOLIC_SUFFIX_OPERATOR]) return false;
 
   unsigned length = 1;
   while (is_operator(lexer->lookahead)) {
