@@ -32,6 +32,10 @@
         "named": true
       },
       {
+        "type": "module_parameters_directive",
+        "named": true
+      },
+      {
         "type": "named_declaration",
         "named": true
       },
@@ -1951,6 +1955,16 @@
     "type": "export_declaration",
     "named": true,
     "fields": {
+      "arguments": {
+        "multiple": false,
+        "required": false,
+        "types": [
+          {
+            "type": "module_argument_list",
+            "named": true
+          }
+        ]
+      },
       "names": {
         "multiple": false,
         "required": false,
@@ -2692,11 +2706,11 @@
           "named": true
         },
         {
-          "type": "modify_directive",
+          "type": "operator_directive",
           "named": true
         },
         {
-          "type": "operator_directive",
+          "type": "specialize_directive",
           "named": true
         },
         {
@@ -2992,6 +3006,16 @@
           }
         ]
       }
+    },
+    "children": {
+      "multiple": true,
+      "required": false,
+      "types": [
+        {
+          "type": "variable_attribute",
+          "named": true
+        }
+      ]
     }
   },
   {
@@ -3343,6 +3367,16 @@
     "type": "import_declaration",
     "named": true,
     "fields": {
+      "arguments": {
+        "multiple": false,
+        "required": false,
+        "types": [
+          {
+            "type": "module_argument_list",
+            "named": true
+          }
+        ]
+      },
       "module": {
         "multiple": false,
         "required": true,
@@ -4424,20 +4458,55 @@
     }
   },
   {
-    "type": "modify_directive",
+    "type": "module_argument_list",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": true,
+      "required": false,
+      "types": [
+        {
+          "type": "_expression",
+          "named": true
+        },
+        {
+          "type": "module_named_argument",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
+    "type": "module_named_argument",
     "named": true,
     "fields": {
-      "body": {
+      "name": {
         "multiple": false,
-        "required": false,
+        "required": true,
         "types": [
           {
-            "type": "block",
+            "type": "identifier",
             "named": true
           }
         ]
       },
-      "condition": {
+      "value": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "_expression",
+            "named": true
+          }
+        ]
+      }
+    }
+  },
+  {
+    "type": "module_parameter",
+    "named": true,
+    "fields": {
+      "default": {
         "multiple": false,
         "required": false,
         "types": [
@@ -4446,7 +4515,42 @@
             "named": true
           }
         ]
+      },
+      "name": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "identifier",
+            "named": true
+          }
+        ]
+      },
+      "type": {
+        "multiple": false,
+        "required": false,
+        "types": [
+          {
+            "type": "_type",
+            "named": true
+          }
+        ]
       }
+    }
+  },
+  {
+    "type": "module_parameters_directive",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": true,
+      "required": false,
+      "types": [
+        {
+          "type": "module_parameter",
+          "named": true
+        }
+      ]
     }
   },
   {
@@ -6179,6 +6283,16 @@
           }
         ]
       },
+      "member": {
+        "multiple": false,
+        "required": false,
+        "types": [
+          {
+            "type": "scoped_name_suffix",
+            "named": true
+          }
+        ]
+      },
       "object": {
         "multiple": false,
         "required": false,
@@ -6336,6 +6450,144 @@
         ]
       },
       "procedure": {
+        "multiple": false,
+        "required": false,
+        "types": [
+          {
+            "type": "array_literal",
+            "named": true
+          },
+          {
+            "type": "array_type",
+            "named": true
+          },
+          {
+            "type": "boolean_literal",
+            "named": true
+          },
+          {
+            "type": "byte_string_literal",
+            "named": true
+          },
+          {
+            "type": "c_string_literal",
+            "named": true
+          },
+          {
+            "type": "char_literal",
+            "named": true
+          },
+          {
+            "type": "code_expression",
+            "named": true
+          },
+          {
+            "type": "code_splice_identifier",
+            "named": true
+          },
+          {
+            "type": "context_expression",
+            "named": true
+          },
+          {
+            "type": "float_literal",
+            "named": true
+          },
+          {
+            "type": "generic_type_variable",
+            "named": true
+          },
+          {
+            "type": "identifier",
+            "named": true
+          },
+          {
+            "type": "integer_literal",
+            "named": true
+          },
+          {
+            "type": "label",
+            "named": true
+          },
+          {
+            "type": "label_none_literal",
+            "named": true
+          },
+          {
+            "type": "lambda_expression",
+            "named": true
+          },
+          {
+            "type": "many_pointer_type",
+            "named": true
+          },
+          {
+            "type": "matrix_literal",
+            "named": true
+          },
+          {
+            "type": "never_type",
+            "named": true
+          },
+          {
+            "type": "non_hygienic_identifier",
+            "named": true
+          },
+          {
+            "type": "null_literal",
+            "named": true
+          },
+          {
+            "type": "parenthesized_expression",
+            "named": true
+          },
+          {
+            "type": "postfix_expression",
+            "named": true
+          },
+          {
+            "type": "quoted_operator",
+            "named": true
+          },
+          {
+            "type": "self_expression",
+            "named": true
+          },
+          {
+            "type": "self_type",
+            "named": true
+          },
+          {
+            "type": "shorthand_member_expression",
+            "named": true
+          },
+          {
+            "type": "simd_literal",
+            "named": true
+          },
+          {
+            "type": "source_location_expression",
+            "named": true
+          },
+          {
+            "type": "string_block",
+            "named": true
+          },
+          {
+            "type": "string_literal",
+            "named": true
+          },
+          {
+            "type": "struct_literal",
+            "named": true
+          },
+          {
+            "type": "tuple_literal",
+            "named": true
+          }
+        ]
+      },
+      "scope": {
         "multiple": false,
         "required": false,
         "types": [
@@ -6644,6 +6896,16 @@
     "type": "qualified_export_declaration",
     "named": true,
     "fields": {
+      "arguments": {
+        "multiple": false,
+        "required": false,
+        "types": [
+          {
+            "type": "module_argument_list",
+            "named": true
+          }
+        ]
+      },
       "names": {
         "multiple": false,
         "required": false,
@@ -6670,6 +6932,16 @@
     "type": "qualified_import_declaration",
     "named": true,
     "fields": {
+      "arguments": {
+        "multiple": false,
+        "required": false,
+        "types": [
+          {
+            "type": "module_argument_list",
+            "named": true
+          }
+        ]
+      },
       "module": {
         "multiple": false,
         "required": true,
@@ -7049,6 +7321,22 @@
     }
   },
   {
+    "type": "scoped_name_suffix",
+    "named": true,
+    "fields": {
+      "name": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "identifier",
+            "named": true
+          }
+        ]
+      }
+    }
+  },
+  {
     "type": "shorthand_member_expression",
     "named": true,
     "fields": {
@@ -7159,6 +7447,32 @@
           "named": true
         }
       ]
+    }
+  },
+  {
+    "type": "specialize_directive",
+    "named": true,
+    "fields": {
+      "body": {
+        "multiple": false,
+        "required": false,
+        "types": [
+          {
+            "type": "block",
+            "named": true
+          }
+        ]
+      },
+      "condition": {
+        "multiple": false,
+        "required": false,
+        "types": [
+          {
+            "type": "_expression",
+            "named": true
+          }
+        ]
+      }
     }
   },
   {
@@ -7617,7 +7931,7 @@
           "named": true
         },
         {
-          "type": "modify_directive",
+          "type": "specialize_directive",
           "named": true
         }
       ]
@@ -8573,6 +8887,37 @@
     }
   },
   {
+    "type": "variable_attribute",
+    "named": true,
+    "fields": {
+      "directive": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "variable_attribute_directive",
+            "named": true
+          }
+        ]
+      },
+      "value": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "_expression",
+            "named": true
+          }
+        ]
+      }
+    }
+  },
+  {
+    "type": "variable_attribute_directive",
+    "named": true,
+    "fields": {}
+  },
+  {
     "type": "variable_declaration",
     "named": true,
     "fields": {
@@ -8610,6 +8955,16 @@
           }
         ]
       }
+    },
+    "children": {
+      "multiple": true,
+      "required": false,
+      "types": [
+        {
+          "type": "variable_attribute",
+          "named": true
+        }
+      ]
     }
   },
   {
@@ -8967,6 +9322,10 @@
     "named": false
   },
   {
+    "type": "#link_section",
+    "named": false
+  },
+  {
     "type": "#magic",
     "named": false
   },
@@ -8983,7 +9342,7 @@
     "named": false
   },
   {
-    "type": "#modify",
+    "type": "#module_params",
     "named": false
   },
   {
@@ -9036,6 +9395,10 @@
   },
   {
     "type": "#soa",
+    "named": false
+  },
+  {
+    "type": "#specialize",
     "named": false
   },
   {

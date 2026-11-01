@@ -9,8 +9,8 @@ canonical module imports and exports without terminators
 Geometry :: #import "parts/geometry.glo"
 Api : Namespace : #export "./api.glo"
 #if true {
-  #import "Prelude" ()
-  #export "./helpers.glo" (helper)
+  #import "Prelude" {}
+  #export "./helpers.glo" {helper}
 }
 main :: () {}
 
@@ -58,10 +58,10 @@ main :: () {}
 import lists with classes members and operators
 ==================
 
-#import "Prelude" (Show, Element.Output, Ops.'+', Module.Class, Module.Class.Output, '>>');
-#import "./operators.glo" (BitNot, Add, Internal.Output,);
-#import "./instances.glo" ();
-Operators :: #import "./operators.glo" (Ops.'%%', Class.`member, ``Class.``Member, `Class);
+#import "Prelude" {Show, Element.Output, Ops.'+', Module.Class, Module.Class.Output, '>>'};
+#import "./operators.glo" {BitNot, Add, Internal.Output,};
+#import "./instances.glo" {};
+Operators :: #import "./operators.glo" {Ops.'%%', Class.`member, ``Class.``Member, `Class};
 
 ---
 
@@ -116,11 +116,11 @@ Operators :: #import "./operators.glo" (Ops.'%%', Class.`member, ``Class.``Membe
 export lists on named and unaliased exports
 ==================
 
-#export "Prelude" (Show, Element.Output, '+',);
-#export "./internal.glo" (Internal, Ops.'%%')
-Api :: #export "./api.glo" (Show, Element.Output);
-Filtered : Namespace : #export "./api.glo" (Internal)
-Empty := #export "./instances.glo" ();
+#export "Prelude" {Show, Element.Output, '+',};
+#export "./internal.glo" {Internal, Ops.'%%'}
+Api :: #export "./api.glo" {Show, Element.Output};
+Filtered : Namespace : #export "./api.glo" {Internal}
+Empty := #export "./instances.glo" {};
 
 ---
 

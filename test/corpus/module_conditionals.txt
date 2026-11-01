@@ -183,7 +183,7 @@ directives inside declaration groups and branches
   #enable(lossy_numerics);
   #if true {
     #disable(lossy_numerics);
-    #import "std/math" (sqrt);
+    #import "std/math" {sqrt};
     Math :: #import "std/math";
   } else {
     #import "fallback.glo";

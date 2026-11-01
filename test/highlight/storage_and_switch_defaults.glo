@@ -1,0 +1,19 @@
+buffer: [8]u8 #align 64 #link_section ".data";
+//            ^ attribute
+//                   ^ number
+//                      ^ attribute
+//                                    ^ string
+
+main :: () {
+
+  if value == {
+
+    case 0; if ready return;
+
+    else /* a comment */ ;
+//  ^ keyword
+//       ^ comment
+
+  }
+
+}

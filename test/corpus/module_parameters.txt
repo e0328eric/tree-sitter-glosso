@@ -1,0 +1,440 @@
+==================
+module parameters with required typed and inferred defaults
+==================
+
+#module_params(T: type, COUNT: ssize = 4, ENABLED := false,);
+#module_params(PATH := path_dirname(GLOSSO_STANDARD_DIRECTORY));
+#module_params(BASE := 20, TOTAL := BASE * 2 + 2);
+#module_params();
+
+---
+
+(source_file
+  (module_parameters_directive
+    (module_parameter
+      (identifier)
+      (named_type
+        (identifier)))
+    (module_parameter
+      (identifier)
+      (named_type
+        (identifier))
+      (integer_literal))
+    (module_parameter
+      (identifier)
+      (boolean_literal)))
+  (module_parameters_directive
+    (module_parameter
+      (identifier)
+      (postfix_expression
+        (identifier)
+        (argument_list
+          (identifier)))))
+  (module_parameters_directive
+    (module_parameter
+      (identifier)
+      (integer_literal))
+    (module_parameter
+      (identifier)
+      (binary_expression
+        (binary_expression
+          (identifier)
+          (operator)
+          (integer_literal))
+        (operator)
+        (integer_literal))))
+  (module_parameters_directive))
+
+==================
+module arguments are separate from selected names
+==================
+
+#import "Foo"(s32, 4, true) { Box, value };
+#import "Foo"(s32, COUNT = 8, .ENABLED = true,) { Box, Ops.'+', };
+#import "Glosso"(DYLIB_PREFIX = "$ORIGIN/../share");
+#import "Foo"(.T = s64, .COUNT = 4);
+
+---
+
+(source_file
+  (import_declaration
+    (string_literal)
+    (module_argument_list
+      (identifier)
+      (integer_literal)
+      (boolean_literal))
+    (import_list
+      (identifier)
+      (identifier)))
+  (import_declaration
+    (string_literal)
+    (module_argument_list
+      (identifier)
+      (module_named_argument
+        (identifier)
+        (integer_literal))
+      (module_named_argument
+        (identifier)
+        (boolean_literal)))
+    (import_list
+      (identifier)
+      (import_member
+        (identifier)
+        (quoted_operator))))
+  (import_declaration
+    (string_literal)
+    (module_argument_list
+      (module_named_argument
+        (identifier)
+        (string_literal))))
+  (import_declaration
+    (string_literal)
+    (module_argument_list
+      (module_named_argument
+        (identifier)
+        (identifier))
+      (module_named_argument
+        (identifier)
+        (integer_literal)))))
+
+==================
+empty module arguments and empty selections have different roles
+==================
+
+#import "M";
+#import "M"();
+#import "M" {};
+#import "M"() {};
+#import "M"(COUNT = 2) {};
+#import "M"(SomeType);
+
+---
+
+(source_file
+  (import_declaration
+    (string_literal))
+  (import_declaration
+    (string_literal)
+    (module_argument_list))
+  (import_declaration
+    (string_literal)
+    (import_list))
+  (import_declaration
+    (string_literal)
+    (module_argument_list)
+    (import_list))
+  (import_declaration
+    (string_literal)
+    (module_argument_list
+      (module_named_argument
+        (identifier)
+        (integer_literal)))
+    (import_list))
+  (import_declaration
+    (string_literal)
+    (module_argument_list
+      (identifier))))
+
+==================
+module arguments on aliases and exports
+==================
+
+Core :: #import "./core.glo"(s32, COUNT = 4) { Box };
+Public : Namespace : #export "./core.glo"(T = u8, .COUNT = 2) { Box, value };
+All := #import "./core.glo"();
+Instances := #export "./core.glo"(s64) {};
+#export "./core.glo"(T = T, COUNT = COUNT) { Box };
+#export "./core.glo"(s32);
+
+---
+
+(source_file
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (qualified_import_declaration
+      (string_literal)
+      (module_argument_list
+        (identifier)
+        (module_named_argument
+          (identifier)
+          (integer_literal)))
+      (import_list
+        (identifier))))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (named_type
+      (identifier))
+    (qualified_export_declaration
+      (string_literal)
+      (module_argument_list
+        (module_named_argument
+          (identifier)
+          (identifier))
+        (module_named_argument
+          (identifier)
+          (integer_literal)))
+      (import_list
+        (identifier)
+        (identifier))))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (qualified_import_declaration
+      (string_literal)
+      (module_argument_list)))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (qualified_export_declaration
+      (string_literal)
+      (module_argument_list
+        (identifier))
+      (import_list)))
+  (export_declaration
+    (string_literal)
+    (module_argument_list
+      (module_named_argument
+        (identifier)
+        (identifier))
+      (module_named_argument
+        (identifier)
+        (identifier)))
+    (import_list
+      (identifier)))
+  (export_declaration
+    (string_literal)
+    (module_argument_list
+      (identifier))))
+
+==================
+conditional and unterminated imports retain module arguments
+==================
+
+#module_params(ENABLED := true);
+#if ENABLED {
+  #export "Glosso"(DYLIB_PREFIX = "$ORIGIN/../share") { parse }
+  #import "Helper"() {}
+} else {
+  Helpers :: #import "Fallback"(false)
+}
+main :: () {}
+
+---
+
+(source_file
+  (module_parameters_directive
+    (module_parameter
+      (identifier)
+      (boolean_literal)))
+  (conditional_declaration
+    (identifier)
+    (declaration_block
+      (export_declaration
+        (string_literal)
+        (module_argument_list
+          (module_named_argument
+            (identifier)
+            (string_literal)))
+        (import_list
+          (identifier)))
+      (import_declaration
+        (string_literal)
+        (module_argument_list)
+        (import_list)))
+    (declaration_block
+      (named_declaration
+        (declaration_name
+          (identifier))
+        (qualified_import_declaration
+          (string_literal)
+          (module_argument_list
+            (boolean_literal))))))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (function_declaration
+      (parameter_list)
+      (block))))
+
+==================
+module argument expressions comments and Unicode names
+==================
+
+#module_params(
+  /* outer /* nested */ comment */ 경로: str,
+  N := compute(2, .scale = 3),
+  MODE: Mode = .Small,
+  VALUES: []s64 = .[1, 2],
+);
+#import "Foo"(
+  /* before the first argument */ path_join(ROOT, "share"),
+  경로 = path_join(ROOT, "lib"),
+  .N = (1 + 2) * 4,
+  MODE = .Large,
+  VALUES = .[1, 2, 3],
+) { name, Namespace.member, '>>' }
+
+---
+
+(source_file
+  (module_parameters_directive
+    (comment)
+    (module_parameter
+      (identifier)
+      (named_type
+        (identifier)))
+    (module_parameter
+      (identifier)
+      (postfix_expression
+        (identifier)
+        (argument_list
+          (integer_literal)
+          (named_argument
+            (identifier)
+            (integer_literal)))))
+    (module_parameter
+      (identifier)
+      (named_type
+        (identifier))
+      (shorthand_member_expression
+        (identifier)))
+    (module_parameter
+      (identifier)
+      (array_type
+        (named_type
+          (identifier)))
+      (array_literal
+        (integer_literal)
+        (integer_literal))))
+  (import_declaration
+    (string_literal)
+    (module_argument_list
+      (comment)
+      (postfix_expression
+        (identifier)
+        (argument_list
+          (identifier)
+          (string_literal)))
+      (module_named_argument
+        (identifier)
+        (postfix_expression
+          (identifier)
+          (argument_list
+            (identifier)
+            (string_literal))))
+      (module_named_argument
+        (identifier)
+        (binary_expression
+          (parenthesized_expression
+            (binary_expression
+              (integer_literal)
+              (operator)
+              (integer_literal)))
+          (operator)
+          (integer_literal)))
+      (module_named_argument
+        (identifier)
+        (shorthand_member_expression
+          (identifier)))
+      (module_named_argument
+        (identifier)
+        (array_literal
+          (integer_literal)
+          (integer_literal)
+          (integer_literal))))
+    (import_list
+      (identifier)
+      (import_member
+        (identifier)
+        (identifier))
+      (quoted_operator))))
+
+==================
+module parameters require a terminating semicolon
+:error
+==================
+
+#module_params(N := 1)
+
+---
+
+(source_file)
+
+==================
+inferred module parameters require a default
+:error
+==================
+
+#module_params(N :=);
+
+---
+
+(source_file)
+
+==================
+module parameters require a type or inferred default
+:error
+==================
+
+#module_params(N);
+
+---
+
+(source_file)
+
+==================
+module parameters do not accept function parameter modifiers
+:error
+==================
+
+#module_params(#comptime T: type);
+
+---
+
+(source_file)
+
+==================
+positional module arguments cannot follow named arguments
+:error
+==================
+
+#import "Foo"(COUNT = 4, s32);
+
+---
+
+(source_file)
+
+==================
+module arguments precede selections
+:error
+==================
+
+#import "Foo" { value } (COUNT = 4);
+
+---
+
+(source_file)
+
+==================
+named module arguments require a value
+:error
+==================
+
+#export "Foo"(.COUNT =);
+
+---
+
+(source_file)
+
+==================
+module selections contain names rather than argument assignments
+:error
+==================
+
+#import "Foo" { COUNT = 4 };
+
+---
+
+(source_file)

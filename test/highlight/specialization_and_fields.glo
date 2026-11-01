@@ -1,0 +1,25 @@
+Box :: struct #specialize { T = s64; return true; } { value: $T; }
+//            ^ attribute
+
+read :: (value: $T) -> s64
+  #specialize #meaningful { T,,foo; } { return value.foo; }
+// ^ attribute
+//            ^ attribute
+//                             ^ property
+
+has_foo :: (T: type, foo: s64) -> bool {
+    return #meaningful { T,,foo; };
+//         ^ attribute
+//                       ^ variable.parameter
+//                          ^ property
+}
+
+inspect :: (T: type) {
+    fields := #meaningful { T,,foo; T,,bar; };
+//                          ^ variable.parameter
+//                             ^ property
+//                                  ^ variable.parameter
+//                                     ^ property
+    target := worker,,'entry;
+//                    ^ label
+}

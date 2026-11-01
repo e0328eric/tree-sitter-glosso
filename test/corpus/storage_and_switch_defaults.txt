@@ -1,0 +1,389 @@
+==================
+variable storage attributes before and after initializers
+==================
+
+buffer: [8]u8 #align 64 #link_section ".text";
+data: [4]u8 #align (8 * 8) = .[1, 2, 3, 4] #link_section ".data";
+inferred := 1 #align alignment_of(s64);
+computed ::= 2 #align 16;
+#thread_local counter: s64 #align 64 = 0;
+main :: () {
+  local: s64 #align 32 = 1;
+  another := 2 #align 16;
+  pair, other: s64 #align 8 = values();
+}
+
+---
+
+(source_file
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (global_variable_declaration_tail
+      (array_type
+        (integer_literal)
+        (named_type
+          (identifier)))
+      (variable_attribute
+        (variable_attribute_directive)
+        (integer_literal))
+      (variable_attribute
+        (variable_attribute_directive)
+        (string_literal))))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (global_variable_declaration_tail
+      (array_type
+        (integer_literal)
+        (named_type
+          (identifier)))
+      (variable_attribute
+        (variable_attribute_directive)
+        (parenthesized_expression
+          (binary_expression
+            (integer_literal)
+            (operator)
+            (integer_literal))))
+      (array_literal
+        (integer_literal)
+        (integer_literal)
+        (integer_literal)
+        (integer_literal))
+      (variable_attribute
+        (variable_attribute_directive)
+        (string_literal))))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (global_variable_declaration_tail
+      (integer_literal)
+      (variable_attribute
+        (variable_attribute_directive)
+        (postfix_expression
+          (identifier)
+          (argument_list
+            (identifier))))))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (global_variable_declaration_tail
+      (integer_literal)
+      (variable_attribute
+        (variable_attribute_directive)
+        (integer_literal))))
+  (thread_local_declaration
+    (named_declaration
+      (declaration_name
+        (identifier))
+      (global_variable_declaration_tail
+        (named_type
+          (identifier))
+        (variable_attribute
+          (variable_attribute_directive)
+          (integer_literal))
+        (integer_literal))))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (function_declaration
+      (parameter_list)
+      (block
+        (variable_declaration
+          (binding_list
+            (identifier))
+          (named_type
+            (identifier))
+          (variable_attribute
+            (variable_attribute_directive)
+            (integer_literal))
+          (integer_literal))
+        (variable_declaration
+          (binding_list
+            (identifier))
+          (integer_literal)
+          (variable_attribute
+            (variable_attribute_directive)
+            (integer_literal)))
+        (variable_declaration
+          (binding_list
+            (identifier)
+            (identifier))
+          (named_type
+            (identifier))
+          (variable_attribute
+            (variable_attribute_directive)
+            (integer_literal))
+          (postfix_expression
+            (identifier)
+            (argument_list)))))))
+
+==================
+variable alignment requires an expression
+:error
+==================
+
+buffer: [8]u8 #align;
+
+---
+
+(source_file)
+
+==================
+variable storage attributes in quoted code and unbraced branches
+==================
+
+quoted :: #code buffer: [8]u8 #align 64;
+quoted_init :: #code slot := 1 #align 32;
+quoted_block :: #code { value: s64 #align 8 = 1; }
+main :: () { if ready value := 3 #align 8; }
+
+---
+
+(source_file
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (constant_declaration_body
+      (code_expression
+        (variable_declaration
+          (binding_list
+            (identifier))
+          (array_type
+            (integer_literal)
+            (named_type
+              (identifier)))
+          (variable_attribute
+            (variable_attribute_directive)
+            (integer_literal))))))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (constant_declaration_body
+      (code_expression
+        (variable_declaration
+          (binding_list
+            (identifier))
+          (integer_literal)
+          (variable_attribute
+            (variable_attribute_directive)
+            (integer_literal))))))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (constant_declaration_body
+      (code_expression
+        (code_block
+          (variable_declaration
+            (binding_list
+              (identifier))
+            (named_type
+              (identifier))
+            (variable_attribute
+              (variable_attribute_directive)
+              (integer_literal))
+            (integer_literal))))))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (function_declaration
+      (parameter_list)
+      (block
+        (if_statement
+          (identifier)
+          (variable_declaration
+            (if_variable_declaration_start)
+            (integer_literal)
+            (variable_attribute
+              (variable_attribute_directive)
+              (integer_literal))))))))
+
+==================
+variable link section requires an expression
+:error
+==================
+
+buffer: [8]u8 #link_section;
+
+---
+
+(source_file)
+
+==================
+switch default after nested if statements
+==================
+
+main :: (text: str, ready: bool) {
+  if text == {
+    case "return"; if ready return;
+    else;
+  }
+  if text == {
+    case "block"; if ready { run(); }
+    else; fallback();
+  }
+  if text == {
+    case "nested"; if ready if active run(); else stop();
+    else;
+  }
+  #if text == {
+    case "static"; #if ready { run(); }
+    else;
+  }
+}
+
+---
+
+(source_file
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (function_declaration
+      (parameter_list
+        (parameter
+          (binding_list
+            (identifier))
+          (named_type
+            (identifier)))
+        (parameter
+          (binding_list
+            (identifier))
+          (named_type
+            (identifier))))
+      (block
+        (switch_statement
+          (identifier)
+          (operator)
+          (pattern_case_clause
+            (string_literal)
+            (if_statement
+              (identifier)
+              (return_statement)))
+          (default_clause))
+        (switch_statement
+          (identifier)
+          (operator)
+          (pattern_case_clause
+            (string_literal)
+            (if_statement
+              (identifier)
+              (block
+                (expression_statement
+                  (postfix_expression
+                    (identifier)
+                    (argument_list))))))
+          (default_clause
+            (expression_statement
+              (postfix_expression
+                (identifier)
+                (argument_list)))))
+        (switch_statement
+          (identifier)
+          (operator)
+          (pattern_case_clause
+            (string_literal)
+            (if_statement
+              (identifier)
+              (if_statement
+                (identifier)
+                (expression_statement
+                  (if_call_start)
+                  (if_call_arguments))
+                (expression_statement
+                  (if_call_start)
+                  (if_call_arguments)))))
+          (default_clause))
+        (static_if_statement
+          (identifier)
+          (operator)
+          (case_clause
+            (string_literal)
+            (static_if_statement
+              (identifier)
+              (block
+                (expression_statement
+                  (postfix_expression
+                    (identifier)
+                    (argument_list))))))
+          (default_clause))))))
+
+==================
+switch default lookahead preserves comments and ordinary else branches
+==================
+
+main :: (value: s64) {
+  if value == {
+    case 0; if ready return;
+    else /* outer /* nested */ comment */ ; fallback();
+  }
+  if value == {
+    case 1; if ready run(); else /* ordinary branch */ stop();
+    else // default branch
+      ;
+  }
+  if value == { case 2; elsewhere(); else; }
+  if ready run(); else stop();
+}
+
+---
+
+(source_file
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (function_declaration
+      (parameter_list
+        (parameter
+          (binding_list
+            (identifier))
+          (named_type
+            (identifier))))
+      (block
+        (switch_statement
+          (identifier)
+          (operator)
+          (pattern_case_clause
+            (integer_literal)
+            (if_statement
+              (identifier)
+              (return_statement)))
+          (default_clause
+            (comment)
+            (expression_statement
+              (postfix_expression
+                (identifier)
+                (argument_list)))))
+        (switch_statement
+          (identifier)
+          (operator)
+          (pattern_case_clause
+            (integer_literal)
+            (if_statement
+              (identifier)
+              (expression_statement
+                (if_call_start)
+                (if_call_arguments))
+              (comment)
+              (expression_statement
+                (if_call_start)
+                (if_call_arguments))))
+          (default_clause
+            (comment)))
+        (switch_statement
+          (identifier)
+          (operator)
+          (pattern_case_clause
+            (integer_literal)
+            (expression_statement
+              (postfix_expression
+                (identifier)
+                (argument_list))))
+          (default_clause))
+        (if_statement
+          (identifier)
+          (expression_statement
+            (if_call_start)
+            (if_call_arguments))
+          (expression_statement
+            (if_call_start)
+            (if_call_arguments)))))))

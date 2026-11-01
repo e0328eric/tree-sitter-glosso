@@ -1,0 +1,28 @@
+#module_params(DYLIB_PREFIX: str = "../share", count := 4,);
+// <- attribute
+//             ^ variable.parameter
+//                           ^ type.builtin
+//                                 ^ string
+//                                             ^ variable.parameter
+//                                                      ^ number
+
+#import "Glosso"(DYLIB_PREFIX = DYLIB_PREFIX) { parse, Tokens };
+// <- attribute
+//      ^ string
+//               ^ variable.parameter
+//                                              ^ variable
+//                                                     ^ type
+
+#export "Foo"(count, .COUNT = count + 1) { Ops.'+', value };
+// <- attribute
+//            ^ variable.parameter
+//                    ^ variable.parameter
+//                                         ^ type
+//                                             ^ operator
+//                                                  ^ variable
+
+read_count :: () -> ssize { return count; }
+//                                 ^ variable.parameter
+
+use_local :: () { count := "local"; sink(count); }
+//                                       ^ variable

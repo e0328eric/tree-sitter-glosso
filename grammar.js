@@ -30,6 +30,10 @@ module.exports = grammar({
   extras: ($) => [/\s/, $.comment],
 
   conflicts: ($) => [
+    // Keep a pending if alternative and a switch default alive until the token
+    // after `else` distinguishes them. `else;` belongs to the surrounding switch.
+    [$.if_statement],
+    [$.static_if_statement],
     [$._literal_name, $.boolean_literal],
     [$.type_constructor_pattern, $._non_range_expression],
     [$._non_range_expression, $._pointer_type_qualifier],
@@ -94,6 +98,7 @@ module.exports = grammar({
     $._function_declaration_tail,
     $._parameter,
     $._function_modifier,
+    $._variable_initializer,
     $._non_run_expression,
     $._primary_expression,
     $._pattern_primary,
@@ -112,6 +117,7 @@ module.exports = grammar({
     _declaration: ($) =>
       choice(
         $.feature_directive,
+        $.module_parameters_directive,
         $.top_run_declaration,
         $.insert_declaration,
         $.import_declaration,
@@ -180,17 +186,61 @@ module.exports = grammar({
     insert_declaration: ($) =>
       seq("#insert", $._insert_operand, optional(";")),
 
+    module_parameters_directive: ($) =>
+      seq("#module_params", "(", commaSep($.module_parameter), ")", ";"),
+
+    module_parameter: ($) =>
+      seq(
+        field("name", $.identifier),
+        choice(
+          seq(":=", field("default", $._expression)),
+          seq(
+            ":",
+            field("type", $._type),
+            optional(seq("=", field("default", $._expression))),
+          ),
+        ),
+      ),
+
     import_declaration: ($) =>
       prec.right(seq(
         "#import",
         field("module", $.string_literal),
+        optional(field("arguments", $.module_argument_list)),
         optional(field("names", $.import_list)),
         optional(";"),
       )),
 
-    // `#import "M" (a, Class, Ns.member, '<->')` brings in only the listed
-    // names; a class name brings its members, and `()` imports instances only.
-    import_list: ($) => seq("(", commaSep($._import_name), ")"),
+    // Positional arguments precede named ones; both NAME=value and .NAME=value
+    // are accepted. These arguments instantiate the module before selection.
+    module_argument_list: ($) =>
+      seq(
+        "(",
+        optional(seq(
+          choice(
+            seq(
+              $._expression,
+              repeat(seq(",", $._expression)),
+              repeat(seq(",", $.module_named_argument)),
+            ),
+            seq($.module_named_argument, repeat(seq(",", $.module_named_argument))),
+          ),
+          optional(","),
+        )),
+        ")",
+      ),
+
+    module_named_argument: ($) =>
+      seq(
+        optional("."),
+        field("name", $.identifier),
+        "=",
+        field("value", $._expression),
+      ),
+
+    // `#import "M"(args) {a, Class, Ns.member, '<->'}` brings in only the
+    // listed names; a class brings its members, and `{}` imports instances only.
+    import_list: ($) => seq("{", commaSep($._import_name), "}"),
 
     _import_name: ($) => choice($._import_simple_name, $.import_member),
 
@@ -207,6 +257,7 @@ module.exports = grammar({
       prec.right(seq(
         "#export",
         field("path", $.string_literal),
+        optional(field("arguments", $.module_argument_list)),
         optional(field("names", $.import_list)),
         optional(";"),
       )),
@@ -415,6 +466,7 @@ module.exports = grammar({
       prec.right(seq(
         "#import",
         field("module", $.string_literal),
+        optional(field("arguments", $.module_argument_list)),
         optional(field("names", $.import_list)),
         optional(";"),
       )),
@@ -423,6 +475,7 @@ module.exports = grammar({
       prec.right(seq(
         "#export",
         field("path", $.string_literal),
+        optional(field("arguments", $.module_argument_list)),
         optional(field("names", $.import_list)),
         optional(";"),
       )),
@@ -473,23 +526,24 @@ module.exports = grammar({
       prec.right(
         seq(
           choice(
-            seq("::=", field("value", $._expression)),
-            seq(":=", field("value", $._expression)),
+            seq("::=", $._variable_initializer),
+            seq(":=", $._variable_initializer),
             seq(
               ":",
               choice(
                 seq(
                   field("type", $._type),
+                  repeat($.variable_attribute),
                   optional(
                     seq(
                       choice("=", ":="),
-                      field("value", $._expression),
+                      $._variable_initializer,
                     ),
                   ),
                 ),
                 seq(
                   choice("=", ":="),
-                  field("value", $._expression),
+                  $._variable_initializer,
                 ),
               ),
             ),
@@ -497,6 +551,18 @@ module.exports = grammar({
           ";",
         ),
       ),
+
+    variable_attribute: ($) =>
+      seq(
+        field("directive", $.variable_attribute_directive),
+        field("value", $._expression),
+      ),
+
+    // Share the expression production across both storage attributes.
+    variable_attribute_directive: (_) => choice("#align", "#link_section"),
+
+    _variable_initializer: ($) =>
+      prec.right(seq(field("value", $._expression), repeat($.variable_attribute))),
 
     typed_constant_declaration_tail: ($) =>
       seq(
@@ -529,7 +595,7 @@ module.exports = grammar({
         "#c_call",
         "#packed",
         $.align_directive,
-        $.modify_directive,
+        $.specialize_directive,
         $.derive_directive,
         $.magic_directive,
       ),
@@ -754,7 +820,7 @@ module.exports = grammar({
     _function_non_bodyless_modifier: ($) =>
       choice(
         $.operator_directive,
-        $.modify_directive,
+        $.specialize_directive,
         $.expand_directive,
         "#c_call",
         "#no_context",
@@ -777,9 +843,9 @@ module.exports = grammar({
 
     where_clause: ($) => seq("where", field("condition", $._expression)),
 
-    modify_directive: ($) =>
+    specialize_directive: ($) =>
       seq(
-        "#modify",
+        "#specialize",
         choice(
           field("body", $.block),
           field("condition", $._expression),
@@ -1202,7 +1268,7 @@ module.exports = grammar({
         2,
         seq(
           field("name", $.if_variable_declaration_start),
-          field("value", $._expression),
+          $._variable_initializer,
           optional(";"),
         ),
       ),
@@ -1353,7 +1419,7 @@ module.exports = grammar({
     comptime_modifier: (_) => token(prec(3, "#comptime")),
 
     if_statement: ($) =>
-      prec.right(
+      prec.dynamic(1,
         seq(
           "if",
           field("condition", $._expression),
@@ -1379,7 +1445,7 @@ module.exports = grammar({
       ),
 
     static_if_statement: ($) =>
-      prec.right(
+      prec.dynamic(1,
         choice(
           seq(
             "#if",
@@ -1451,17 +1517,17 @@ module.exports = grammar({
         seq(
           field("name", $.binding_list),
           "::=",
-          field("value", $._expression),
+          $._variable_initializer,
         ),
         seq(
           field("name", $.binding_list),
           ":=",
-          field("value", $._expression),
+          $._variable_initializer,
         ),
         seq(
           field("name", $.binding_list),
           "::",
-          field("value", $._expression),
+          $._variable_initializer,
         ),
         seq(
           field("name", $.binding_list),
@@ -1469,16 +1535,17 @@ module.exports = grammar({
           choice(
             seq(
               field("type", $._type),
+              repeat($.variable_attribute),
               optional(
                 seq(
                   choice(":=", "=", "::", ":"),
-                  field("value", $._expression),
+                  $._variable_initializer,
                 ),
               ),
             ),
             seq(
               choice(":=", "=", "::", ":"),
-              field("value", $._expression),
+              $._variable_initializer,
             ),
           ),
         ),
@@ -2253,6 +2320,10 @@ module.exports = grammar({
             field("procedure", $._postfix_expression_base),
             field("label", $.nonlocal_label_suffix),
           ),
+          seq(
+            field("scope", $._postfix_expression_base),
+            field("member", $.scoped_name_suffix),
+          ),
           seq(field("object", $._postfix_expression_base), ".", "cast", "(", field("type", $._type), ")"),
           seq(field("object", $._postfix_expression_base), ".", "acast"),
           seq(field("object", $._postfix_expression_base), choice(".*", ".&")),
@@ -2322,6 +2393,11 @@ module.exports = grammar({
 
     nonlocal_label_suffix: ($) =>
       seq(",,", field("name", $.label)),
+
+    // The compiler resolves a bare scoped name as a type's field requirement
+    // inside #meaningful or as a function's nonlocal label.
+    scoped_name_suffix: ($) =>
+      seq(",,", field("name", $.identifier)),
 
     _primary_expression: ($) =>
       choice(

@@ -1,0 +1,503 @@
+==================
+function specialization blocks and conditions
+==================
+
+force_int :: (value: $T) -> T #specialize {
+  T = s64;
+  return true;
+} { return value; }
+
+identity :: (value: $T) -> T #specialize true { return value; }
+
+read_foo :: (value: $T) -> s64
+  #specialize #meaningful { T,,foo; } { return value.foo; }
+
+---
+
+(source_file
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (function_declaration
+      (parameter_list
+        (parameter
+          (binding_list
+            (identifier))
+          (generic_type_variable
+            (identifier))))
+      (arrow)
+      (named_type
+        (identifier))
+      (specialize_directive
+        (block
+          (assignment_statement
+            (identifier)
+            (identifier))
+          (return_statement
+            (boolean_literal))))
+      (block
+        (return_statement
+          (identifier)))))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (function_declaration
+      (parameter_list
+        (parameter
+          (binding_list
+            (identifier))
+          (generic_type_variable
+            (identifier))))
+      (arrow)
+      (named_type
+        (identifier))
+      (specialize_directive
+        (boolean_literal))
+      (block
+        (return_statement
+          (identifier)))))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (function_declaration
+      (parameter_list
+        (parameter
+          (binding_list
+            (identifier))
+          (generic_type_variable
+            (identifier))))
+      (arrow)
+      (named_type
+        (identifier))
+      (specialize_directive
+        (meaningful_expression
+          (block
+            (expression_statement
+              (postfix_expression
+                (identifier)
+                (scoped_name_suffix
+                  (identifier)))))))
+      (block
+        (return_statement
+          (postfix_expression
+            (identifier)
+            (identifier)))))))
+
+==================
+struct specialization blocks and conditions
+==================
+
+Box :: struct #specialize {
+  T = s64;
+  return true;
+} { value: $T; }
+
+Container :: struct #specialize true { value: $T; }
+Checked :: struct #specialize #meaningful { T,,foo; } { value: $T; }
+
+---
+
+(source_file
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (struct_declaration
+      (struct_modifier
+        (specialize_directive
+          (block
+            (assignment_statement
+              (identifier)
+              (identifier))
+            (return_statement
+              (boolean_literal)))))
+      (struct_field
+        (identifier)
+        (generic_type_variable
+          (identifier)))))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (struct_declaration
+      (struct_modifier
+        (specialize_directive
+          (boolean_literal)))
+      (struct_field
+        (identifier)
+        (generic_type_variable
+          (identifier)))))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (struct_declaration
+      (struct_modifier
+        (specialize_directive
+          (meaningful_expression
+            (block
+              (expression_statement
+                (postfix_expression
+                  (identifier)
+                  (scoped_name_suffix
+                    (identifier))))))))
+      (struct_field
+        (identifier)
+        (generic_type_variable
+          (identifier))))))
+
+==================
+meaningful field requirements for type expressions
+==================
+
+has_foo :: (T: type) -> bool { return #meaningful { T,,foo; }; }
+
+main :: () {
+  present := #meaningful { Record,,foo; };
+  missing := !#meaningful { Record,,missing; };
+  qualified := #meaningful { Fields.Record,,foo; };
+  generic := #meaningful { Box(s64),,foo; };
+  computed := #meaningful { identity(Record),,foo; };
+  builtin := #meaningful { str,,count; []u8,,count; [..]u8,,capacity; };
+  keyword_name := #meaningful { Record,,true; Record,,const; };
+  expression := #meaningful Record,,foo;
+}
+
+---
+
+(source_file
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (function_declaration
+      (parameter_list
+        (parameter
+          (binding_list
+            (identifier))
+          (named_type
+            (identifier))))
+      (arrow)
+      (named_type
+        (identifier))
+      (block
+        (return_statement
+          (meaningful_expression
+            (block
+              (expression_statement
+                (postfix_expression
+                  (identifier)
+                  (scoped_name_suffix
+                    (identifier))))))))))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (function_declaration
+      (parameter_list)
+      (block
+        (variable_declaration
+          (binding_list
+            (identifier))
+          (meaningful_expression
+            (block
+              (expression_statement
+                (postfix_expression
+                  (identifier)
+                  (scoped_name_suffix
+                    (identifier)))))))
+        (variable_declaration
+          (binding_list
+            (identifier))
+          (unary_expression
+            (prefix_operator)
+            (meaningful_expression
+              (block
+                (expression_statement
+                  (postfix_expression
+                    (identifier)
+                    (scoped_name_suffix
+                      (identifier))))))))
+        (variable_declaration
+          (binding_list
+            (identifier))
+          (meaningful_expression
+            (block
+              (expression_statement
+                (postfix_expression
+                  (postfix_expression
+                    (identifier)
+                    (identifier))
+                  (scoped_name_suffix
+                    (identifier)))))))
+        (variable_declaration
+          (binding_list
+            (identifier))
+          (meaningful_expression
+            (block
+              (expression_statement
+                (postfix_expression
+                  (postfix_expression
+                    (identifier)
+                    (argument_list
+                      (identifier)))
+                  (scoped_name_suffix
+                    (identifier)))))))
+        (variable_declaration
+          (binding_list
+            (identifier))
+          (meaningful_expression
+            (block
+              (expression_statement
+                (postfix_expression
+                  (postfix_expression
+                    (identifier)
+                    (argument_list
+                      (identifier)))
+                  (scoped_name_suffix
+                    (identifier)))))))
+        (variable_declaration
+          (binding_list
+            (identifier))
+          (meaningful_expression
+            (block
+              (expression_statement
+                (postfix_expression
+                  (identifier)
+                  (scoped_name_suffix
+                    (identifier))))
+              (expression_statement
+                (postfix_expression
+                  (array_type
+                    (named_type
+                      (identifier)))
+                  (scoped_name_suffix
+                    (identifier))))
+              (expression_statement
+                (postfix_expression
+                  (array_type
+                    (named_type
+                      (identifier)))
+                  (scoped_name_suffix
+                    (identifier)))))))
+        (variable_declaration
+          (binding_list
+            (identifier))
+          (meaningful_expression
+            (block
+              (expression_statement
+                (postfix_expression
+                  (identifier)
+                  (scoped_name_suffix
+                    (identifier))))
+              (expression_statement
+                (postfix_expression
+                  (identifier)
+                  (scoped_name_suffix
+                    (identifier)))))))
+        (variable_declaration
+          (binding_list
+            (identifier))
+          (meaningful_expression
+            (postfix_expression
+              (identifier)
+              (scoped_name_suffix
+                (identifier)))))))))
+
+==================
+field requirements in where clauses
+==================
+
+read :: (value: $T) -> s64 where #meaningful { T,,foo; } {
+  return value.foo;
+}
+
+Has_Foo :: typeclass (T: type) {
+  read :: (value: T) -> s64 where #meaningful { T,,foo; };
+}
+
+---
+
+(source_file
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (function_declaration
+      (parameter_list
+        (parameter
+          (binding_list
+            (identifier))
+          (generic_type_variable
+            (identifier))))
+      (arrow)
+      (named_type
+        (identifier))
+      (where_clause
+        (meaningful_expression
+          (block
+            (expression_statement
+              (postfix_expression
+                (identifier)
+                (scoped_name_suffix
+                  (identifier)))))))
+      (block
+        (return_statement
+          (postfix_expression
+            (identifier)
+            (identifier))))))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (typeclass_declaration
+      (typeclass_parameter
+        (identifier)
+        (named_type
+          (identifier)))
+      (typeclass_method_signature
+        (declaration_name
+          (identifier))
+        (function_declaration
+          (parameter_list
+            (parameter
+              (binding_list
+                (identifier))
+              (named_type
+                (identifier))))
+          (arrow)
+          (named_type
+            (identifier))
+          (where_clause
+            (meaningful_expression
+              (block
+                (expression_statement
+                  (postfix_expression
+                    (identifier)
+                    (scoped_name_suffix
+                      (identifier))))))))))))
+
+==================
+bare scoped names coexist with labels and qualified operators
+==================
+
+main :: () {
+  target: label = worker,,entry;
+  quoted: label = worker,,'entry;
+  generic_target := worker(s64),,task;
+  qualified_target := Tasks.worker,,entry;
+  probe := #meaningful { T,,foo; worker,,entry; worker,,'entry; };
+  first := values Slice,,[0];
+  total := 1 Num,,+ 2;
+}
+
+---
+
+(source_file
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (function_declaration
+      (parameter_list)
+      (block
+        (variable_declaration
+          (binding_list
+            (identifier))
+          (named_type
+            (identifier))
+          (postfix_expression
+            (identifier)
+            (scoped_name_suffix
+              (identifier))))
+        (variable_declaration
+          (binding_list
+            (identifier))
+          (named_type
+            (identifier))
+          (postfix_expression
+            (identifier)
+            (nonlocal_label_suffix
+              (label))))
+        (variable_declaration
+          (binding_list
+            (identifier))
+          (postfix_expression
+            (postfix_expression
+              (identifier)
+              (argument_list
+                (identifier)))
+            (scoped_name_suffix
+              (identifier))))
+        (variable_declaration
+          (binding_list
+            (identifier))
+          (postfix_expression
+            (postfix_expression
+              (identifier)
+              (identifier))
+            (scoped_name_suffix
+              (identifier))))
+        (variable_declaration
+          (binding_list
+            (identifier))
+          (meaningful_expression
+            (block
+              (expression_statement
+                (postfix_expression
+                  (identifier)
+                  (scoped_name_suffix
+                    (identifier))))
+              (expression_statement
+                (postfix_expression
+                  (identifier)
+                  (scoped_name_suffix
+                    (identifier))))
+              (expression_statement
+                (postfix_expression
+                  (identifier)
+                  (nonlocal_label_suffix
+                    (label)))))))
+        (variable_declaration
+          (binding_list
+            (identifier))
+          (postfix_expression
+            (identifier)
+            (qualified_index_suffix
+              (identifier)
+              (index_suffix
+                (integer_literal)))))
+        (variable_declaration
+          (binding_list
+            (identifier))
+          (binary_expression
+            (integer_literal)
+            (qualified_operator
+              (identifier)
+              (operator))
+            (integer_literal)))))))
+
+==================
+removed function modify directive
+:error
+==================
+
+identity :: (value: $T) -> T #modify true { return value; }
+
+---
+
+(source_file)
+
+==================
+removed struct modify directive
+:error
+==================
+
+Box :: struct #modify { T = s64; return true; } { value: $T; }
+
+---
+
+(source_file)
+
+==================
+scoped names require a name
+:error
+==================
+
+main :: () { present := #meaningful { T,,; }; }
+
+---
+
+(source_file)

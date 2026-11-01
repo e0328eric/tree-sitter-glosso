@@ -2,8 +2,8 @@
 selective imports and generated declarations
 ==================
 
-#import "Math/Core" (Fractional, '/');
-Math :: #import "Math/Core" (sqrt);
+#import "Math/Core" {Fractional, '/'};
+Math :: #import "Math/Core" {sqrt};
 Parts :: #import "parts/math.glo";
 #insert generated_source;
 
