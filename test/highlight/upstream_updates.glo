@@ -2,21 +2,21 @@ LIMIT :: 5;
 
 match_value :: (value: ?s64, number: s64) -> s64 {
     if value == {
-        case .Some(==LIMIT); return number;
-//            ^ property
-//                 ^ operator
-//                                  ^ variable.parameter
-        case .Some(number) if number > 0; return number;
-//                 ^ variable
-//                         ^ keyword
-//                            ^ variable
-//                                               ^ variable
-        case .None; return number;
-//                         ^ variable.parameter
+        case ?==LIMIT; return number;
+//           ^ operator
+//            ^ operator
+//                            ^ variable.parameter
+        case ?number if number > 0; return number;
+//            ^ variable
+//                   ^ keyword
+//                      ^ variable
+//                                         ^ variable
+        case null; return number;
+//                        ^ variable.parameter
     }
     return ifx value == {
-        case .Some(==LIMIT), .None; 0;
-//                 ^ operator
+        case ?==LIMIT, null; 0;
+//            ^ operator
         else; number;
 //            ^ variable.parameter
     };

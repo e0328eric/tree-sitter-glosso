@@ -30,6 +30,8 @@ module.exports = grammar({
   extras: ($) => [/\s/, $.comment],
 
   conflicts: ($) => [
+    // `[N]` opens both an array type and an array type pattern.
+    [$._array_length, $.array_type_constructor_pattern],
     // Keep a pending if alternative and a switch default alive until the token
     // after `else` distinguishes them. `else;` belongs to the surrounding switch.
     [$.if_statement],
@@ -1726,13 +1728,36 @@ module.exports = grammar({
             "length",
             choice(
               "..",
-              $.integer_literal,
               alias("_", $.type_hole),
-              $.identifier,
+              $._array_length,
             ),
           ),
           "]",
           field("element", $._modified_type),
+        ),
+      ),
+
+    // A fixed array's length is a compile-time integer expression, such as
+    // `[N * 2 + 1]u8` or `[size_of(T)]u8`. It never starts with `*`, so
+    // `[*]T` stays a many-pointer.
+    _array_length: ($) =>
+      choice(
+        $.integer_literal,
+        $.identifier,
+        alias($.array_length_call, $.postfix_expression),
+        alias($.array_length_binary, $.binary_expression),
+        $.parenthesized_expression,
+      ),
+
+    array_length_call: ($) =>
+      seq(field("function", $.identifier), field("arguments", $.argument_list)),
+
+    array_length_binary: ($) =>
+      prec.left(
+        seq(
+          field("left", $._array_length),
+          field("operator", choice("+", "-", "*", "/", "%", "<<", ">>")),
+          field("right", $._array_length),
         ),
       ),
 
@@ -2207,11 +2232,23 @@ module.exports = grammar({
 
     _pattern_unary: ($) =>
       choice(
+        $.optional_pattern,
         $.unary_expression,
         prec.dynamic(1, $.binary_expression),
         $.constant_pattern,
         $.pattern_postfix_expression,
         $._pattern_primary,
+      ),
+
+    // `?p` matches a present option whose payload matches `p`, as in
+    // `case ?v;`, `#pattern ?v = value`, `??v`, `?null`, `?1..=9`.
+    optional_pattern: ($) =>
+      prec.right(
+        PREC.unary,
+        seq(
+          field("operator", alias($._optional_pattern_prefix, $.prefix_operator)),
+          field("pattern", $._pattern_range),
+        ),
       ),
 
     constant_pattern: ($) =>
@@ -2715,7 +2752,13 @@ module.exports = grammar({
 
     range_operator: (_) => token(prec(2, choice("..=", ".."))),
 
-    try_operator: (_) => token(prec(2, "?")),
+    // The try operator is attached to its operand: `x? y`, `x?.y`. A `?`
+    // with a space before it and none after starts the next operand instead,
+    // as the present value `?y` (`ifx c ?a else null`).
+    try_operator: (_) => token.immediate(prec(2, "?")),
+
+    // `?` leading a pattern: a present option.
+    _optional_pattern_prefix: (_) => token(prec(2, "?")),
 
     _ellipsis: (_) => token(prec(3, "...")),
 

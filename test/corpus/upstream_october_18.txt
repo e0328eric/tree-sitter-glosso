@@ -5,12 +5,12 @@ runtime switches share implicit and explicit pattern cases
 LIMIT :: 5;
 match_value :: (value: ?s64, limit: s64) -> s64 {
   if value == {
-    case .Some(==LIMIT); return 1;
-    case .Some(number) if number < limit; return number;
-    case .None, .Some(0); return 0;
+    case ?==LIMIT; return 1;
+    case ?number if number < limit; return number;
+    case null, ?0; return 0;
   }
   return ifx value == {
-    case .Some(==LIMIT), .Some(0) if limit > 0; 1;
+    case ?==LIMIT, ?0 if limit > 0; 1;
     else; 0;
   };
 }
@@ -47,22 +47,18 @@ match_value :: (value: ?s64, limit: s64) -> s64 {
           (identifier)
           (operator)
           (pattern_case_clause
-            (pattern_postfix_expression
-              (shorthand_member_pattern
-                (identifier))
-              (pattern_argument_list
-                (constant_pattern
-                  (constant_pattern_operator)
-                  (identifier))))
+            (optional_pattern
+              (prefix_operator)
+              (constant_pattern
+                (constant_pattern_operator)
+                (identifier)))
             (return_statement
               (integer_literal)))
           (pattern_case_clause
-            (pattern_postfix_expression
-              (shorthand_member_pattern
-                (identifier))
-              (pattern_argument_list
-                (pattern_binding
-                  (identifier))))
+            (optional_pattern
+              (prefix_operator)
+              (pattern_binding
+                (identifier)))
             (binary_expression
               (identifier)
               (operator)
@@ -70,13 +66,10 @@ match_value :: (value: ?s64, limit: s64) -> s64 {
             (return_statement
               (identifier)))
           (pattern_case_clause
-            (shorthand_member_pattern
-              (identifier))
-            (pattern_postfix_expression
-              (shorthand_member_pattern
-                (identifier))
-              (pattern_argument_list
-                (integer_literal)))
+            (null_literal)
+            (optional_pattern
+              (prefix_operator)
+              (integer_literal))
             (return_statement
               (integer_literal))))
         (return_statement
@@ -84,18 +77,14 @@ match_value :: (value: ?s64, limit: s64) -> s64 {
             (identifier)
             (operator)
             (pattern_case_clause
-              (pattern_postfix_expression
-                (shorthand_member_pattern
-                  (identifier))
-                (pattern_argument_list
-                  (constant_pattern
-                    (constant_pattern_operator)
-                    (identifier))))
-              (pattern_postfix_expression
-                (shorthand_member_pattern
-                  (identifier))
-                (pattern_argument_list
-                  (integer_literal)))
+              (optional_pattern
+                (prefix_operator)
+                (constant_pattern
+                  (constant_pattern_operator)
+                  (identifier)))
+              (optional_pattern
+                (prefix_operator)
+                (integer_literal))
               (binary_expression
                 (identifier)
                 (operator)
@@ -112,12 +101,12 @@ explicit pattern switches accept comma alternatives and guards
 
 match_value :: (value: ?s64) -> s64 {
   if #pattern value == {
-    case .None, .Some(0); return 0;
-    case .Some(number) if number > 0; return number;
+    case null, ?0; return 0;
+    case ?number if number > 0; return number;
     else; return -1;
   }
   return ifx #pattern value == {
-    case .None, .Some(0); 0;
+    case null, ?0; 0;
     else; 1;
   };
 }
@@ -144,22 +133,17 @@ match_value :: (value: ?s64) -> s64 {
           (identifier)
           (operator)
           (pattern_case_clause
-            (shorthand_member_pattern
-              (identifier))
-            (pattern_postfix_expression
-              (shorthand_member_pattern
-                (identifier))
-              (pattern_argument_list
-                (integer_literal)))
+            (null_literal)
+            (optional_pattern
+              (prefix_operator)
+              (integer_literal))
             (return_statement
               (integer_literal)))
           (pattern_case_clause
-            (pattern_postfix_expression
-              (shorthand_member_pattern
-                (identifier))
-              (pattern_argument_list
-                (pattern_binding
-                  (identifier))))
+            (optional_pattern
+              (prefix_operator)
+              (pattern_binding
+                (identifier)))
             (binary_expression
               (identifier)
               (operator)
@@ -176,13 +160,10 @@ match_value :: (value: ?s64) -> s64 {
             (identifier)
             (operator)
             (pattern_case_clause
-              (shorthand_member_pattern
-                (identifier))
-              (pattern_postfix_expression
-                (shorthand_member_pattern
-                  (identifier))
-                (pattern_argument_list
-                  (integer_literal)))
+              (null_literal)
+              (optional_pattern
+                (prefix_operator)
+                (integer_literal))
               (expression_statement
                 (integer_literal)))
             (default_clause

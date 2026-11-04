@@ -247,3 +247,59 @@ Aligned :: struct #align(16 + 16) {}
 
 (source_file)
 
+==================
+array lengths are compile-time expressions
+==================
+
+Rolls :: struct {
+  counts: [6]u32;
+  padding: [LINE - size_of(type_of(counts))]u8;
+  wide: [N * 2 + 1][(M)]s64;
+  many: [*]const u8;
+}
+
+---
+
+(source_file
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (struct_declaration
+      (struct_field
+        (identifier)
+        (array_type
+          (integer_literal)
+          (named_type
+            (identifier))))
+      (struct_field
+        (identifier)
+        (array_type
+          (binary_expression
+            (identifier)
+            (postfix_expression
+              (identifier)
+              (argument_list
+                (postfix_expression
+                  (identifier)
+                  (argument_list
+                    (identifier))))))
+          (named_type
+            (identifier))))
+      (struct_field
+        (identifier)
+        (array_type
+          (binary_expression
+            (binary_expression
+              (identifier)
+              (integer_literal))
+            (integer_literal))
+          (array_type
+            (parenthesized_expression
+              (identifier))
+            (named_type
+              (identifier)))))
+      (struct_field
+        (identifier)
+        (many_pointer_type
+          (named_type
+            (identifier)))))))

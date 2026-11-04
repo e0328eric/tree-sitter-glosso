@@ -74,8 +74,8 @@ bindings :: (item: u8, index: u8) {
 }
 
 quoted_pattern :: (value: u8) {
-    quoted := #pattern .Some(value);
-//                           ^ variable
+    quoted := #pattern ?value;
+//                      ^ variable
     value;
 //  ^ variable.parameter
 }

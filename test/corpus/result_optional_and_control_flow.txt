@@ -160,7 +160,7 @@ pattern binding and control flow expressions
 ==================
 
 unwrap :: (value: ?*s32) -> Io_Error!s32 {
-  #pattern .Some(pointer) := value else {
+  #pattern ?pointer := value else {
     return .Err(Io_Error.Missing);
   };
   answer := return pointer.*;
@@ -207,12 +207,10 @@ compare :: (value: s32) {
       (block
         (expression_statement
           (pattern_binding_expression
-            (pattern_postfix_expression
-              (shorthand_member_pattern
-                (identifier))
-              (pattern_argument_list
-                (pattern_binding
-                  (identifier))))
+            (optional_pattern
+              (prefix_operator)
+              (pattern_binding
+                (identifier)))
             (identifier)
             (block
               (return_statement

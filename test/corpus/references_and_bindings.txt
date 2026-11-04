@@ -634,7 +634,7 @@ implicit expression patterns preserve unary binary and pointer capture forms
 NEGATE :: #pattern !false;
 COMPLEMENT :: #pattern ~0;
 POSITIVE :: #pattern +1;
-OPTIONAL_TYPE :: #pattern ?*void;
+PRESENT_POINTER :: #pattern ?*raw;
 ADDRESS :: #pattern &VALUE;
 DEREFERENCE :: #pattern **VALUE;
 DOUBLE_ADDRESS :: #pattern &&VALUE;
@@ -678,10 +678,9 @@ Constant_Bitwise :: #pattern == (LOW | HIGH);
       (identifier))
     (constant_declaration_body
       (pattern_quote_expression
-        (unary_expression
+        (optional_pattern
           (prefix_operator)
-          (unary_expression
-            (prefix_operator)
+          (pointer_pattern
             (identifier))))))
   (named_declaration
     (declaration_name

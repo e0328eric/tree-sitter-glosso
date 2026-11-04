@@ -615,7 +615,7 @@ match_value :: (value: s64, n: s64) -> s64 {
 }
 
 match_payload :: (value: ?s64) -> bool {
-  if #pattern .Some(== (K * 2)) = value { return true; }
+  if #pattern ?(== (K * 2)) = value { return true; }
   return false;
 }
 
@@ -728,10 +728,9 @@ match_payload :: (value: ?s64) -> bool {
         (if_statement
           (pattern_test_expression
             (pattern_arm
-              (pattern_postfix_expression
-                (shorthand_member_pattern
-                  (identifier))
-                (pattern_argument_list
+              (optional_pattern
+                (prefix_operator)
+                (parenthesized_pattern
                   (constant_pattern
                     (constant_pattern_operator)
                     (parenthesized_expression
@@ -1243,4 +1242,3 @@ Record ::: { inspect :: (*mut #self) {} }
 ---
 
 (source_file)
-

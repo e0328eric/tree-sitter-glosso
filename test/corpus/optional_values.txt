@@ -1,0 +1,181 @@
+==================
+optional values, patterns, and the attached try operator
+==================
+
+half :: (n: s64) -> ?s64 {
+  if n % 2 != 0 return null;
+  return ?(n / 2);
+}
+main :: () {
+  a: ?s64 = ?5;
+  b := ?.();
+  c: ??s64 = ?null;
+  d := ifx a != null ?a else null;
+  e := half(4)? + 1;
+  if #pattern ?h = half(8) print("{}\n", h);
+  #pattern ?q := half(12) else { return; };
+  if a == {
+    case ?1..=5; print("small\n");
+    case ??v | ?_; print("other\n");
+    case null; print("none\n");
+  }
+}
+
+---
+
+(source_file
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (function_declaration
+      (parameter_list
+        (parameter
+          (binding_list
+            (identifier))
+          (named_type
+            (identifier))))
+      (arrow)
+      (optional_type
+        (named_type
+          (identifier)))
+      (block
+        (if_statement
+          (binary_expression
+            (binary_expression
+              (identifier)
+              (operator)
+              (integer_literal))
+            (operator)
+            (integer_literal))
+          (return_statement
+            (null_literal)))
+        (return_statement
+          (unary_expression
+            (prefix_operator)
+            (parenthesized_expression
+              (binary_expression
+                (identifier)
+                (operator)
+                (integer_literal))))))))
+  (named_declaration
+    (declaration_name
+      (identifier))
+    (function_declaration
+      (parameter_list)
+      (block
+        (variable_declaration
+          (binding_list
+            (identifier))
+          (optional_type
+            (named_type
+              (identifier)))
+          (unary_expression
+            (prefix_operator)
+            (integer_literal)))
+        (variable_declaration
+          (binding_list
+            (identifier))
+          (unary_expression
+            (prefix_operator)
+            (tuple_literal)))
+        (variable_declaration
+          (binding_list
+            (identifier))
+          (optional_type
+            (optional_type
+              (named_type
+                (identifier))))
+          (unary_expression
+            (prefix_operator)
+            (null_literal)))
+        (variable_declaration
+          (binding_list
+            (identifier))
+          (ifx_expression
+            (binary_expression
+              (identifier)
+              (operator)
+              (null_literal))
+            (unary_expression
+              (prefix_operator)
+              (identifier))
+            (null_literal)))
+        (variable_declaration
+          (binding_list
+            (identifier))
+          (binary_expression
+            (postfix_expression
+              (postfix_expression
+                (identifier)
+                (argument_list
+                  (integer_literal)))
+              (try_operator))
+            (operator)
+            (integer_literal)))
+        (if_statement
+          (pattern_test_expression
+            (pattern_arm
+              (optional_pattern
+                (prefix_operator)
+                (pattern_binding
+                  (identifier)))
+              (postfix_expression
+                (identifier)
+                (argument_list
+                  (integer_literal)))))
+          (expression_statement
+            (if_call_start)
+            (if_call_arguments
+              (string_literal)
+              (identifier))))
+        (expression_statement
+          (pattern_binding_expression
+            (optional_pattern
+              (prefix_operator)
+              (pattern_binding
+                (identifier)))
+            (postfix_expression
+              (identifier)
+              (argument_list
+                (integer_literal)))
+            (block
+              (return_statement))))
+        (switch_statement
+          (identifier)
+          (operator)
+          (pattern_case_clause
+            (optional_pattern
+              (prefix_operator)
+              (range_pattern
+                (integer_literal)
+                (range_operator)
+                (integer_literal)))
+            (expression_statement
+              (postfix_expression
+                (identifier)
+                (argument_list
+                  (string_literal)))))
+          (pattern_case_clause
+            (or_pattern
+              (optional_pattern
+                (prefix_operator)
+                (optional_pattern
+                  (prefix_operator)
+                  (pattern_binding
+                    (identifier))))
+              (optional_pattern
+                (prefix_operator)
+                (pattern_binding
+                  (identifier))))
+            (expression_statement
+              (postfix_expression
+                (identifier)
+                (argument_list
+                  (string_literal)))))
+          (pattern_case_clause
+            (null_literal)
+            (expression_statement
+              (postfix_expression
+                (identifier)
+                (argument_list
+                  (string_literal))))))))))

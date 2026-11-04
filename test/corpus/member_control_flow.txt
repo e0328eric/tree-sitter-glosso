@@ -50,7 +50,7 @@ unbraced pattern condition with a member call body
 ==================
 
 poll :: () {
-  if #pattern .Some(socket) = entry.socket
+  if #pattern ?socket = entry.socket
     socket.poll_once(event, timeout);
 }
 
@@ -66,12 +66,10 @@ poll :: () {
         (if_statement
           (pattern_test_expression
             (pattern_arm
-              (pattern_postfix_expression
-                (shorthand_member_pattern
-                  (identifier))
-                (pattern_argument_list
-                  (pattern_binding
-                    (identifier))))
+              (optional_pattern
+                (prefix_operator)
+                (pattern_binding
+                  (identifier)))
               (postfix_expression
                 (identifier)
                 (identifier))))

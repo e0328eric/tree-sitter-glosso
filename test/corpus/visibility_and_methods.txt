@@ -498,7 +498,7 @@ option result and array inherent owners
 ==================
 
 ?$T ::: #private {
-  make_none :: () -> #Self_Type { return .None; }
+  make_none :: () -> #Self_Type { return null; }
   unwrap_or :: (#self, default: T) -> T { return default; }
   map_or :: (*#self, fnt: (T) -> $U, default: U) -> U { return default; }
 }
@@ -537,8 +537,7 @@ $E!$T ::: #public,unit where true {
         (self_type)
         (block
           (return_statement
-            (shorthand_member_expression
-              (identifier))))))
+            (null_literal)))))
     (inherent_method
       (identifier)
       (function_declaration
