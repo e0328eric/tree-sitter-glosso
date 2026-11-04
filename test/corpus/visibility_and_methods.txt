@@ -952,3 +952,109 @@ visibility cannot prefix an inherent owner
 ---
 
 (source_file)
+
+==================
+using receivers and pointer parameters
+==================
+
+Point ::: {
+  sum :: (using #self) -> s64 { return x + y; }
+  scale :: (using *#self, factor: s64) { x *= factor; }
+  read :: (using *const #self) -> s64 { return x; }
+  copy :: (noalias using *#self, source: *Point) { x = source.x; }
+  shift :: (using noalias *#self) { x += 1; }
+  reset :: (noalias using point: *Point) { x = 0; }
+}
+
+---
+
+(source_file
+  (inherent_declaration
+    (type_constructor_pattern
+      (identifier))
+    (inherent_method
+      (identifier)
+      (function_declaration
+        (parameter_list
+          (receiver_parameter
+            (self_expression)))
+        (arrow)
+        (named_type
+          (identifier))
+        (block
+          (return_statement
+            (binary_expression
+              (identifier)
+              (operator)
+              (identifier))))))
+    (inherent_method
+      (identifier)
+      (function_declaration
+        (parameter_list
+          (receiver_parameter
+            (self_expression))
+          (parameter
+            (binding_list
+              (identifier))
+            (named_type
+              (identifier))))
+        (block
+          (assignment_statement
+            (identifier)
+            (assignment_operator)
+            (identifier)))))
+    (inherent_method
+      (identifier)
+      (function_declaration
+        (parameter_list
+          (receiver_parameter
+            (self_expression)))
+        (arrow)
+        (named_type
+          (identifier))
+        (block
+          (return_statement
+            (identifier)))))
+    (inherent_method
+      (identifier)
+      (function_declaration
+        (parameter_list
+          (receiver_parameter
+            (self_expression))
+          (parameter
+            (binding_list
+              (identifier))
+            (pointer_type
+              (named_type
+                (identifier)))))
+        (block
+          (assignment_statement
+            (identifier)
+            (postfix_expression
+              (identifier)
+              (identifier))))))
+    (inherent_method
+      (identifier)
+      (function_declaration
+        (parameter_list
+          (receiver_parameter
+            (self_expression)))
+        (block
+          (assignment_statement
+            (identifier)
+            (assignment_operator)
+            (integer_literal)))))
+    (inherent_method
+      (identifier)
+      (function_declaration
+        (parameter_list
+          (parameter
+            (binding_list
+              (identifier))
+            (pointer_type
+              (named_type
+                (identifier)))))
+        (block
+          (assignment_statement
+            (identifier)
+            (integer_literal)))))))

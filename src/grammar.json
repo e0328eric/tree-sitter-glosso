@@ -3851,16 +3851,20 @@
       "type": "SEQ",
       "members": [
         {
-          "type": "CHOICE",
-          "members": [
-            {
-              "type": "STRING",
-              "value": "noalias"
-            },
-            {
-              "type": "BLANK"
-            }
-          ]
+          "type": "REPEAT",
+          "content": {
+            "type": "CHOICE",
+            "members": [
+              {
+                "type": "STRING",
+                "value": "using"
+              },
+              {
+                "type": "STRING",
+                "value": "noalias"
+              }
+            ]
+          }
         },
         {
           "type": "CHOICE",

@@ -729,10 +729,11 @@ module.exports = grammar({
         ")",
       ),
 
-    // `#self`, `*#self`, or `*const #self`, always the first parameter.
+    // `#self`, `*#self`, or `*const #self`, always the first parameter, after
+    // any `using` and `noalias` modifiers.
     receiver_parameter: ($) =>
       seq(
-        optional("noalias"),
+        repeat(choice("using", "noalias")),
         optional(seq("*", optional("const"))),
         $.self_expression,
       ),
